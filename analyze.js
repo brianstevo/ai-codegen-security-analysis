@@ -1,0 +1,156 @@
+/**
+ * analyze.js — Static Analysis
+ *
+ * Runs Semgrep (CWE Top 25 + custom rules) on all generated files in latest_ran_output/,
+ * parses the results, and writes findings.json with the schema:
+ *   { model, prompt_id, tier, cwe_id, severity, rule, line, file }
+ *
+ * Usage:
+ *   node analyze.js
+ */
+
+import { execSync }  from 'child_process';
+import fs            from 'fs/promises';
+
+const RAW_OUTPUTS_DIR = './latest_ran_output';
+const FINDINGS_FILE   = './latest_ran_output/findings.json';
+
+// ─── Semgrep ──────────────────────────────────────────────────────────────────
+
+function runSemgrep(config, label) {
+  console.log(`Running Semgrep (${label})...`);
+  try {
+    const stdout = execSync(
+      `semgrep --config=${config} ${RAW_OUTPUTS_DIR} --json --quiet`,
+      { maxBuffer: 50 * 1024 * 1024 }
+    ).toString();
+    return JSON.parse(stdout);
+  } catch (err) {
+    // Semgrep exits with code 1 when findings exist — stdout still has valid JSON
+    if (err.stdout) {
+      try { return JSON.parse(err.stdout.toString()); } catch {}
+    }
+    console.error(`Semgrep (${label}) failed:`, err.message);
+    return { results: [] };
+  }
+}
+
+/**
+ * Parse model, prompt_id, and tier from a file path.
+ * Expected format: latest_ran_output/{model}/{prompt_id}_{tier}.{ext}
+ *              or: output_number_N/{model}/{prompt_id}_{tier}.{ext}
+ */
+function parseFilePath(filePath) {
+  const parts = filePath.replace(/\\/g, '/').split('/');
+
+  // model is always the second-to-last path segment
+  const model    = parts[parts.length - 2] ?? 'unknown';
+  const basename = parts[parts.length - 1].replace(/\.(js|html|css|txt)$/, '');
+
+  let tier, prompt_id;
+  if (basename.endsWith('_security_aware')) {
+    tier      = 'security_aware';
+    prompt_id = basename.slice(0, -'_security_aware'.length);
+  } else if (basename.endsWith('_naive')) {
+    tier      = 'naive';
+    prompt_id = basename.slice(0, -'_naive'.length);
+  } else {
+    tier      = 'unknown';
+    prompt_id = basename;
+  }
+
+  return { model, prompt_id, tier };
+}
+
+/**
+ * Extract the first CWE ID string (e.g. "CWE-79") from Semgrep metadata.
+ * Semgrep returns CWE as an array of strings like ["CWE-79: Improper Neutralization..."]
+ */
+function extractCwe(metadata) {
+  const cwes = metadata?.cwe ?? metadata?.['cwe-id'] ?? [];
+  const list  = Array.isArray(cwes) ? cwes : [cwes];
+  for (const entry of list) {
+    const match = String(entry).match(/CWE-\d+/);
+    if (match) return match[0];
+  }
+  return 'unknown';
+}
+
+// ─── Parser ───────────────────────────────────────────────────────────────────
+
+function parseSemgrepFindings(semgrepData) {
+  const findings = [];
+
+  for (const result of semgrepData.results ?? []) {
+    const { model, prompt_id, tier } = parseFilePath(result.path);
+
+    findings.push({
+      model,
+      prompt_id,
+      tier,
+      cwe_id:   extractCwe(result.extra?.metadata),
+      severity: (result.extra?.severity ?? 'unknown').toLowerCase(),
+      tool:     'semgrep',
+      rule:     result.check_id,
+      line:     result.start?.line ?? null,
+      file:     result.path,
+    });
+  }
+
+  return findings;
+}
+
+// ─── Summary ──────────────────────────────────────────────────────────────────
+
+function printSummary(findings) {
+  const byModel = {};
+  const byCwe   = {};
+
+  for (const f of findings) {
+    byModel[f.model] = (byModel[f.model] ?? 0) + 1;
+    byCwe[f.cwe_id]  = (byCwe[f.cwe_id]  ?? 0) + 1;
+  }
+
+  console.log('\n── Findings by model ─────────────────');
+  for (const [model, count] of Object.entries(byModel)) {
+    console.log(`  ${model.padEnd(20)} ${count}`);
+  }
+
+  console.log('\n── Findings by CWE ───────────────────');
+  for (const [cwe, count] of Object.entries(byCwe).sort((a, b) => b[1] - a[1])) {
+    console.log(`  ${cwe.padEnd(12)} ${count}`);
+  }
+
+  console.log(`\n  Total findings: ${findings.length}`);
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
+
+async function main() {
+  const cweTop25Data = runSemgrep('p/cwe-top-25',    'CWE Top 25');
+  const customData   = runSemgrep('./custom_rules/', 'custom innerHTML/eval');
+
+  const findings = [
+    ...parseSemgrepFindings(cweTop25Data),
+    ...parseSemgrepFindings(customData),
+  ];
+
+  // Deduplicate: same file + rule + line
+  const seen    = new Set();
+  const unique  = findings.filter(f => {
+    const key = `${f.file}|${f.rule}|${f.line}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  await fs.writeFile(FINDINGS_FILE, JSON.stringify(unique, null, 2), 'utf-8');
+
+  printSummary(unique);
+  console.log(`\nSaved → ${FINDINGS_FILE}`);
+}
+
+main().catch(err => {
+  console.error('Fatal:', err.message);
+  process.exit(1);
+});

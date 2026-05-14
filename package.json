@@ -1,0 +1,12 @@
+{
+  "name": "seminar-ai-pipeline",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node pipeline.js",
+    "analyze": "node analyze.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

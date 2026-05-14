@@ -1,3 +1,7 @@
+# Generated pipeline outputs
+latest_ran_output/
+output_number_*/
+
 # Logs
 logs
 *.log

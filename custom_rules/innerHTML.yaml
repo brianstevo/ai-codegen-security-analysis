@@ -1,0 +1,75 @@
+rules:
+  - id: unsafe-innerHTML-assignment
+    patterns:
+      - pattern: $X.innerHTML = $Y
+      - pattern-not: $X.innerHTML = ""
+      - pattern-not: $X.innerHTML = ''
+    message: >
+      Potential XSS: innerHTML assigned with a non-empty value.
+      If $Y contains user-supplied data this is a stored or reflected XSS vulnerability.
+      Use textContent for plain text, or DOMPurify.sanitize() before innerHTML for HTML.
+    languages: [javascript]
+    severity: WARNING
+    metadata:
+      cwe: CWE-79
+      owasp: A03:2021 - Injection
+      category: security
+
+  - id: unsafe-outerHTML-assignment
+    pattern: $X.outerHTML = $Y
+    message: >
+      Potential XSS: outerHTML assigned with a dynamic value.
+      outerHTML replaces the element entirely and executes any scripts in $Y.
+      Use textContent or a sanitisation library instead.
+    languages: [javascript]
+    severity: WARNING
+    metadata:
+      cwe: CWE-79
+      owasp: A03:2021 - Injection
+      category: security
+
+  - id: unsafe-insertAdjacentHTML
+    pattern: $X.insertAdjacentHTML($POS, $Y)
+    message: >
+      Potential XSS: insertAdjacentHTML called with a dynamic value.
+      If $Y contains user-supplied data this will execute embedded scripts.
+      Use insertAdjacentText for plain text instead.
+    languages: [javascript]
+    severity: WARNING
+    metadata:
+      cwe: CWE-79
+      owasp: A03:2021 - Injection
+      category: security
+
+  - id: unsafe-document-write
+    patterns:
+      - pattern: document.write($X)
+      - pattern: document.writeln($X)
+    message: >
+      Potential XSS: document.write/writeln with a dynamic value overwrites the DOM
+      and executes any scripts in $X. Avoid document.write entirely.
+    languages: [javascript]
+    severity: ERROR
+    metadata:
+      cwe: CWE-79
+      owasp: A03:2021 - Injection
+      category: security
+
+  - id: unsafe-eval
+    patterns:
+      - pattern: eval($X)
+      - pattern: new Function($X)
+      - pattern: setTimeout($X, ...)
+        pattern-not: setTimeout("...", ...)
+      - pattern: setInterval($X, ...)
+        pattern-not: setInterval("...", ...)
+    message: >
+      Potential code injection: eval() or equivalent called with a dynamic value.
+      If $X contains user-supplied data this allows arbitrary code execution (CWE-94).
+      Use a safe alternative such as JSON.parse() for data or a math library for expressions.
+    languages: [javascript]
+    severity: ERROR
+    metadata:
+      cwe: CWE-94
+      owasp: A03:2021 - Injection
+      category: security
