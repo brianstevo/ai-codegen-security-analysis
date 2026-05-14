@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Third-Party Widget</title>
+    <meta http-equiv="Content-Security-Policy" content="frame-src https://third-party-origin.com">
+</head>
+<body>
+    <iframe
+        src="https://third-party-origin.com/widget"
+        sandbox="allow-scripts allow-same-origin"
+        referrerpolicy="no-referrer"
+        width="600"
+        height="400"
+    ></iframe>
+</body>
+</html>

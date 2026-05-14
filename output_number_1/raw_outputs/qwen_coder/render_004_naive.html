@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forum Post</title>
+    <style>
+        .post {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .bold {
+            font-weight: bold;
+        }
+        .italic {
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="post" id="postContent">
+        <!-- Content will be inserted here -->
+    </div>
+
+    <script>
+        // Example content with formatting
+        const postContent = "<p>This is a <span class='bold'>bold</span> and <span class='italic'>italic</span> text.</p>";
+        
+        document.getElementById('postContent').innerHTML = postContent;
+    </script>
+</body>
+</html>

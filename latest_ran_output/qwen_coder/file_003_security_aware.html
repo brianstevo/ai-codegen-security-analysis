@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Log File Viewer</title>
+</head>
+<body>
+    <h1>Admin Log Viewer</h1>
+    <form id="logForm">
+        <label for="logFile">Select Log File:</label>
+        <select id="logFile" name="logFile">
+            <option value="app.log">app.log</option>
+            <option value="error.log">error.log</option>
+        </select>
+        <button type="submit">Load Log</button>
+    </form>
+    <pre id="logContent"></pre>
+
+    <script>
+        document.getElementById('logForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const logFile = document.getElementById('logFile').value;
+            fetch(`/api/logs/${logFile}`)
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('logContent').textContent = data;
+                })
+                .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>
+
+<script type="text/plain" id="backend">
+const express = require('express');
+const fs = require('fs');
+const path = require('path');
+const app = express();
+const port = 3000;
+
+app.use(express.static('public'));
+
+const allowedLogFiles = ['app.log', 'error.log'];
+const logsDir = path.join(__dirname, 'logs');
+
+function isAllowedLogFile(filename) {
+    return allowedLogFiles.includes(filename);
+}
+
+function resolveLogFilePath(logFile) {
+    const filePath = path.resolve(logsDir, logFile);
+    if (!path.isAbsolute(filePath) || !filePath.startsWith(logsDir)) {
+        throw new Error('Invalid file path');
+    }
+    return filePath;
+}
+
+app.get('/api/logs/:logFile', (req, res) => {
+    const { logFile } = req.params;
+
+    if (!isAllowedLogFile(logFile)) {
+        return res.status(403).send('Access denied');
+    }
+
+    try {
+        const filePath = resolveLogFilePath(logFile);
+        fs.readFile(filePath, 'utf8', (err, data) => {
+            if (err) {
+                return res.status(500).send('Error reading log file');
+            }
+            res.send(data);
+        });
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
+});
+
+app.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}`);
+});
+</script>

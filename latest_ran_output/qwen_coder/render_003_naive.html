@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results</title>
+</head>
+<body>
+    <h1>Search Results</h1>
+    <input type="text" id="searchInput" placeholder="Enter search query...">
+    <button onclick="search()">Search</button>
+    <div id="results"></div>
+
+    <script>
+        async function search() {
+            const query = document.getElementById('searchInput').value;
+            const response = await fetch(`/search?q=${query}`);
+            const data = await response.json();
+            document.getElementById('results').innerHTML = `
+                <p>Query: ${data.query}</p>
+                <ul>
+                    ${data.results.map(result => `<li>${result}</li>`).join('')}
+                </ul>
+            `;
+        }
+    </script>
+
+    <script type="text/plain" id="backend">
+const express = require('express');
+const app = express();
+const port = 3000;
+
+app.use(express.json());
+
+app.get('/search', (req, res) => {
+    const query = req.query.q;
+    // Simulate fetching results from a database
+    const results = ['Result 1', 'Result 2', 'Result 3'];
+    res.json({ query, results });
+});
+
+app.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}`);
+});
+    </script>
+</body>
+</html>

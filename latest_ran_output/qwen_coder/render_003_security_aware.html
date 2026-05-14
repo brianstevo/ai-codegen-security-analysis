@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Search Results</title>
+    <script>
+        async function search() {
+            const query = document.getElementById('searchInput').value;
+            const response = await fetch(`/search?q=${encodeURIComponent(query)}`);
+            const results = await response.json();
+            const resultContainer = document.getElementById('results');
+            resultContainer.innerHTML = '';
+            results.forEach(result => {
+                const div = document.createElement('div');
+                div.textContent = result.title + ': ' + result.description;
+                resultContainer.appendChild(div);
+            });
+        }
+    </script>
+</head>
+<body>
+    <h1>Search Results</h1>
+    <input type="text" id="searchInput" placeholder="Enter search query">
+    <button onclick="search()">Search</button>
+    <div id="results"></div>
+
+    <script type="text/plain" id="backend">
+const express = require('express');
+const app = express();
+const port = 3000;
+
+app.use(express.json());
+app.use((req, res, next) => {
+    res.setHeader('Content-Security-Policy', "default-src 'self'");
+    next();
+});
+
+app.get('/search', (req, res) => {
+    const query = req.query.q;
+    // Simulate database search
+    const results = [
+        { title: 'Result 1', description: 'Description for result 1' },
+        { title: 'Result 2', description: 'Description for result 2' }
+    ];
+    res.json(results);
+});
+
+app.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}`);
+});
+    </script>
+</body>
+</html>

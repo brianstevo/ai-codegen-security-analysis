@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forum Post</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/DOMPurify/2.3.2/purify.min.js" integrity="sha512-..."></script>
+    <style>
+        .post {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div id="forum-post" class="post"></div>
+
+    <script>
+        const postContent = '<p>This is a <b>bold</b> and <i>italic</i> post.</p><img src="image.jpg"><a href="javascript:void(0)">Click me</a>';
+
+        const purifyConfig = {
+            ALLOWED_TAGS: ['b', 'i', 'p'],
+            RETURN_DOM_FRAGMENT: true,
+            RETURN_DOM: false
+        };
+
+        const cleanPostContent = DOMPurify.sanitize(postContent, purifyConfig);
+
+        document.getElementById('forum-post').innerHTML = cleanPostContent;
+    </script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Search</title>
+</head>
+<body>
+    <h1>Search Products</h1>
+    <input type="text" id="searchInput" placeholder="Enter product name...">
+    <button onclick="searchProducts()">Search</button>
+    <div id="results"></div>
+
+    <script>
+        async function searchProducts() {
+            const keyword = document.getElementById('searchInput').value;
+            if (!keyword) return;
+
+            try {
+                const response = await fetch(`/api/search?keyword=${encodeURIComponent(keyword)}`);
+                const data = await response.json();
+                const resultsDiv = document.getElementById('results');
+                resultsDiv.textContent = ''; // Clear previous results
+
+                data.forEach(product => {
+                    const p = document.createElement('p');
+                    p.textContent = product.name; // Use textContent to prevent XSS
+                    resultsDiv.appendChild(p);
+                });
+            } catch (error) {
+                console.error('Error fetching products:', error);
+            }
+        }
+    </script>
+</body>
+</html>
+
+<script type="text/plain" id="backend">
+const express = require('express');
+const mysql = require('mysql2/promise');
+const app = express();
+app.use(express.json());
+
+// Database connection
+const pool = mysql.createPool({
+    host: 'localhost',
+    user: 'your_user',
+    password: 'your_password',
+    database: 'your_database'
+});
+
+// Search route
+app.get('/api/search', async (req, res) => {
+    const keyword = req.query.keyword;
+    if (!keyword || typeof keyword !== 'string') {
+        return res.status(400).json({ error: 'Invalid keyword' });
+    }
+
+    try {
+        const [rows] = await pool.execute('SELECT name FROM products WHERE name LIKE ?', [`%${keyword}%`]);
+        res.json(rows);
+    } catch (error) {
+        console.error('Error querying database:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+app.listen(3000, () => {
+    console.log('Server is running on port 3000');
+});
+</script>

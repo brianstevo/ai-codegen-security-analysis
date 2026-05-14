@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'">
+    <title>User Bio</title>
+</head>
+<body>
+    <div id="bio"></div>
+
+    <script>
+        const bio = document.getElementById('bio');
+        const userBio = '<p>This is a &lt;b&gt;sample&lt;/b&gt; bio with special characters.</p>';
+
+        // Escape HTML special characters
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        bio.textContent = escapeHtml(userBio);
+    </script>
+</body>
+</html>

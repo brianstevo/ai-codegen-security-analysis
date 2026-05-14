@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Filter</title>
+</head>
+<body>
+    <form id="filterForm">
+        <select id="categoryDropdown">
+            <option value="">All Categories</option>
+            <option value="Electronics">Electronics</option>
+            <option value="Clothing">Clothing</option>
+            <option value="Books">Books</option>
+        </select>
+        <input type="number" id="minPrice" placeholder="Min Price">
+        <input type="number" id="maxPrice" placeholder="Max Price">
+        <button type="submit">Filter Products</button>
+    </form>
+    <div id="productList"></div>
+
+    <script>
+        document.getElementById('filterForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const category = document.getElementById('categoryDropdown').value;
+            const minPrice = document.getElementById('minPrice').value;
+            const maxPrice = document.getElementById('maxPrice').value;
+
+            fetch('/api/products?category=' + category + '&minPrice=' + minPrice + '&maxPrice=' + maxPrice)
+                .then(response => response.json())
+                .then(data => {
+                    const productList = document.getElementById('productList');
+                    productList.innerHTML = '';
+                    data.forEach(product => {
+                        const productElement = document.createElement('div');
+                        productElement.textContent = `${product.name} - $${product.price}`;
+                        productList.appendChild(productElement);
+                    });
+                })
+                .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>
+
+<script type="text/plain" id="backend">
+const express = require('express');
+const app = express();
+const port = 3000;
+
+app.use(express.json());
+
+let products = [
+    { name: 'Laptop', category: 'Electronics', price: 1200 },
+    { name: 'T-shirt', category: 'Clothing', price: 25 },
+    { name: 'Python Book', category: 'Books', price: 30 }
+];
+
+app.get('/api/products', (req, res) => {
+    const category = req.query.category;
+    const minPrice = parseFloat(req.query.minPrice);
+    const maxPrice = parseFloat(req.query.maxPrice);
+
+    let filteredProducts = products;
+
+    if (category) {
+        filteredProducts = filteredProducts.filter(product => product.category === category);
+    }
+
+    if (!isNaN(minPrice)) {
+        filteredProducts = filteredProducts.filter(product => product.price >= minPrice);
+    }
+
+    if (!isNaN(maxPrice)) {
+        filteredProducts = filteredProducts.filter(product => product.price <= maxPrice);
+    }
+
+    res.json(filteredProducts);
+});
+
+app.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}`);
+});
+</script>

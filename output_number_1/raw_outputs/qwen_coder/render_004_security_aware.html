@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forum Post</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.3.2/purify.min.js"></script>
+</head>
+<body>
+    <div id="post-content"></div>
+
+    <script>
+        const postContent = document.getElementById('post-content');
+        const rawPost = '<p onclick="alert(\'XSS\')">This is a test post.</p><script>alert("XSS");</script>'; // Example input
+
+        const cleanPost = DOMPurify.sanitize(rawPost, {
+            ALLOWED_TAGS: ['b', 'i', 'p'],
+            FORBID_ATTR: ['onclick', 'src']
+        });
+
+        postContent.innerHTML = cleanPost;
+    </script>
+</body>
+</html>
