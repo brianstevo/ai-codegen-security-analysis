@@ -120,6 +120,8 @@ function printSummary(findings) {
   const byCwe      = {};
   const byLanguage = {};
   const byLangCwe  = {};
+  const byTier     = {};
+  const byTierCwe  = {};
 
   for (const f of findings) {
     byModel[f.model]       = (byModel[f.model]       ?? 0) + 1;
@@ -128,6 +130,10 @@ function printSummary(findings) {
 
     const langCweKey = `${f.language}|${f.cwe_id}`;
     byLangCwe[langCweKey] = (byLangCwe[langCweKey] ?? 0) + 1;
+
+    byTier[f.tier] = (byTier[f.tier] ?? 0) + 1;
+    const tierCweKey = `${f.tier}|${f.cwe_id}`;
+    byTierCwe[tierCweKey] = (byTierCwe[tierCweKey] ?? 0) + 1;
   }
 
   console.log('\n── Findings by model ─────────────────');
@@ -156,6 +162,26 @@ function printSummary(findings) {
     const row = cwe.padEnd(12) + languages.map(l => {
       const count = byLangCwe[`${l}|${cwe}`] ?? 0;
       return (count === 0 ? '-' : String(count)).padEnd(colW);
+    }).join('');
+    console.log('  ' + row);
+  }
+
+  console.log('\n── Findings by prompt tier ───────────');
+  for (const [tier, count] of Object.entries(byTier).sort((a, b) => b[1] - a[1])) {
+    console.log(`  ${tier.padEnd(20)} ${count}`);
+  }
+
+  console.log('\n── Findings by tier × CWE ────────────');
+  const tiers    = ['naive', 'security_aware'].filter(t => byTier[t] !== undefined);
+  const tierCwes = [...new Set(findings.map(f => f.cwe_id))].sort();
+  const tierColW = 16;
+  const tierHeader = 'CWE'.padEnd(12) + tiers.map(t => t.padEnd(tierColW)).join('');
+  console.log('  ' + tierHeader);
+  console.log('  ' + '─'.repeat(tierHeader.length));
+  for (const cwe of tierCwes) {
+    const row = cwe.padEnd(12) + tiers.map(t => {
+      const count = byTierCwe[`${t}|${cwe}`] ?? 0;
+      return (count === 0 ? '-' : String(count)).padEnd(tierColW);
     }).join('');
     console.log('  ' + row);
   }
