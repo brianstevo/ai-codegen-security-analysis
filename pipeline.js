@@ -3,8 +3,10 @@
  *
  * Reads prompts.json, queries each configured model for both tiers
  * (naive / security_aware), extracts code from the response, and writes:
- *   raw_outputs/{model}_{prompt_id}_{tier}.{js|html|css}
- *   run_log.jsonl  — one JSON line per run (for later analysis)
+ *   latest_ran_output/{model}/{prompt_id}_{tier}.{js|html|css|py}
+ *   latest_ran_output/{model}/{prompt_id}_{tier}_backend.js   (for "both" context)
+ *   latest_ran_output/{model}/{prompt_id}_{tier}_backend.py   (Python backend, where applicable)
+ *   run_log.jsonl  — one JSON line per API call (for later analysis)
  *
  * Supported providers:
  *   ollama     — local Ollama server (CodeLlama, DeepSeek Coder, etc.)
@@ -27,21 +29,6 @@ const PROMPTS_FILE = './prompts.json';
 const OUTPUT_DIR   = './latest_ran_output';
 const LOG_FILE     = './latest_ran_output/run_log.jsonl';
 
-/**
- * Add or remove models here.
- *
- * provider: 'ollama' | 'openai'
- * model   : model name as recognised by the provider
- * base_url: API base URL (no trailing slash)
- * api_key : required for 'openai' provider; ignored for 'ollama'
- *
- * Ollama quick-start:
- *   ollama pull codellama:13b-instruct
- *   ollama pull deepseek-coder:6.7b-instruct
- *
- * Anthropic quick-start:
- *   export ANTHROPIC_API_KEY=sk-ant-...
- */
 const MODELS = {
   // claude_opus: {
   //   provider: 'anthropic',
@@ -80,7 +67,8 @@ const MODELS = {
 // Delay between requests to avoid overloading a local Ollama server (ms)
 const REQUEST_DELAY_MS = 500;
 
-// Returns the appropriate system prompt based on prompt context
+// ─── System prompts ───────────────────────────────────────────────────────────
+
 function buildSystemPrompt(context) {
   if (context === 'frontend') {
     return (
@@ -95,13 +83,10 @@ function buildSystemPrompt(context) {
   if (context === 'both') {
     return (
       'You are a full-stack web coding assistant. ' +
-      'Output a single complete HTML file that contains three clearly separated sections:\n' +
-      '1. The HTML <body> with the form or UI elements.\n' +
-      '2. A <script> tag with vanilla JavaScript for DOM interactions and fetch calls to the backend.\n' +
-      '3. A <script type="text/plain" id="backend"> block containing the Node.js/Express backend code ' +
-      '(routes, database queries, middleware) as plain text so it is readable but not executed by the browser.\n' +
-      'Output only a single fenced html code block. ' +
-      'Do not add explanatory text or any prose outside the code block.'
+      'Output EXACTLY two fenced code blocks in this order:\n' +
+      '1. An ```html block: the complete HTML page with form/UI elements and a <script> tag with vanilla JavaScript that makes fetch calls to the backend API.\n' +
+      '2. A ```js block: the complete Node.js/Express backend code (routes, database queries, middleware).\n' +
+      'Do not include any explanatory text or prose outside the code blocks.'
     );
   }
   return (
@@ -112,6 +97,17 @@ function buildSystemPrompt(context) {
     'Do not add explanatory text or any prose outside the code block.'
   );
 }
+
+function buildPythonSystemPrompt() {
+  return (
+    'You are a Python/Flask backend coding assistant. ' +
+    'Write server-side Python using Flask (with libraries like bcrypt, PyJWT, secrets, hashlib, cryptography as needed). ' +
+    'Output only a single fenced code block containing the complete implementation. ' +
+    'Do not add explanatory text or any prose outside the code block.'
+  );
+}
+
+// ─── API adapters ─────────────────────────────────────────────────────────────
 
 // Each adapter returns { text, tokens: { input, output } }
 
@@ -229,6 +225,7 @@ const LANG_ALIASES = {
   javascript: ['javascript', 'js'],
   html:       ['html'],
   css:        ['css'],
+  python:     ['python', 'py'],
 };
 
 /**
@@ -250,9 +247,22 @@ function extractCode(text, language) {
   return text.trim(); // fallback: whole response
 }
 
+/**
+ * Extract html and js blocks from a "both" context response.
+ * The model is asked to output two separate fenced blocks.
+ */
+function extractBothBlocks(text) {
+  const htmlMatch = text.match(/```html\r?\n([\s\S]*?)```/i);
+  const jsMatch   = text.match(/```(?:javascript|js)\r?\n([\s\S]*?)```/i);
+  return {
+    html: htmlMatch ? htmlMatch[1].trim() : '',
+    js:   jsMatch   ? jsMatch[1].trim()   : '',
+  };
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const EXT_MAP = { javascript: 'js', html: 'html', css: 'css' };
+const EXT_MAP = { javascript: 'js', html: 'html', css: 'css', python: 'py' };
 
 function fileExt(language) {
   return EXT_MAP[language] ?? 'txt';
@@ -260,6 +270,11 @@ function fileExt(language) {
 
 function sleep(ms) {
   return new Promise(r => setTimeout(r, ms));
+}
+
+async function fileExists(filePath) {
+  try { await fs.access(filePath); return true; }
+  catch { return false; }
 }
 
 function parseArgs() {
@@ -274,7 +289,6 @@ function parseArgs() {
 }
 
 async function archiveLastRun() {
-  // Find highest existing output_number_N and increment
   let n = 0;
   const entries = await fs.readdir('.').catch(() => []);
   for (const entry of entries) {
@@ -286,15 +300,20 @@ async function archiveLastRun() {
   console.log(`Archived previous run → ${archiveName}/`);
 }
 
+async function appendLog(entry) {
+  await fs.appendFile(LOG_FILE, JSON.stringify(entry) + '\n', 'utf-8');
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
+
 async function main() {
   const { modelFilter, dryRun, newRun } = parseArgs();
 
-  // Archive existing output and start fresh if --new-run
   if (newRun) {
     try {
       await fs.access(OUTPUT_DIR);
       await archiveLastRun();
-    } catch { /* no existing output yet — nothing to archive */ }
+    } catch { /* no existing output yet */ }
   }
 
   const raw = await fs.readFile(PROMPTS_FILE, 'utf-8');
@@ -312,15 +331,30 @@ async function main() {
   }
 
   const tiers = ['naive', 'security_aware'];
-  const total = prompts.length * tiers.length * modelKeys.length;
+
+  // Count total API calls: "both" prompts make 1 call (html+js) + optional python call;
+  // backend prompts make 1 call (js) + optional python call; frontend prompts make 1 call.
+  let total = 0;
+  for (const p of prompts) {
+    const hasPython = !!(p.python_naive);
+    if (p.context === 'both') {
+      total += tiers.length * (1 + (hasPython ? 1 : 0));
+    } else if (p.context === 'backend') {
+      total += tiers.length * (1 + (hasPython ? 1 : 0));
+    } else {
+      total += tiers.length;
+    }
+  }
+  total *= modelKeys.length;
 
   console.log(
     `Pipeline: ${prompts.length} prompts × ${tiers.length} tiers × ` +
-    `${modelKeys.length} model(s) = ${total} runs` +
+    `${modelKeys.length} model(s) = ${total} API calls` +
     (dryRun ? '  [DRY RUN]' : '')
   );
 
   let done = 0, skipped = 0, errors = 0;
+  let totalTokensIn = 0, totalTokensOut = 0;
 
   for (const modelKey of modelKeys) {
     const cfg = MODELS[modelKey];
@@ -331,61 +365,175 @@ async function main() {
 
     for (const prompt of prompts) {
       for (const tier of tiers) {
-        done++;
-        const ext     = fileExt(prompt.language);
-        const outFile = path.join(modelDir, `${prompt.id}_${tier}.${ext}`);
-        const label   = `[${done}/${total}] ${modelKey}/${prompt.id}/${tier}`;
+        const label = `${modelKey}/${prompt.id}/${tier}`;
 
-        // Resume support: skip already-completed files
-        try {
-          await fs.access(outFile);
-          console.log(`  SKIP  ${label}`);
-          skipped++;
-          continue;
-        } catch { /* file does not exist — proceed */ }
+        if (prompt.context === 'both') {
+          // ── "both": one API call → html (frontend) + _backend.js ──────────
+          done++;
+          const htmlFile    = path.join(modelDir, `${prompt.id}_${tier}.html`);
+          const backendFile = path.join(modelDir, `${prompt.id}_${tier}_backend.js`);
 
-        if (dryRun) {
-          console.log(`  WOULD ${label} → ${outFile}`);
-          continue;
+          if (await fileExists(htmlFile) && await fileExists(backendFile)) {
+            console.log(`  SKIP  ${label} (html + backend.js)`);
+            skipped++;
+          } else if (dryRun) {
+            console.log(`  WOULD ${label} → html + backend.js`);
+          } else {
+            console.log(`  RUN   ${label} (html + backend.js)`);
+            const t0 = Date.now();
+            let status = 'ok', errorMsg = '';
+            let tokens = { input: null, output: null };
+            try {
+              const result = await callModel(modelKey, cfg, buildSystemPrompt('both'), prompt[tier]);
+              tokens = result.tokens;
+              const { html, js } = extractBothBlocks(result.text);
+              if (html) await fs.writeFile(htmlFile, html, 'utf-8');
+              if (js)   await fs.writeFile(backendFile, js, 'utf-8');
+              totalTokensIn  += tokens.input  ?? 0;
+              totalTokensOut += tokens.output ?? 0;
+              console.log(`        tokens in=${tokens.input ?? '?'} out=${tokens.output ?? '?'} (total: ${totalTokensIn}in / ${totalTokensOut}out)`);
+            } catch (err) {
+              status = 'error'; errorMsg = err.message; errors++;
+              console.error(`  ERROR ${label}: ${err.message}`);
+            }
+            const dur1 = Date.now() - t0;
+            await appendLog({
+              timestamp: new Date().toISOString(), model: modelKey,
+              prompt_id: prompt.id, tier, category: prompt.category,
+              language: 'html+js',
+              output_files: [htmlFile, backendFile],
+              duration_ms: dur1,
+              duration_min: +(dur1 / 60000).toFixed(2),
+              tokens_input: tokens.input, tokens_output: tokens.output,
+              status, ...(errorMsg && { error: errorMsg }),
+            });
+            await sleep(REQUEST_DELAY_MS);
+          }
+
+          // ── Python backend for "both" prompts ────────────────────────────
+          if (prompt.python_naive) {
+            done++;
+            const pyFile = path.join(modelDir, `${prompt.id}_${tier}_backend.py`);
+
+            if (await fileExists(pyFile)) {
+              console.log(`  SKIP  ${label} (backend.py)`);
+              skipped++;
+            } else if (dryRun) {
+              console.log(`  WOULD ${label} → backend.py`);
+            } else {
+              console.log(`  RUN   ${label} (backend.py)`);
+              const t0 = Date.now();
+              let status = 'ok', errorMsg = '';
+              let tokens = { input: null, output: null };
+              try {
+                const result = await callModel(modelKey, cfg, buildPythonSystemPrompt(), prompt[`python_${tier}`]);
+                tokens = result.tokens;
+                const code = extractCode(result.text, 'python');
+                await fs.writeFile(pyFile, code, 'utf-8');
+                totalTokensIn  += tokens.input  ?? 0;
+                totalTokensOut += tokens.output ?? 0;
+                console.log(`        tokens in=${tokens.input ?? '?'} out=${tokens.output ?? '?'} (total: ${totalTokensIn}in / ${totalTokensOut}out)`);
+              } catch (err) {
+                status = 'error'; errorMsg = err.message; errors++;
+                console.error(`  ERROR ${label} (python): ${err.message}`);
+              }
+              const dur2 = Date.now() - t0;
+              await appendLog({
+                timestamp: new Date().toISOString(), model: modelKey,
+                prompt_id: prompt.id, tier, category: prompt.category,
+                language: 'python', output_file: pyFile,
+                duration_ms: dur2,
+                duration_min: +(dur2 / 60000).toFixed(2),
+                tokens_input: tokens.input, tokens_output: tokens.output,
+                status, ...(errorMsg && { error: errorMsg }),
+              });
+              await sleep(REQUEST_DELAY_MS);
+            }
+          }
+
+        } else {
+          // ── Normal context (frontend / backend) ──────────────────────────
+          done++;
+          const ext     = fileExt(prompt.language);
+          const outFile = path.join(modelDir, `${prompt.id}_${tier}.${ext}`);
+
+          if (await fileExists(outFile)) {
+            console.log(`  SKIP  ${label}`);
+            skipped++;
+          } else if (dryRun) {
+            console.log(`  WOULD ${label} → ${outFile}`);
+          } else {
+            console.log(`  RUN   ${label}`);
+            const t0 = Date.now();
+            let status = 'ok', errorMsg = '';
+            let tokens = { input: null, output: null };
+            try {
+              const systemPrompt = buildSystemPrompt(prompt.context ?? 'backend');
+              const result = await callModel(modelKey, cfg, systemPrompt, prompt[tier]);
+              tokens = result.tokens;
+              const code = extractCode(result.text, prompt.language);
+              await fs.writeFile(outFile, code, 'utf-8');
+              totalTokensIn  += tokens.input  ?? 0;
+              totalTokensOut += tokens.output ?? 0;
+              console.log(`        tokens in=${tokens.input ?? '?'} out=${tokens.output ?? '?'} (total: ${totalTokensIn}in / ${totalTokensOut}out)`);
+            } catch (err) {
+              status = 'error'; errorMsg = err.message; errors++;
+              console.error(`  ERROR ${label}: ${err.message}`);
+            }
+            const dur3 = Date.now() - t0;
+            await appendLog({
+              timestamp: new Date().toISOString(), model: modelKey,
+              prompt_id: prompt.id, tier, category: prompt.category,
+              language: prompt.language, output_file: outFile,
+              duration_ms: dur3,
+              duration_min: +(dur3 / 60000).toFixed(2),
+              tokens_input: tokens.input, tokens_output: tokens.output,
+              status, ...(errorMsg && { error: errorMsg }),
+            });
+            await sleep(REQUEST_DELAY_MS);
+          }
+
+          // ── Python backend (backend-context prompts only) ─────────────────
+          if (prompt.context === 'backend' && prompt.python_naive) {
+            done++;
+            const pyFile = path.join(modelDir, `${prompt.id}_${tier}.py`);
+
+            if (await fileExists(pyFile)) {
+              console.log(`  SKIP  ${label} (python)`);
+              skipped++;
+            } else if (dryRun) {
+              console.log(`  WOULD ${label} → ${prompt.id}_${tier}.py`);
+            } else {
+              console.log(`  RUN   ${label} (python)`);
+              const t0 = Date.now();
+              let status = 'ok', errorMsg = '';
+              let tokens = { input: null, output: null };
+              try {
+                const result = await callModel(modelKey, cfg, buildPythonSystemPrompt(), prompt[`python_${tier}`]);
+                tokens = result.tokens;
+                const code = extractCode(result.text, 'python');
+                await fs.writeFile(pyFile, code, 'utf-8');
+                totalTokensIn  += tokens.input  ?? 0;
+                totalTokensOut += tokens.output ?? 0;
+                console.log(`        tokens in=${tokens.input ?? '?'} out=${tokens.output ?? '?'} (total: ${totalTokensIn}in / ${totalTokensOut}out)`);
+              } catch (err) {
+                status = 'error'; errorMsg = err.message; errors++;
+                console.error(`  ERROR ${label} (python): ${err.message}`);
+              }
+              const dur4 = Date.now() - t0;
+              await appendLog({
+                timestamp: new Date().toISOString(), model: modelKey,
+                prompt_id: prompt.id, tier, category: prompt.category,
+                language: 'python', output_file: pyFile,
+                duration_ms: dur4,
+                duration_min: +(dur4 / 60000).toFixed(2),
+                tokens_input: tokens.input, tokens_output: tokens.output,
+                status, ...(errorMsg && { error: errorMsg }),
+              });
+              await sleep(REQUEST_DELAY_MS);
+            }
+          }
         }
-
-        console.log(`  RUN   ${label}`);
-        const t0 = Date.now();
-        let status = 'ok';
-        let errorMsg = '';
-        let tokens = { input: null, output: null };
-
-        try {
-          const systemPrompt = buildSystemPrompt(prompt.context ?? 'backend');
-          const result = await callModel(modelKey, cfg, systemPrompt, prompt[tier]);
-          const code   = extractCode(result.text, prompt.language);
-          tokens       = result.tokens;
-          await fs.writeFile(outFile, code, 'utf-8');
-          console.log(`        tokens in=${tokens.input ?? '?'} out=${tokens.output ?? '?'}`);
-        } catch (err) {
-          status   = 'error';
-          errorMsg = err.message;
-          errors++;
-          console.error(`  ERROR ${label}: ${err.message}`);
-        }
-
-        const logEntry = {
-          timestamp:    new Date().toISOString(),
-          model:        modelKey,
-          prompt_id:    prompt.id,
-          tier,
-          category:     prompt.category,
-          language:     prompt.language,
-          output_file:  outFile,
-          duration_ms:  Date.now() - t0,
-          tokens_input:  tokens.input,
-          tokens_output: tokens.output,
-          status,
-          ...(errorMsg && { error: errorMsg }),
-        };
-        await fs.appendFile(LOG_FILE, JSON.stringify(logEntry) + '\n', 'utf-8');
-
-        await sleep(REQUEST_DELAY_MS);
       }
     }
   }
@@ -394,6 +542,7 @@ async function main() {
     `\nFinished. ${done - skipped - errors} generated, ` +
     `${skipped} skipped, ${errors} errors.`
   );
+  console.log(`Tokens:  ${totalTokensIn} input / ${totalTokensOut} output / ${totalTokensIn + totalTokensOut} total`);
   console.log(`Outputs → ${OUTPUT_DIR}/`);
   console.log(`Run log → ${LOG_FILE}`);
 }

@@ -36,16 +36,28 @@ function runSemgrep(config, label) {
 }
 
 /**
- * Parse model, prompt_id, and tier from a file path.
- * Expected format: latest_ran_output/{model}/{prompt_id}_{tier}.{ext}
- *              or: output_number_N/{model}/{prompt_id}_{tier}.{ext}
+ * Parse model, prompt_id, tier, and language from a file path.
+ * Expected formats:
+ *   latest_ran_output/{model}/{prompt_id}_{tier}.{ext}
+ *   latest_ran_output/{model}/{prompt_id}_{tier}_backend.{ext}
+ *   output_number_N/{model}/{prompt_id}_{tier}.{ext}
  */
 function parseFilePath(filePath) {
   const parts = filePath.replace(/\\/g, '/').split('/');
 
   // model is always the second-to-last path segment
   const model    = parts[parts.length - 2] ?? 'unknown';
-  const basename = parts[parts.length - 1].replace(/\.(js|html|css|txt)$/, '');
+  const filename = parts[parts.length - 1];
+
+  const extMatch = filename.match(/\.(js|html|css|py|txt)$/);
+  const ext      = extMatch?.[1] ?? 'txt';
+  const language = ext === 'py' ? 'python' : ext === 'js' ? 'javascript' : ext;
+
+  // Strip extension, then strip optional _backend suffix
+  let basename = filename.replace(/\.(js|html|css|py|txt)$/, '');
+  if (basename.endsWith('_backend')) {
+    basename = basename.slice(0, -'_backend'.length);
+  }
 
   let tier, prompt_id;
   if (basename.endsWith('_security_aware')) {
@@ -59,7 +71,7 @@ function parseFilePath(filePath) {
     prompt_id = basename;
   }
 
-  return { model, prompt_id, tier };
+  return { model, prompt_id, tier, language };
 }
 
 /**
@@ -82,12 +94,13 @@ function parseSemgrepFindings(semgrepData) {
   const findings = [];
 
   for (const result of semgrepData.results ?? []) {
-    const { model, prompt_id, tier } = parseFilePath(result.path);
+    const { model, prompt_id, tier, language } = parseFilePath(result.path);
 
     findings.push({
       model,
       prompt_id,
       tier,
+      language,
       cwe_id:   extractCwe(result.extra?.metadata),
       severity: (result.extra?.severity ?? 'unknown').toLowerCase(),
       tool:     'semgrep',
