@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Comment System</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; background-color: #f4f4f9; }
+        .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        h2 { margin-top: 0; color: #333; }
+        .form-group { margin-bottom: 15px; }
+        textarea { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; resize: vertical; }
+        button { background-color: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover { background-color: #218838; }
+        .comments-list { margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; }
+        .comment-item { margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #f0f0f0; }
+        .comment-header { display: flex; justify-content: space-between; font-size: 0.9em; color: #666; margin-bottom: 5px; }
+        .comment-body { font-size: 1.1em; color: #333; line-height: 1.5; }
+        .error { color: #d9534f; font-size: 0.9em; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Leave a Comment</h2>
+    <form id="commentForm">
+        <div class="form-group">
+            <textarea id="commentInput" rows="4" placeholder="Write your comment here..." required></textarea>
+            <div id="errorMsg" class="error"></div>
+        </div>
+        <button type="submit">Post Comment</button>
+    </form>
+
+    <div class="comments-list" id="commentsList">
+        <!-- Comments will be appended here -->
+        <p style="color: #888; font-style: italic;">No comments yet.</p>
+    </div>
+</div>
+
+<script>
+    const form = document.getElementById('commentForm');
+    const input = document.getElementById('commentInput');
+    const list = document.getElementById('commentsList');
+    const errorMsg = document.getElementById('errorMsg');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const content = input.value.trim();
+        errorMsg.textContent = '';
+
+        if (!content) return;
+
+        try {
+            const response = await fetch('/api/comments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: content })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                renderComment(data);
+                input.value = '';
+            } else {
+                const errData = await response.json();
+                errorMsg.textContent = errData.error || 'Failed to post comment.';
+            }
+        } catch (err) {
+            errorMsg.textContent = 'Network error. Please try again.';
+        }
+    });
+
+    function renderComment(data) {
+        // Remove placeholder if it exists
+        if (list.querySelector('p')) {
+            list.innerHTML = '';
+        }
+
+        const commentDiv = document.createElement('div');
+        commentDiv.className = 'comment-item';
+
+        // SECURITY: Use textContent to prevent XSS injection
+        const headerDiv = document.createElement('div');
+        headerDiv.className = 'comment-header';
+
+        const userSpan = document.createElement('span');
+        userSpan.textContent = 'User: ' + data.username;
+
+        const timeSpan = document.createElement('span');
+        timeSpan.textContent = new Date().toLocaleString();
+
+        headerDiv.appendChild(userSpan);
+        headerDiv.appendChild(timeSpan);
+
+        const bodyDiv = document.createElement('div');
+        bodyDiv.className = 'comment-body';
+
+        const textSpan = document.createElement('span');
+        textSpan.textContent = data.content;
+
+        bodyDiv.appendChild(textSpan);
+
+        commentDiv.appendChild(headerDiv);
+        commentDiv.appendChild(bodyDiv);
+
+        // Prepend to show newest first
+        list.prepend(commentDiv);
+    }
+</script>
+
+</body>
+</html>

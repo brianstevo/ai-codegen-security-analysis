@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' https://example.com 'nonce-random123' 'strict-dynamic'; script-src-elem 'self' https://example.com 'sha384-Qv2UZq+RQeVxipML/8JgKbh6B7fY9tXmO0YWzM2kYy2Iwq5GnErcdXJrjDj'">
+    <title>SRI Example</title>
+</head>
+<body>
+    <!--
+        To regenerate the hash when the script version changes:
+        1. Download the script file from https://example.com/script.js
+        2. Run: openssl dgst -sha384 -binary script.js | openssl base64 -A
+        3. Replace the integrity attribute value with the new hash
+    -->
+    <script src="https://example.com/script.js"
+            integrity="sha384-Qv2UZq+RQeVxipML/8JgKbh6B7fY9tXmO0YWzM2kYy2Iwq5GnErcdXJrjDj"
+            crossorigin="anonymous"></script>
+</body>
+</html>

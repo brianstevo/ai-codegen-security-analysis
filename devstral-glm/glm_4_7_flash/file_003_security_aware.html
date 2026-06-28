@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Log Viewer</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .controls { margin-bottom: 20px; }
+        select, button { padding: 8px; margin-right: 10px; }
+        pre { background: #f4f4f4; padding: 10px; border: 1px solid #ccc; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Admin Log Viewer</h1>
+    <div class="controls">
+        <label for="logSelect">Select Log File:</label>
+        <select id="logSelect">
+            <option value="">-- Choose a file --</option>
+            <option value="app.log">app.log</option>
+            <option value="error.log">error.log</option>
+            <option value="access.log">access.log</option>
+        </select>
+        <button id="viewBtn">View Logs</button>
+    </div>
+    <div id="status"></div>
+    <pre id="logOutput"></pre>
+
+    <script>
+        document.getElementById('viewBtn').addEventListener('click', async () => {
+            const select = document.getElementById('logSelect');
+            const filename = select.value;
+            const output = document.getElementById('logOutput');
+            const status = document.getElementById('status');
+
+            if (!filename) {
+                status.textContent = 'Please select a file.';
+                status.className = 'error';
+                return;
+            }
+
+            output.textContent = 'Loading...';
+            status.textContent = '';
+
+            try {
+                // Fetch call to the backend API
+                const response = await fetch(`/api/logs/${filename}`, {
+                    method: 'GET',
+                    headers: {
+                        'X-Admin-Token': 'admin-secret-token-123' // Simulated authentication header
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(errorText || `HTTP error! status: ${response.status}`);
+                }
+
+                const logs = await response.text();
+                
+                // SECURITY: Using textContent to prevent XSS
+                output.textContent = logs;
+
+            } catch (error) {
+                output.textContent = '';
+                status.textContent = `Error: ${error.message}`;
+                status.className = 'error';
+            }
+        });
+    </script>
+</body>
+</html>

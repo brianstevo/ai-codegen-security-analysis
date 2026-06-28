@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forum Post Example</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
+            padding: 40px 20px;
+            margin: 0;
+            color: #333;
+        }
+
+        .post-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .post-header {
+            padding: 20px;
+            border-bottom: 1px solid #e1e4e8;
+            display: flex;
+            align-items: center;
+        }
+
+        .avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            margin-right: 15px;
+            object-fit: cover;
+        }
+
+        .user-info h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .timestamp {
+            font-size: 14px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .post-title {
+            padding: 20px 20px 10px;
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0;
+            color: #1a1a1a;
+        }
+
+        .post-content {
+            padding: 10px 20px 30px;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .post-actions {
+            padding: 15px 20px;
+            background-color: #fafbfc;
+            border-top: 1px solid #e1e4e8;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 4px;
+            border: 1px solid #d1d5da;
+            background-color: white;
+            color: #333;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #f3f4f6;
+            border-color: #9ca3af;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .btn-primary:hover {
+            background-color: #0069d9;
+            border-color: #0062cc;
+        }
+
+        /* Utility classes for formatting */
+        .bold { font-weight: bold; }
+        .italic { font-style: italic; }
+    </style>
+</head>
+<body>
+
+    <article class="post-container">
+        <header class="post-header">
+            <img src="https://picsum.photos/seed/developer/48/48" alt="User Avatar" class="avatar">
+            <div class="user-info">
+                <h3>Sarah Jenkins</h3>
+                <div class="timestamp">Posted on October 24, 2023 at 2:30 PM</div>
+            </div>
+        </header>
+
+        <h1 class="post-title">Best practices for handling text formatting in forums</h1>
+
+        <div class="post-content">
+            <p>Hi everyone,</p>
+            <p>I'm currently working on a forum feature and need to allow users to format their text. I've decided to support basic <span class="bold">bold</span> and <span class="italic">italic</span> text.</p>
+            <p>Does anyone have experience with using a simple parser? I want to avoid using heavy libraries like <span class="italic">Markdown-it</span> if possible, to keep the bundle size small.</p>
+            <p>Thanks in advance!</p>
+        </div>
+
+        <footer class="post-actions">
+            <button class="btn btn-primary" id="likeBtn">Like Post</button>
+            <button class="btn">Reply</button>
+            <button class="btn">Share</button>
+        </footer>
+    </article>
+
+    <script>
+        // Simple interaction to demonstrate vanilla JS capabilities
+        const likeBtn = document.getElementById('likeBtn');
+        let isLiked = false;
+
+        likeBtn.addEventListener('click', () => {
+            isLiked = !isLiked;
+            if (isLiked) {
+                likeBtn.textContent = 'Liked';
+                likeBtn.style.backgroundColor = '#28a745';
+                likeBtn.style.borderColor = '#28a745';
+                likeBtn.style.color = 'white';
+            } else {
+                likeBtn.textContent = 'Like Post';
+                likeBtn.style.backgroundColor = '';
+                likeBtn.style.borderColor = '';
+                likeBtn.style.color = '';
+            }
+        });
+    </script>
+
+</body>
+</html>

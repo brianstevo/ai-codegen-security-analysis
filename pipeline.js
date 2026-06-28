@@ -62,21 +62,21 @@ const MODELS = {
   //   model:    'gemma4:31b',
   //   base_url: 'http://localhost:11434',
   // },
-  // gpt_oss_120b: {
+  gpt_oss_120b: {
+    provider: 'ollama',
+    model:    'gpt-oss:120b',
+    base_url: 'http://localhost:11434',
+  },
+  // glm_4_7_flash: {
   //   provider: 'ollama',
-  //   model:    'gpt-oss:120b',
+  //   model:    'glm-4.7-flash',
   //   base_url: 'http://localhost:11434',
   // },
-  glm_4_7_flash: {
-    provider: 'ollama',
-    model:    'glm-4.7-flash',
-    base_url: 'http://localhost:11434',
-  },
-  devstral_small_2: {
-    provider: 'ollama',
-    model:    'devstral-small-2',
-    base_url: 'http://localhost:11434',
-  },
+  // devstral_small_2: {
+  //   provider: 'ollama',
+  //   model:    'devstral-small-2',
+  //   base_url: 'http://localhost:11434',
+  // },
   // codellama: {
   //   provider: 'ollama',
   //   model:    'codellama:13b-instruct',

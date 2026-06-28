@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Payment Form</title>
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --error-color: #ef4444;
+            --success-color: #10b981;
+            --text-color: #1f2937;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --border-color: #d1d5db;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .payment-container {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h2 {
+            color: var(--text-color);
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-color);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 12px 16px;
+            padding-right: 40px; /* Space for icon */
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+
+        .input-wrapper input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .input-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            pointer-events: none;
+        }
+
+        .cvv-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            margin-top: 0.5rem;
+            font-size: 0.75rem;
+            color: #6b7280;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .cvv-toggle input {
+            margin-right: 6px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 1rem;
+        }
+
+        .btn-submit:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-submit:disabled {
+            background-color: #a5b4fc;
+            cursor: not-allowed;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background-color: #333;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            background-color: var(--success-color);
+        }
+
+        .toast.error {
+            background-color: var(--error-color);
+        }
+
+        /* Validation Message */
+        .error-message {
+            color: var(--error-color);
+            font-size: 0.75rem;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .form-group.error input {
+            border-color: var(--error-color);
+        }
+
+        .form-group.error .error-message {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="payment-container">
+        <div class="header">
+            <h2>Payment Details</h2>
+            <p>Enter your card information below</p>
+        </div>
+
+        <form id="paymentForm" novalidate>
+            <!-- Card Number -->
+            <div class="form-group" id="card-number-group">
+                <label for="card-number">Card Number</label>
+                <div class="input-wrapper">
+                    <input type="text" id="card-number" placeholder="1234 5678 9012 3456" maxlength="19" autocomplete="cc-number">
+                    <span class="input-icon">💳</span>
+                </div>
+                <div class="error-message">Please enter a valid card number.</div>
+            </div>
+
+            <!-- Expiry Date -->
+            <div class="form-group" id="expiry-group">
+                <label for="expiry">Expiry Date</label>
+                <div class="input-wrapper">
+                    <input type="text" id="expiry" placeholder="MM/YY" maxlength="5" autocomplete="cc-exp">
+                    <span class="input-icon">📅</span>
+                </div>
+                <div class="error-message">Invalid date. Use MM/YY.</div>
+            </div>
+
+            <!-- CVV -->
+            <div class="form-group" id="cvv-group">
+                <label for="cvv">CVV</label>
+                <div class="input-wrapper">
+                    <input type="password" id="cvv" placeholder="123" maxlength="4" autocomplete="cc-csc">
+                    <span class="input-icon">🔒</span>
+                </div>
+                <div class="cvv-toggle">
+                    <input type="checkbox" id="toggle-cvv">
+                    <label for="toggle-cvv">Show CVV</label>
+                </div>
+                <div class="error-message">Invalid CVV.</div>
+            </div>
+
+            <button type="submit" class="btn-submit" id="submitBtn">Pay Now</button>
+        </form>
+    </div>
+
+    <div id="toast" class="toast">Payment Successful!</div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('paymentForm');
+            const cardNumberInput = document.getElementById('card-number');
+            const expiryInput = document.getElementById('expiry');
+            const cvvInput = document.getElementById('cvv');
+            const toggleCvv = document.getElementById('toggle-cvv');
+            const submitBtn = document.getElementById('submitBtn');
+            const toast = document.getElementById('toast');
+
+            // --- Formatting Logic ---
+
+            // Format Card Number: Add space every 4 digits
+            cardNumberInput.addEventListener('input', (e) => {
+                let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+                value = value.substring(0, 16); // Limit to 16 digits
+                
+                // Add spaces
+                const formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+                e.target.value = formattedValue;
+                
+                // Remove error state on input
+                document.getElementById('card-number-group').classList.remove('error');
+            });
+
+            // Format Expiry: Add slash after 2 digits
+            expiryInput.addEventListener('input', (e) => {
+                let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+                value = value.substring(0, 4); // Limit to 4 digits
+
+                if (value.length >= 2) {
+                    value = value.substring(0, 2) + '/' + value.substring(2, 4);
+                }
+                e.target.value = value;
+
+                // Remove error state on input
+                document.getElementById('expiry-group').classList.remove('error');
+            });
+
+            // Toggle CVV visibility
+            toggleCvv.addEventListener('change', (e) => {
+                cvvInput.type = e.target.checked ? 'text' : 'password';
+            });
+
+            // --- Validation Logic ---
+
+            function validateCardNumber(number) {
+                // Basic check: length and digits
+                const cleanNumber = number.replace(/\s/g, '');
+                return /^\d{13,16}$/.test(cleanNumber);
+            }
+
+            function validateExpiry(expiry) {
+                const parts = expiry.split('/');
+                if (parts.length !== 2) return false;
+
+                const month = parseInt(parts[0], 10);
+                const year = parseInt('20' + parts[1], 10); // Assume current century
+
+                if (month < 1 || month > 12) return false;
+
+                const now = new Date();
+                const currentYear = now.getFullYear();
+                const currentMonth = now.getMonth() + 1; // 0-indexed
+
+                if (year < currentYear) return false;
+                if (year === currentYear && month < currentMonth) return false;
+
+                return true;
+            }
+
+            function validateCVV(cvv) {
+                // Standard is 3 digits, Amex is 4. Allow 3-4.
+                return /^\d{3,4}$/.test(cvv);
+            }
+
+            function showError(groupId) {
+                document.getElementById(groupId).classList.add('error');
+            }
+
+            // --- Form Submission ---
+
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                let isValid = true;
+
+                // Validate Card Number
+                if (!validateCardNumber(cardNumberInput.value)) {
+                    showError('card-number-group');
+                    isValid = false;
+                }
+
+                // Validate Expiry
+                if (!validateExpiry(expiryInput.value)) {
+                    showError('expiry-group');
+                    isValid = false;
+                }
+
+                // Validate CVV
+                if (!validateCVV(cvvInput.value)) {
+                    showError('cvv-group');
+                    isValid = false;
+                }
+
+                if (isValid) {
+                    // Simulate processing
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Processing...';
+
+                    setTimeout(() => {
+                        showToast('Payment Successful!', 'success');
+                        form.reset();
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Pay Now';
+                        cvvInput.type = 'password';
+                        toggleCvv.checked = false;
+                    }, 1500);
+                } else {
+                    showToast('Please correct the errors.', 'error');
+                }
+            });
+
+            // --- Toast Notification ---
+            function showToast(message, type) {
+                toast.textContent = message;
+                toast.className = 'toast show'; // Reset classes
+                if (type === 'success') toast.classList.add('success');
+                if (type === 'error') toast.classList.add('error');
+
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Edit</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; }
+        input, textarea { width: 100%; padding: 8px; box-sizing: border-box; }
+        button { padding: 10px 20px; cursor: pointer; }
+        .feedback { margin-top: 15px; padding: 10px; border-radius: 4px; display: none; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h2>Edit Profile</h2>
+    <form id="profileForm">
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required>
+        </div>
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        <div class="form-group">
+            <label for="bio">Bio</label>
+            <textarea id="bio" name="bio"></textarea>
+        </div>
+        <button type="submit">Save Changes</button>
+    </form>
+
+    <div id="feedback" class="feedback"></div>
+
+    <script>
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const feedbackEl = document.getElementById('feedback');
+            feedbackEl.style.display = 'none';
+            feedbackEl.className = 'feedback';
+
+            // Collect form data
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+
+            try {
+                const response = await fetch('/api/profile', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    feedbackEl.textContent = 'Profile updated successfully!';
+                    feedbackEl.classList.add('success');
+                } else {
+                    feedbackEl.textContent = result.msg || 'Failed to update profile.';
+                    feedbackEl.classList.add('error');
+                }
+            } catch (error) {
+                feedbackEl.textContent = 'An error occurred while communicating with the server.';
+                feedbackEl.classList.add('error');
+            }
+
+            feedbackEl.style.display = 'block';
+        });
+    </script>
+</body>
+</html>

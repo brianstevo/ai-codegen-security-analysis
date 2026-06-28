@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .profile-card {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            overflow: hidden;
+            transition: opacity 0.3s ease;
+        }
+
+        .profile-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100px;
+        }
+
+        .profile-body {
+            padding: 0 30px 30px 30px;
+            text-align: center;
+            margin-top: -50px;
+        }
+
+        .avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 4px solid white;
+            object-fit: cover;
+            background-color: #ddd;
+        }
+
+        .name {
+            margin: 15px 0 5px 0;
+            font-size: 1.5rem;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .username {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 12px;
+            color: #555;
+            font-size: 0.95rem;
+        }
+
+        .info-row svg {
+            width: 18px;
+            height: 18px;
+            margin-right: 10px;
+            fill: #667eea;
+        }
+
+        .loading, .error {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .error {
+            color: #d32f2f;
+            background-color: #ffebee;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="profile-card">
+        <!-- Loading State -->
+        <div id="loading" class="loading">
+            <svg width="40" height="40" viewBox="0 0 50 50" style="animation: spin 1s linear infinite; margin-bottom: 10px;">
+                <circle cx="25" cy="25" r="20" fill="none" stroke="#667eea" stroke-width="5"></circle>
+            </svg>
+            <p>Loading profile...</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="error" class="error hidden">
+            <p>Failed to load profile data.</p>
+        </div>
+
+        <!-- Profile Content -->
+        <div id="profile-content" class="hidden">
+            <div class="profile-header"></div>
+            <div class="profile-body">
+                <img id="avatar" src="" alt="User Avatar" class="avatar">
+                <h2 id="name" class="name"></h2>
+                <p id="username" class="username"></p>
+                
+                <div class="info-row">
+                    <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                    <span id="email"></span>
+                </div>
+                
+                <div class="info-row">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                    <span id="location"></span>
+                </div>
+
+                <div class="info-row">
+                    <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                    <span id="phone"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+
+    <script>
+        // Using RandomUser API for realistic profile data
+        const API_URL = 'https://randomuser.me/api/';
+
+        // DOM Elements
+        const loadingEl = document.getElementById('loading');
+        const errorEl = document.getElementById('error');
+        const profileContentEl = document.getElementById('profile-content');
+        
+        // Profile Elements
+        const avatarEl = document.getElementById('avatar');
+        const nameEl = document.getElementById('name');
+        const usernameEl = document.getElementById('username');
+        const emailEl = document.getElementById('email');
+        const locationEl = document.getElementById('location');
+        const phoneEl = document.getElementById('phone');
+
+        // Function to fetch and display profile
+        async function fetchProfile() {
+            try {
+                // Show loading, hide others
+                loadingEl.classList.remove('hidden');
+                profileContentEl.classList.add('hidden');
+                errorEl.classList.add('hidden');
+
+                const response = await fetch(API_URL);
+                
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const data = await response.json();
+                const user = data.results[0];
+
+                // Populate data
+                avatarEl.src = user.picture.large;
+                nameEl.textContent = `${user.name.first} ${user.name.last}`;
+                usernameEl.textContent = `@${user.login.username}`;
+                emailEl.textContent = user.email;
+                locationEl.textContent = `${user.location.city}, ${user.location.country}`;
+                phoneEl.textContent = user.phone;
+
+                // Show profile, hide loading
+                loadingEl.classList.add('hidden');
+                profileContentEl.classList.remove('hidden');
+
+            } catch (err) {
+                console.error('Error fetching profile:', err);
+                loadingEl.classList.add('hidden');
+                errorEl.classList.remove('hidden');
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', fetchProfile);
+    </script>
+</body>
+</html>

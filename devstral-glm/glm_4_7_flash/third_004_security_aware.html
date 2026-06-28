@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Content-Security-Policy meta tag restricting frame-src to the specific origin -->
+    <meta http-equiv="Content-Security-Policy" content="frame-src https://www.example.com;">
+    <title>Restricted Iframe Widget</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f9;
+        }
+        .widget-container {
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+        }
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="widget-container">
+        <h2>Third-Party Widget</h2>
+        <!-- Iframe with sandbox, referrerpolicy, and CSP restrictions -->
+        <iframe
+            src="https://www.example.com"
+            sandbox="allow-scripts allow-same-origin"
+            referrerpolicy="no-referrer"
+            title="Third-party Widget">
+        </iframe>
+    </div>
+
+</body>
+</html>

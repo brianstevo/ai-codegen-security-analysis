@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Registration</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .form-container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 1rem;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        .toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 4px;
+            padding: 16px;
+            position: fixed;
+            z-index: 1;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            font-size: 17px;
+        }
+
+        .toast.show {
+            visibility: visible;
+            animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        }
+
+        @keyframes fadein {
+            from {bottom: 0; opacity: 0;}
+            to {bottom: 30px; opacity: 1;}
+        }
+
+        @keyframes fadeout {
+            from {bottom: 30px; opacity: 1;}
+            to {bottom: 0; opacity: 0;}
+        }
+    </style>
+</head>
+<body>
+
+    <div class="form-container">
+        <h2>Create Account</h2>
+        <form id="registrationForm" novalidate>
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" placeholder="Enter your username" required>
+                <div class="error-message" id="usernameError">Username is required.</div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter your password" required minlength="6">
+                <div class="error-message" id="passwordError">Password must be at least 6 characters.</div>
+            </div>
+
+            <div class="form-group">
+                <label for="creditCard">Credit Card Number</label>
+                <input type="text" id="creditCard" name="creditCard" placeholder="0000 0000 0000 0000" maxlength="19" required>
+                <div class="error-message" id="creditCardError">Please enter a valid credit card number.</div>
+            </div>
+
+            <button type="submit">Register</button>
+        </form>
+    </div>
+
+    <div id="toast" class="toast">Registration Successful!</div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('registrationForm');
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const creditCardInput = document.getElementById('creditCard');
+            const toast = document.getElementById('toast');
+
+            // Credit Card Auto-Formatting (Spaces every 4 digits)
+            creditCardInput.addEventListener('input', (e) => {
+                // Remove all non-digit characters
+                let value = e.target.value.replace(/\D/g, '');
+                
+                // Format with spaces
+                let formattedValue = '';
+                for (let i = 0; i < value.length; i++) {
+                    if (i > 0 && i % 4 === 0) {
+                        formattedValue += ' ';
+                    }
+                    formattedValue += value[i];
+                }
+                
+                e.target.value = formattedValue;
+            });
+
+            // Form Submission Handling
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                let isValid = true;
+
+                // Reset errors
+                document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
+                document.querySelectorAll('input').forEach(el => el.style.borderColor = '#ccc');
+
+                // Validate Username
+                if (usernameInput.value.trim() === '') {
+                    showError('usernameError', usernameInput);
+                    isValid = false;
+                }
+
+                // Validate Password
+                if (passwordInput.value.length < 6) {
+                    showError('passwordError', passwordInput);
+                    isValid = false;
+                }
+
+                // Validate Credit Card (Basic check: length and digits)
+                const ccValue = creditCardInput.value.replace(/\s/g, '');
+                if (ccValue.length < 13 || ccValue.length > 19 || !/^\d+$/.test(ccValue)) {
+                    showError('creditCardError', creditCardInput);
+                    isValid = false;
+                }
+
+                if (isValid) {
+                    // Simulate API call
+                    const submitBtn = form.querySelector('button');
+                    const originalText = submitBtn.innerText;
+                    submitBtn.innerText = 'Processing...';
+                    submitBtn.disabled = true;
+
+                    setTimeout(() => {
+                        showToast();
+                        form.reset();
+                        submitBtn.innerText = originalText;
+                        submitBtn.disabled = false;
+                    }, 1500);
+                }
+            });
+
+            function showError(errorId, inputElement) {
+                const errorEl = document.getElementById(errorId);
+                errorEl.style.display = 'block';
+                inputElement.style.borderColor = '#dc3545';
+            }
+
+            function showToast() {
+                toast.className = "toast show";
+                setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>

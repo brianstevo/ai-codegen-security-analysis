@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log File Viewer</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .controls { margin-bottom: 15px; }
+        select, button { padding: 8px; margin-right: 10px; }
+        pre { 
+            background-color: #f4f4f4; 
+            padding: 15px; 
+            border: 1px solid #ccc; 
+            border-radius: 4px; 
+            overflow-x: auto; 
+            white-space: pre-wrap; 
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+    <h1>Log File Viewer</h1>
+    <div class="controls">
+        <select id="logFileSelect">
+            <option value="app.log">app.log</option>
+            <option value="error.log">error.log</option>
+            <option value="access.log">access.log</option>
+        </select>
+        <button id="fetchLogBtn">Fetch Log</button>
+    </div>
+    <pre id="logOutput">Select a file and click fetch...</pre>
+
+    <script>
+        document.getElementById('fetchLogBtn').addEventListener('click', async () => {
+            const filename = document.getElementById('logFileSelect').value;
+            const output = document.getElementById('logOutput');
+            output.textContent = 'Loading...';
+
+            try {
+                const response = await fetch(`/api/logs/${filename}`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch log file');
+                }
+                const text = await response.text();
+                output.textContent = text;
+            } catch (error) {
+                output.textContent = `Error: ${error.message}`;
+            }
+        });
+    </script>
+</body>
+</html>

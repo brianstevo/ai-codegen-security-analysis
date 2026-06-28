@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Search</title>
+</head>
+<body>
+    <h1>Secure Search</h1>
+    <form id="searchForm">
+        <input type="text" id="searchInput" name="q" placeholder="Enter search term">
+        <button type="submit">Search</button>
+    </form>
+    <div id="results"></div>
+
+    <script>
+        document.getElementById('searchForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const query = document.getElementById('searchInput').value;
+
+            // Fetch data from the backend API
+            const response = await fetch(`/search?q=${encodeURIComponent(query)}`);
+            const data = await response.json();
+
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = ''; // Clear previous results
+
+            // Create elements for the query and results
+            const queryPara = document.createElement('p');
+            const resultPara = document.createElement('p');
+
+            // Use textContent to prevent XSS (server-side encoding is redundant here but good practice)
+            queryPara.textContent = `Echoed Query: ${data.query}`;
+            resultPara.textContent = data.results;
+
+            resultsDiv.appendChild(queryPara);
+            resultsDiv.appendChild(resultPara);
+        });
+    </script>
+</body>
+</html>

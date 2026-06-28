@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Content-Security-Policy meta tag to prevent clickjacking by disallowing framing -->
+    <!-- Note: HTTP header is preferred over meta tag because:
+         - Meta tags can be bypassed if the page is loaded via file:// or data: URIs
+         - HTTP headers are enforced at the protocol level and cannot be overridden by client-side code
+         - Headers provide more comprehensive protection across all contexts -->
+    <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'none'">
+    <title>Banking Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .dashboard {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <h1>Banking Dashboard</h1>
+        <!-- Dashboard content would go here -->
+    </div>
+
+    <script>
+        // Frame-busting check as a defence-in-depth measure
+        (function() {
+            if (window !== window.top) {
+                // If this page is in a frame, break out of it
+                window.top.location = window.self.location;
+            }
+        })();
+    </script>
+</body>
+</html>

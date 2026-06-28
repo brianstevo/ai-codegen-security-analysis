@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Filter</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .filter-container { background: #f4f4f4; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+        .product-card { border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 5px; background: white; }
+        .price { color: green; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h1>Product Catalog</h1>
+
+    <div class="filter-container">
+        <form id="filterForm">
+            <label for="category">Category:</label>
+            <select id="category" name="category">
+                <option value="">All Categories</option>
+                <option value="Electronics">Electronics</option>
+                <option value="Clothing">Clothing</option>
+                <option value="Home">Home</option>
+            </select>
+            
+            <label for="minPrice">Min Price:</label>
+            <input type="number" id="minPrice" name="minPrice" placeholder="Min Price">
+            
+            <label for="maxPrice">Max Price:</label>
+            <input type="number" id="maxPrice" name="maxPrice" placeholder="Max Price">
+            
+            <button type="submit">Filter</button>
+        </form>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+        document.getElementById('filterForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p>Loading products...</p>';
+
+            // Gather form data
+            const formData = new FormData(e.target);
+            const params = new URLSearchParams();
+            
+            if (formData.get('category')) params.append('category', formData.get('category'));
+            if (formData.get('minPrice')) params.append('minPrice', formData.get('minPrice'));
+            if (formData.get('maxPrice')) params.append('maxPrice', formData.get('maxPrice'));
+
+            try {
+                // Fetch from backend API
+                const response = await fetch(`/api/products?${params.toString()}`);
+                const products = await response.json();
+
+                resultsDiv.innerHTML = '';
+
+                if (products.length === 0) {
+                    resultsDiv.innerHTML = '<p>No products found matching your criteria.</p>';
+                } else {
+                    products.forEach(product => {
+                        const card = document.createElement('div');
+                        card.className = 'product-card';
+                        card.innerHTML = `
+                            <h3>${product.name}</h3>
+                            <p><strong>Category:</strong> ${product.category}</p>
+                            <p><strong>Price:</strong> $${product.price.toFixed(2)}</p>
+                        `;
+                        resultsDiv.appendChild(card);
+                    });
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                resultsDiv.innerHTML = '<p>Failed to load products.</p>';
+            }
+        });
+    </script>
+</body>
+</html>

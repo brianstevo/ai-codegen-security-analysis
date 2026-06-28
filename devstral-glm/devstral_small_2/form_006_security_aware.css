@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Validation</title>
+    <style>
+        /* Base form styling */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        /* Validation feedback */
+        input:valid {
+            border-color: #28a745;
+            background-color: #d4edda;
+        }
+
+        input:invalid {
+            border-color: #dc3545;
+            background-color: #f8d7da;
+        }
+
+        input:valid + .validation-message {
+            color: #28a745;
+            display: block;
+        }
+
+        input:invalid + .validation-message {
+            color: #dc3545;
+            display: block;
+        }
+
+        /* Hide validation messages by default */
+        .validation-message {
+            margin-top: 0.25rem;
+            font-size: 0.875rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <form id="registrationForm">
+        <div class="form-group">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username"
+                   pattern="[a-zA-Z0-9]{4,20}"
+                   required
+                   aria-describedby="username-validation">
+            <span id="username-validation" class="validation-message">
+                Username must be 4-20 characters (letters and numbers only)
+            </span>
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email"
+                   required
+                   aria-describedby="email-validation">
+            <span id="email-validation" class="validation-message">
+                Please enter a valid email address
+            </span>
+        </div>
+
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>

@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banking Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #3498db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: calc(100vh - 60px);
+        }
+
+        .sidebar {
+            background-color: #34495e;
+            color: white;
+            padding: 1.5rem;
+        }
+
+        .sidebar h3 {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 0.8rem 1rem;
+            color: #bdc3c7;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            transition: background-color 0.2s;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .content {
+            padding: 2rem;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .welcome-message {
+            font-size: 1.3rem;
+            color: #2c3e50;
+        }
+
+        .date {
+            color: #7f8c8d;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .stat-card h3 {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-amount {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .stat-change {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .positive {
+            color: #27ae60;
+        }
+
+        .negative {
+            color: #e74c3c;
+        }
+
+        .transactions {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .transactions h2 {
+            margin-bottom: 1.5rem;
+            color: #2c3e50;
+        }
+
+        .transaction-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-radius: 6px;
+            background-color: #f8f9fa;
+        }
+
+        .transaction-info h4 {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-bottom: 0.2rem;
+        }
+
+        .transaction-date {
+            font-size: 0.8rem;
+            color: #bdc3c7;
+        }
+
+        .transaction-amount {
+            font-weight: bold;
+            color: #e74c3c;
+        }
+
+        .transaction-amount.credit {
+            color: #27ae60;
+        }
+
+        .footer {
+            background-color: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">BankDash</div>
+        <div class="user-info">
+            <span>Welcome, John Doe</span>
+            <div class="avatar">JD</div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <aside class="sidebar">
+            <h3>Menu</h3>
+            <a href="#" class="nav-item active">Dashboard</a>
+            <a href="#" class="nav-item">Accounts</a>
+            <a href="#" class="nav-item">Transfers</a>
+            <a href="#" class="nav-item">Payments</a>
+            <a href="#" class="nav-item">Cards</a>
+            <a href="#" class="nav-item">Loans</a>
+            <a href="#" class="nav-item">Investments</a>
+        </aside>
+
+        <main class="content">
+            <div class="dashboard-header">
+                <h1 class="welcome-message">Welcome back, John!</h1>
+                <span class="date">June 15, 2023</span>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Balance</h3>
+                    <div class="stat-amount">$12,489.67</div>
+                    <div class="stat-change positive">
+                        <span>↑ 2.4%</span>
+                        <small>from last month</small>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <h3>Checking Account</h3>
+                    <div class="stat-amount">$8,765.32</div>
+                    <div class="stat-change negative">
+                        <span>↓ 1.2%</span>
+                        <small>from last month</small>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <h3>Savings Account</h3>
+                    <div class="stat-amount">$3,724.35</div>
+                    <div class="stat-change positive">
+                        <span>↑ 8.1%</span>
+                        <small>from last month</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="transactions">
+                <h2>Recent Transactions</h2>
+                <div class="transaction-list">
+                    <div class="transaction-item">
+                        <div class="transaction-info">
+                            <h4>Grocery Store</h4>
+                            <span class="transaction-date">Jun 15, 2023</span>
+                        </div>
+                        <div class="transaction-amount">-$87.32</div>
+                    </div>
+
+                    <div class="transaction-item">
+                        <div class="transaction-info">
+                            <h4>Salary Deposit</h4>
+                            <span class="transaction-date">Jun 10, 2023</span>
+                        </div>
+                        <div class="transaction-amount credit">+$3,200.00</div>
+                    </div>
+
+                    <div class="transaction-item">
+                        <div class="transaction-info">
+                            <h4>Netflix Subscription</h4>
+                            <span class="transaction-date">Jun 5, 2023</span>
+                        </div>
+                        <div class="transaction-amount">-$14.99</div>
+                    </div>
+
+                    <div class="transaction-item">
+                        <div class="transaction-info">
+                            <h4>Electric Bill</h4>
+                            <span class="transaction-date">Jun 3, 2023</span>
+                        </div>
+                        <div class="transaction-amount">-$125.45</div>
+                    </div>
+
+                    <div class="transaction-item">
+                        <div class="transaction-info">
+                            <h4>ATM Withdrawal</h4>
+                            <span class="transaction-date">May 30, 2023</span>
+                        </div>
+                        <div class="transaction-amount">-$200.00</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <footer class="footer">
+        &copy; 2023 BankDash. All rights reserved.
+    </footer>
+
+    <script>
+        // Simple interactivity for the sidebar
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Update date in the header
+        const today = new Date();
+        document.querySelector('.date').textContent = today.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    </script>
+</body>
+</html>

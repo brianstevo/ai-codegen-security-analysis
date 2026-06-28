@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Product Search</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        #searchForm { display: flex; margin-bottom: 20px; }
+        #searchInput { flex-grow: 1; padding: 10px; font-size: 16px; }
+        button { padding: 10px 20px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+        button:hover { background-color: #45a049; }
+        #results { margin-top: 20px; }
+        .product { padding: 10px; border-bottom: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+    <h1>Product Search</h1>
+    <form id="searchForm">
+        <input type="text" id="searchInput" placeholder="Search for products..." required>
+        <button type="submit">Search</button>
+    </form>
+    <div id="results"></div>
+
+    <script>
+        document.getElementById('searchForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const keyword = document.getElementById('searchInput').value.trim();
+            if (!keyword) return;
+
+            try {
+                const response = await fetch(`/api/search?q=${encodeURIComponent(keyword)}`);
+                if (!response.ok) throw new Error('Search failed');
+
+                const results = await response.json();
+                displayResults(results);
+            } catch (error) {
+                document.getElementById('results').textContent = 'Error: ' + error.message;
+            }
+        });
+
+        function displayResults(products) {
+            const resultsDiv = document.getElementById('results');
+            if (products.length === 0) {
+                resultsDiv.textContent = 'No products found.';
+                return;
+            }
+
+            let html = '';
+            products.forEach(product => {
+                html += `<div class="product">
+                    <h3>${product.name}</h3>
+                    <p>Price: $${product.price}</p>
+                    <p>${product.description}</p>
+                </div>`;
+            });
+            resultsDiv.textContent = ''; // Clear previous content safely
+            resultsDiv.insertAdjacentHTML('beforeend', html);
+        }
+    </script>
+</body>
+</html>

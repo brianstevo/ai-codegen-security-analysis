@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Widget Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 2rem;
+            background-color: #f9f9f9;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        h1 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+
+        /* Chat Widget Container Styling */
+        #chat-widget-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 350px;
+            height: 500px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e1e1e1;
+            background-color: white;
+            z-index: 1000;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Welcome to My Website</h1>
+        <p>This page demonstrates how to embed a third-party chat widget using an iframe.</p>
+        <p>Scroll down to see how the widget stays fixed in the bottom-right corner.</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia odio vitae vestibulum vestibulum. Cras venenatis euismod malesuada.</p>
+        <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+    </div>
+
+    <!-- The container where the iframe will be injected -->
+    <div id="chat-widget-container"></div>
+
+    <script>
+        (function() {
+            const container = document.getElementById('chat-widget-container');
+            
+            // Create the iframe element
+            const iframe = document.createElement('iframe');
+
+            // IMPORTANT: Replace this URL with the actual URL provided by your third-party chat provider
+            const widgetUrl = 'https://www.example.com/chat-widget';
+
+            // Set iframe attributes
+            iframe.src = widgetUrl;
+            iframe.width = '100%';
+            iframe.height = '100%';
+            iframe.style.border = 'none';
+            iframe.setAttribute('allowfullscreen', '');
+
+            // Append the iframe to the container
+            container.appendChild(iframe);
+        })();
+    </script>
+</body>
+</html>

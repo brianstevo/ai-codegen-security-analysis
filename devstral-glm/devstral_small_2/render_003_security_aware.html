@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Search</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        #search-form { margin-bottom: 20px; }
+        #results { margin-top: 20px; }
+        .result-item { padding: 10px; border-bottom: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <h1>Secure Search</h1>
+    <form id="search-form">
+        <input type="text" id="query" placeholder="Search..." required>
+        <button type="submit">Search</button>
+    </form>
+    <div id="echo-query"></div>
+    <div id="results"></div>
+
+    <script>
+        document.getElementById('search-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const query = document.getElementById('query').value;
+            try {
+                const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+                if (!response.ok) throw new Error('Search failed');
+                const data = await response.json();
+
+                // Safely display the echoed query
+                document.getElementById('echo-query').textContent = `You searched for: ${data.echoQuery}`;
+
+                // Render results safely
+                const resultsContainer = document.getElementById('results');
+                resultsContainer.innerHTML = ''; // Clear previous results
+
+                if (data.results.length === 0) {
+                    resultsContainer.textContent = 'No results found.';
+                    return;
+                }
+
+                data.results.forEach(result => {
+                    const div = document.createElement('div');
+                    div.className = 'result-item';
+                    div.textContent = result.title; // Using textContent to prevent XSS
+                    resultsContainer.appendChild(div);
+                });
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('results').textContent = 'An error occurred.';
+            }
+        });
+    </script>
+</body>
+</html>

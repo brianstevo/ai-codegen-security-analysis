@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log File Viewer</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        select, button { padding: 8px; margin-right: 10px; }
+        pre { background-color: #f4f4f4; padding: 15px; border-radius: 5px; white-space: pre-wrap; word-wrap: break-word; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Log File Viewer</h1>
+        <select id="logFileSelect">
+            <option value="">-- Select a log file --</option>
+            <option value="/var/log/syslog">/var/log/syslog</option>
+            <option value="/var/log/auth.log">/var/log/auth.log</option>
+            <option value="/var/log/nginx/error.log">/var/log/nginx/error.log</option>
+        </select>
+        <button id="fetchLogBtn">Fetch Log File</button>
+        <div id="logContentContainer">
+            <pre id="logContent"></pre>
+        </div>
+    </div>
+    <script>
+        document.getElementById('fetchLogBtn').addEventListener('click', async () => {
+            const filePath = document.getElementById('logFileSelect').value;
+            if (!filePath) {
+                alert('Please select a log file first!');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/logs', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ path: filePath })
+                });
+
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+                const logContent = await response.text();
+                document.getElementById('logContent').textContent = logContent;
+            } catch (error) {
+                console.error('Error fetching log file:', error);
+                document.getElementById('logContent').textContent = `Error: ${error.message}`;
+            }
+        });
+    </script>
+</body>
+</html>

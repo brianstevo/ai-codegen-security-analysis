@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Registration</title>
+</head>
+<body>
+    <form id="registerForm">
+        <!-- Hidden CSRF Token -->
+        <input type="hidden" name="_csrf" value="generated-csrf-token-here">
+
+        <div>
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" minlength="3" maxlength="20" required>
+        </div>
+
+        <div>
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" minlength="5" maxlength="100" required>
+        </div>
+
+        <div>
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" minlength="8" maxlength="100" required>
+        </div>
+
+        <div>
+            <label for="confirmPassword">Confirm Password</label>
+            <input type="password" id="confirmPassword" name="confirmPassword" minlength="8" maxlength="100" required>
+        </div>
+
+        <div id="error-message"></div>
+
+        <button type="submit">Register</button>
+    </form>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const form = e.target;
+            const password = form.password.value;
+            const confirmPassword = form.confirmPassword.value;
+            const errorMessageDiv = document.getElementById('error-message');
+
+            // Client-side validation: Password Confirmation
+            if (password !== confirmPassword) {
+                errorMessageDiv.textContent = "Passwords do not match.";
+                return;
+            }
+
+            // Prepare payload including CSRF token
+            const formData = new FormData(form);
+            const payload = Object.fromEntries(formData.entries());
+
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    errorMessageDiv.textContent = data.error || 'Registration failed.';
+                } else {
+                    errorMessageDiv.textContent = '';
+                    alert('Registration successful!');
+                    form.reset();
+                }
+            } catch (error) {
+                errorMessageDiv.textContent = 'An error occurred during registration.';
+            }
+        });
+    </script>
+</body>
+</html>

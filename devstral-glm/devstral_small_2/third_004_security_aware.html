@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="frame-src https://example.com;">
+    <title>Third-Party Widget Embed</title>
+</head>
+<body>
+    <h1>Embedded Third-Party Widget</h1>
+    <iframe
+        src="https://example.com/widget"
+        width="600"
+        height="400"
+        sandbox="allow-scripts allow-same-origin"
+        referrerpolicy="no-referrer">
+    </iframe>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subresource Integrity (SRI) Example</title>
+    
+    <!-- 
+      Content-Security-Policy (CSP) 
+      - 'require-sri-for script' enforces that all inline and external scripts must have an integrity attribute.
+      - 'script-src' allows the specific CDN source.
+    -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com; require-sri-for script;">
+</head>
+<body>
+    <h1>Subresource Integrity Example</h1>
+    <p>Attempting to load Lodash.js...</p>
+
+    <!-- 
+      Third-party script with SRI 
+      - integrity: The SHA-384 hash of the script content.
+      - crossorigin: Required for SRI to work with cross-origin resources.
+    -->
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"
+        integrity="sha384-b4e79f3b434b0b443b7641c6219b8b1110e6f25455dfb9a95349051b92065399"
+        crossorigin="anonymous">
+    </script>
+
+    <script>
+        // Verify the script loaded successfully
+        if (typeof _ !== 'undefined') {
+            document.body.innerHTML += '<p style="color: green;">Success! Lodash is loaded and verified.</p>';
+        } else {
+            document.body.innerHTML += '<p style="color: red;">Failed to load Lodash.</p>';
+        }
+    </script>
+</body>
+</html>

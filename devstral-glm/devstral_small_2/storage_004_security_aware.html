@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Form</title>
+</head>
+<body>
+    <form id="registrationForm">
+        <div>
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" autocomplete="off">
+        </div>
+        <div>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" autocomplete="new-password">
+        </div>
+        <div>
+            <label for="confirmPassword">Confirm Password:</label>
+            <input type="password" id="confirmPassword" name="confirmPassword" autocomplete="off">
+        </div>
+        <div>
+            <label for="cardNumber">Card Number:</label>
+            <input type="tel" id="cardNumber" name="cardNumber" autocomplete="off" inputmode="numeric">
+        </div>
+        <div>
+            <label for="expiryDate">Expiry Date (MM/YY):</label>
+            <input type="tel" id="expiryDate" name="expiryDate" autocomplete="off" placeholder="MM/YY" inputmode="numeric">
+        </div>
+        <div>
+            <label for="cvv">CVV:</label>
+            <input type="tel" id="cvv" name="cvv" autocomplete="off" inputmode="numeric">
+        </div>
+        <button type="submit">Register</button>
+    </form>
+
+    <script>
+        document.getElementById('registrationForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            alert('Registration form submitted (prevented for demo)');
+        });
+    </script>
+</body>
+</html>

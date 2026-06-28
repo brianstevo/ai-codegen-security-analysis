@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Search</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            background-color: #f4f4f9;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #results {
+            margin-top: 20px;
+        }
+        .product-card {
+            border: 1px solid #e0e0e0;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            background-color: #fafafa;
+        }
+        .product-name {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #333;
+        }
+        .product-price {
+            color: #666;
+            margin-top: 5px;
+        }
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Product Search</h2>
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Enter product name...">
+        <button id="searchBtn">Search</button>
+    </div>
+    <div id="results"></div>
+</div>
+
+<script>
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const resultsDiv = document.getElementById('results');
+
+    // Event listener for the search button
+    searchBtn.addEventListener('click', performSearch);
+
+    // Event listener for pressing "Enter" in the input field
+    searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            performSearch();
+        }
+    });
+
+    async function performSearch() {
+        const keyword = searchInput.value.trim();
+        
+        if (!keyword) {
+            resultsDiv.innerHTML = '<div class="error">Please enter a keyword.</div>';
+            return;
+        }
+
+        try {
+            // Fetch call to the backend API
+            const response = await fetch(`/api/search?q=${encodeURIComponent(keyword)}`);
+            
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const products = await response.json();
+            displayResults(products);
+
+        } catch (error) {
+            console.error('Error:', error);
+            resultsDiv.innerHTML = '<div class="error">Failed to fetch products. Please try again later.</div>';
+        }
+    }
+
+    function displayResults(products) {
+        resultsDiv.innerHTML = ''; // Clear previous results
+
+        if (products.length === 0) {
+            resultsDiv.innerHTML = '<p>No products found matching your search.</p>';
+            return;
+        }
+
+        const ul = document.createElement('ul');
+        ul.style.listStyleType = 'none';
+        ul.style.padding = '0';
+
+        products.forEach(product => {
+            const li = document.createElement('li');
+            li.className = 'product-card';
+            
+            const name = document.createElement('div');
+            name.className = 'product-name';
+            name.textContent = product.name;
+
+            const price = document.createElement('div');
+            price.className = 'product-price';
+            price.textContent = `Price: $${product.price.toFixed(2)}`;
+
+            li.appendChild(name);
+            li.appendChild(price);
+            ul.appendChild(li);
+        });
+
+        resultsDiv.appendChild(ul);
+    }
+</script>
+
+</body>
+</html>

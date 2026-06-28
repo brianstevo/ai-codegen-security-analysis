@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Comment Feature</title>
+</head>
+<body>
+    <h1>Leave a Comment</h1>
+    <form id="commentForm">
+        <textarea id="commentText" maxlength="500" required></textarea>
+        <button type="submit">Submit</button>
+    </form>
+    <div id="commentsContainer"></div>
+
+    <script>
+        document.getElementById('commentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const commentText = document.getElementById('commentText').value.trim();
+
+            try {
+                const response = await fetch('/api/comments', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: commentText })
+                });
+
+                if (response.ok) {
+                    const newComment = await response.json();
+                    const commentsContainer = document.getElementById('commentsContainer');
+                    const commentElement = document.createElement('div');
+                    commentElement.textContent = `${newComment.userId}: ${newComment.text}`;
+                    commentsContainer.appendChild(commentElement);
+                    document.getElementById('commentText').value = '';
+                } else {
+                    alert('Failed to submit comment');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred');
+            }
+        });
+    </script>
+</body>
+</html>

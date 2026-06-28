@@ -1,0 +1,711 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureBank Dashboard</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --secondary: #64748b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg-body: #f1f5f9;
+            --bg-card: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --sidebar-width: 260px;
+            --header-height: 70px;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: #0f172a;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            transition: transform 0.3s ease;
+            z-index: 100;
+        }
+
+        .logo-area {
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .logo-icon {
+            margin-right: 10px;
+            color: var(--primary);
+        }
+
+        .nav-links {
+            list-style: none;
+            padding: 20px 0;
+            flex: 1;
+        }
+
+        .nav-item {
+            padding: 12px 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: background 0.2s;
+            color: #94a3b8;
+            text-decoration: none;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background-color: rgba(255,255,255,0.05);
+            color: white;
+            border-left: 4px solid var(--primary);
+        }
+
+        .nav-item svg {
+            margin-right: 12px;
+            width: 20px;
+            height: 20px;
+        }
+
+        .user-profile {
+            padding: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 12px;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            width: calc(100% - var(--sidebar-width));
+        }
+
+        /* Header */
+        header {
+            height: var(--header-height);
+            background-color: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            position: sticky;
+            top: 0;
+            z-index: 90;
+        }
+
+        .header-title h2 {
+            font-size: 1.25rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-icon {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-muted);
+            padding: 8px;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+
+        .btn-icon:hover {
+            background-color: var(--bg-body);
+            color: var(--primary);
+        }
+
+        /* Dashboard Content */
+        .dashboard-container {
+            padding: 30px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: auto auto 1fr;
+            gap: 24px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .balance-card {
+            grid-column: span 1;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+        }
+
+        .balance-amount {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .balance-trend {
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .trend-up { color: #6ee7b7; }
+        .trend-down { color: #fca5a5; }
+
+        /* Chart Section */
+        .chart-card {
+            grid-column: span 2;
+            min-height: 350px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chart-container {
+            flex: 1;
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Transactions */
+        .transactions-card {
+            grid-column: span 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .transaction-list {
+            list-style: none;
+            overflow-y: auto;
+            max-height: 300px;
+        }
+
+        .transaction-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+
+        .t-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 1.2rem;
+        }
+
+        .t-icon.income { background-color: #d1fae5; color: var(--success); }
+        .t-icon.expense { background-color: #fee2e2; color: var(--danger); }
+        .t-icon.transfer { background-color: #e0e7ff; color: var(--primary); }
+
+        .t-details {
+            flex: 1;
+        }
+
+        .t-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .t-date {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .t-amount {
+            font-weight: bold;
+        }
+
+        .t-amount.negative { color: var(--danger); }
+        .t-amount.positive { color: var(--success); }
+
+        /* Quick Actions */
+        .actions-card {
+            grid-column: span 3;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            flex: 1;
+            min-width: 150px;
+            padding: 20px;
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background-color: #eef2ff;
+        }
+
+        .action-btn svg {
+            width: 32px;
+            height: 32px;
+            margin-bottom: 10px;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 400px;
+            max-width: 90%;
+            transform: translateY(20px);
+            transition: transform 0.3s;
+        }
+
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-muted);
+            border: none;
+            margin-top: 10px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #1e293b;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            transform: translateY(100px);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 2000;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .dashboard-container {
+                grid-template-columns: 1fr 1fr;
+            }
+            .chart-card { grid-column: span 2; }
+            .transactions-card { grid-column: span 2; }
+            .actions-card { grid-column: span 2; }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+            .dashboard-container {
+                grid-template-columns: 1fr;
+            }
+            .chart-card, .transactions-card, .actions-card {
+                grid-column: span 1;
+            }
+            .mobile-menu-btn {
+                display: block !important;
+            }
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-main);
+            margin-right: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="logo-area">
+            <span class="logo-icon">◆</span> SecureBank
+        </div>
+        <ul class="nav-links">
+            <li class="nav-item active" onclick="setActive(this)">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                Dashboard
+            </li>
+            <li class="nav-item" onclick="setActive(this)">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                Accounts
+            </li>
+            <li class="nav-item" onclick="setActive(this)">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                Cards
+            </li>
+            <li class="nav-item" onclick="setActive(this)">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                Transactions
+            </li>
+            <li class="nav-item" onclick="setActive(this)">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                Settings
+            </li>
+        </ul>
+        <div class="user-profile">
+            <div class="avatar">JD</div>
+            <div>
+                <div style="font-weight: 600; font-size: 0.9rem;">John Doe</div>
+                <div style="font-size: 0.8rem; opacity: 0.7;">Premium User</div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header>
+            <div style="display: flex; align-items: center;">
+                <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+                <div class="header-title">
+                    <h2>Dashboard</h2>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn-icon" title="Notifications">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                </button>
+                <button class="btn-icon" title="Help">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </button>
+            </div>
+        </header>
+
+        <div class="dashboard-container">
+            <!-- Balance Card -->
+            <div class="card balance-card">
+                <div class="card-header">
+                    <span class="card-title">Total Balance</span>
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <div class="balance-amount" id="totalBalance">$24,500.00</div>
+                <div class="balance-trend">
+                    <span class="trend-up">▲ 12%</span> vs last month
+                </div>
+            </div>
+
+            <!-- Income Card -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Income</span>
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12"></path></svg>
+                </div>
+                <div class="balance-amount" style="color: var(--success); font-size: 2rem;">$4,200.00</div>
+                <div class="balance-trend">
+                    <span class="trend-up">▲ 5%</span> vs last month
+                </div>
+            </div>
+
+            <!-- Expense Card -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Expenses</span>
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 13l-5 5m0 0l-5-5m5 5V6"></path></svg>
+                </div>
+                <div class="balance-amount" style="color: var(--danger); font-size: 2rem;">$1,300.00</div>
+                <div class="balance-trend">
+                    <span class="trend-down">▼ 2%</span> vs last month
+                </div>
+            </div>
+
+            <!-- Chart Section -->
+            <div class="card chart-card">
+                <div class="card-header">
+                    <span class="card-title">Spending Overview (Last 7 Days)</span>
+                    <select style="border: 1px solid var(--border); padding: 5px; border-radius: 4px; background: white;">
+                        <option>This Week</option>
+                        <option>Last Week</option>
+                    </select>
+                </div>
+                <div class="chart-container">
+                    <canvas id="spendingChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Transactions List -->
+            <div class="card transactions-card">
+                <div class="card-header">
+                    <span class="card-title">Recent Transactions</span>
+                    <a href="#" style="color: var(--primary); text-decoration: none; font-size: 0.9rem;">View All</a>
+                </div>
+                <ul class="transaction-list" id="transactionList">
+                    <!-- Populated by JS -->
+                </ul>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card actions-card">
+                <div class="action-btn" onclick="openModal('transfer')">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+                    <span>Transfer</span>
+                </div>
+                <div class="action-btn" onclick="openModal('paybill')">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                    <span>Pay Bills</span>
+                </div>
+                <div class="action-btn" onclick="openModal('deposit')">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    <span>Deposit</span>
+                </div>
+                <div class="action-btn" onclick="showToast('Request sent successfully!')">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+                    <span>Request</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Transfer Modal -->
+    <div class="modal-overlay" id="transferModal">
+        <div class="modal">
+            <h3 style="margin-bottom: 20px;">Transfer Money</h3>
+            <form onsubmit="handleTransfer(event)">
+                <div class="form-group">
+                    <label>Recipient</label>
+                    <input type="text" placeholder="Enter account number or name" required>
+                </div>
+                <div class="form-group">
+                    <label>Amount</label>
+                    <input type="number" placeholder="0.00" required>
+                </div>
+                <button type="submit" class="btn-primary">Send Money</button>
+                <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">Action Successful</div>
+
+    <script>
+        // --- Data ---
+        const transactions = [
+            { id: 1, name: 'Netflix Subscription', date: 'Today, 10:23 AM', amount: -15.99, type: 'expense', icon: '🎬' },
+            { id: 2, name: 'Salary Deposit', date: 'Yesterday, 9:00 AM', amount: 3200.00, type: 'income', icon: '💰' },
+            { id: 3, name: 'Uber Ride', date: 'Yesterday, 4:45 PM', amount: -24.50, type: 'expense', icon: '🚗' },
+            { id: 4, name: 'Grocery Store', date: 'Oct 24, 2023', amount: -85.20, type: 'expense', icon: '🛒' },
+            { id: 5, name: 'Freelance Payment', date: 'Oct 22, 2023', amount: 850.00, type: 'income', icon: '💻' },
+            { id: 6, name: 'Electric Bill', date: 'Oct 20, 2023', amount: -120.00, type: 'expense', icon: '⚡' },
+        ];
+
+        const chartData = [120, 190, 150, 220, 180, 250, 210]; // Spending over 7 days
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTransactions();
+            drawChart();
+        });
+
+        // --- Functions ---
+
+        function renderTransactions() {
+            const list = document.getElementById('transactionList');
+            list.innerHTML = '';
+
+            transactions.forEach(t => {
+                const li = document.createElement('li');
+                li.className = 'transaction-item';
+                
+                const amountClass = t.amount > 0 ? 'positive' : 'negative';
+                const sign = t.amount > 0 ? '+' : '';
+
+                li.innerHTML = `
+                    <div class="t-icon ${t.type}">
+                        ${t.icon}
+                    </div>
+                    <div class="t-details">
+                        <div class="t-name">${t.name}</div>
+                        <div class="t-date">${t.date}</div>
+                    </div>
+                    <div class="t-amount ${amountClass}">${sign}$${Math.abs(t.amount).toFixed(2)}</div>
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        function setActive(element) {
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        // --- Modal Logic ---
+        function openModal(type) {
+            const modal = document.getElementById('transferModal');
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('transferModal');
+            modal.classList.remove('active');
+        }
+
+        function handleTransfer(e) {
+            e.preventDefault();
+            closeModal();
+            showToast('Transfer Successful!');
+            e.target.reset();
+        }
+
+        // --- Toast Logic ---
+        function

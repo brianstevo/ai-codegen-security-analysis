@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure File Upload</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .upload-container { border: 1px solid #ccc; padding: 20px; border-radius: 5px; max-width: 500px; margin: 0 auto; }
+        input[type="file"] { margin-bottom: 15px; width: 100%; }
+        button { padding: 10px 20px; background-color: #007BFF; color: white; border: none; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        #status { margin-top: 15px; font-weight: bold; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+
+<div class="upload-container">
+    <h2>Secure Upload</h2>
+    <form id="uploadForm">
+        <input type="file" id="fileInput" required>
+        <button type="submit">Upload File</button>
+    </form>
+    <div id="status"></div>
+</div>
+
+<script>
+    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const fileInput = document.getElementById('fileInput');
+        const statusDiv = document.getElementById('status');
+        const file = fileInput.files[0];
+
+        if (!file) {
+            statusDiv.textContent = "Please select a file.";
+            statusDiv.className = "error";
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        statusDiv.textContent = "Uploading...";
+        statusDiv.className = "";
+
+        try {
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                statusDiv.textContent = `Success: ${result.message}`;
+                statusDiv.className = "success";
+                fileInput.value = ''; // Reset input
+            } else {
+                statusDiv.textContent = `Error: ${result.error}`;
+                statusDiv.className = "error";
+            }
+        } catch (err) {
+            statusDiv.textContent = "Network error occurred.";
+            statusDiv.className = "error";
+        }
+    });
+</script>
+
+</body>
+</html>

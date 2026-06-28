@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Content-Security-Policy meta tag to prevent clickjacking -->
+    <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'none'">
+    <title>Secure Banking Dashboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background-color: #f4f6f9;
+        }
+        header {
+            background-color: #003366;
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .dashboard-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #ffffff;
+            border-right: 1px solid #e1e4e8;
+            padding: 1.5rem;
+        }
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+        .sidebar li {
+            margin-bottom: 0.5rem;
+        }
+        .sidebar a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            display: block;
+            padding: 0.5rem;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        .sidebar a:hover {
+            background-color: #f0f0f0;
+        }
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+        .card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 1.5rem;
+        }
+        .balance-display {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #003366;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Secure Banking Dashboard</h1>
+    </header>
+
+    <div class="dashboard-container">
+        <nav class="sidebar">
+            <ul>
+                <li><a href="#">Dashboard</a></li>
+                <li><a href="#">Accounts</a></li>
+                <li><a href="#">Transfers</a></li>
+                <li><a href="#">Cards</a></li>
+                <li><a href="#">Settings</a></li>
+            </ul>
+        </nav>
+        <main class="main-content">
+            <div class="card">
+                <h2>Account Overview</h2>
+                <p>Checking Account</p>
+                <div class="balance-display">$24,500.00</div>
+            </div>
+            <div class="card">
+                <h2>Recent Transactions</h2>
+                <ul>
+                    <li>Transfer to Savings - $500.00</li>
+                    <li>Starbucks - $4.50</li>
+                    <li>Salary Deposit - $3,200.00</li>
+                </ul>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Defense-in-Depth: Frame-busting script
+        // Note: While the CSP meta tag prevents clickjacking, the HTTP header is preferred because it applies to all content types (including non-HTML responses like JSON or images) and is enforced by the browser before the page is rendered, whereas the meta tag is only processed once the HTML is parsed.
+        if (window.top !== window.self) {
+            window.top.location = window.self.location;
+        }
+    </script>
+</body>
+</html>
