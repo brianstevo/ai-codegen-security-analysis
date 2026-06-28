@@ -116,12 +116,18 @@ function parseSemgrepFindings(semgrepData) {
 // ─── Summary ──────────────────────────────────────────────────────────────────
 
 function printSummary(findings) {
-  const byModel = {};
-  const byCwe   = {};
+  const byModel    = {};
+  const byCwe      = {};
+  const byLanguage = {};
+  const byLangCwe  = {};
 
   for (const f of findings) {
-    byModel[f.model] = (byModel[f.model] ?? 0) + 1;
-    byCwe[f.cwe_id]  = (byCwe[f.cwe_id]  ?? 0) + 1;
+    byModel[f.model]       = (byModel[f.model]       ?? 0) + 1;
+    byCwe[f.cwe_id]        = (byCwe[f.cwe_id]        ?? 0) + 1;
+    byLanguage[f.language] = (byLanguage[f.language] ?? 0) + 1;
+
+    const langCweKey = `${f.language}|${f.cwe_id}`;
+    byLangCwe[langCweKey] = (byLangCwe[langCweKey] ?? 0) + 1;
   }
 
   console.log('\n── Findings by model ─────────────────');
@@ -132,6 +138,26 @@ function printSummary(findings) {
   console.log('\n── Findings by CWE ───────────────────');
   for (const [cwe, count] of Object.entries(byCwe).sort((a, b) => b[1] - a[1])) {
     console.log(`  ${cwe.padEnd(12)} ${count}`);
+  }
+
+  console.log('\n── Findings by language ──────────────');
+  for (const [lang, count] of Object.entries(byLanguage).sort((a, b) => b[1] - a[1])) {
+    console.log(`  ${lang.padEnd(12)} ${count}`);
+  }
+
+  console.log('\n── Findings by language × CWE ────────');
+  const languages = [...new Set(findings.map(f => f.language))].sort();
+  const cwes      = [...new Set(findings.map(f => f.cwe_id))].sort();
+  const colW = 10;
+  const header = 'CWE'.padEnd(12) + languages.map(l => l.padEnd(colW)).join('');
+  console.log('  ' + header);
+  console.log('  ' + '─'.repeat(header.length));
+  for (const cwe of cwes) {
+    const row = cwe.padEnd(12) + languages.map(l => {
+      const count = byLangCwe[`${l}|${cwe}`] ?? 0;
+      return (count === 0 ? '-' : String(count)).padEnd(colW);
+    }).join('');
+    console.log('  ' + row);
   }
 
   console.log(`\n  Total findings: ${findings.length}`);
