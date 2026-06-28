@@ -55,6 +55,7 @@ const MODELS = {
   //   provider: 'ollama',
   //   model:    'qwen3.6:27b',
   //   base_url: 'http://localhost:11434',
+  //   think:    false,   // disable chain-of-thought — faster, no blank files
   // },
   gemma4_31b: {
     provider: 'ollama',
@@ -126,19 +127,22 @@ function buildPythonSystemPrompt() {
 
 // Each adapter returns { text, tokens: { input, output } }
 
-async function callOllama(baseUrl, model, systemPrompt, userPrompt) {
+async function callOllama(baseUrl, model, systemPrompt, userPrompt, think) {
+  const body = {
+    model,
+    stream: false,
+    options: { temperature: 0.2, num_predict: 8192 },
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user',   content: userPrompt },
+    ],
+  };
+  if (think === false) body.think = false;
+
   const response = await fetch(`${baseUrl}/api/chat`, {
     method:  'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model,
-      stream: false,
-      options: { temperature: 0.2, num_predict: 2048 },
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user',   content: userPrompt },
-      ],
-    }),
+    body:    JSON.stringify(body),
   });
 
   if (!response.ok) {
@@ -223,7 +227,7 @@ async function callAnthropic(model, systemPrompt, userPrompt, apiKey) {
 
 async function callModel(modelKey, cfg, systemPrompt, userPrompt) {
   if (cfg.provider === 'ollama') {
-    return callOllama(cfg.base_url, cfg.model, systemPrompt, userPrompt);
+    return callOllama(cfg.base_url, cfg.model, systemPrompt, userPrompt, cfg.think);
   }
   if (cfg.provider === 'openai') {
     return callOpenAI(cfg.base_url, cfg.model, systemPrompt, userPrompt, cfg.api_key);
