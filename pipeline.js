@@ -41,9 +41,14 @@ const MODELS = {
   //   base_url: 'https://generativelanguage.googleapis.com/v1beta/openai',
   //   api_key:  process.env.GOOGLE_API_KEY,
   // },
-  qwen_coder: {
+  // qwen_coder: {
+  //   provider: 'ollama',
+  //   model:    'qwen2.5-coder:7b',
+  //   base_url: 'http://localhost:11434',
+  // },
+  qwen3_coder_next: {
     provider: 'ollama',
-    model:    'qwen2.5-coder:7b',
+    model:    'qwen3-coder-next',
     base_url: 'http://localhost:11434',
   },
   // codellama: {
