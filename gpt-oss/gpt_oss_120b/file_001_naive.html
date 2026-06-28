@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>File Upload</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; }
+    #status { margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>Upload a File</h1>
+  <input type="file" id="fileInput">
+  <button id="uploadBtn">Upload</button>
+  <p id="status"></p>
+
+  <script>
+    const uploadBtn = document.getElementById('uploadBtn');
+    const fileInput = document.getElementById('fileInput');
+    const statusEl = document.getElementById('status');
+
+    function setStatus(message, isError) {
+      statusEl.textContent = message;
+      statusEl.style.color = isError ? 'red' : 'green';
+    }
+
+    uploadBtn.addEventListener('click', async () => {
+      if (!fileInput.files.length) {
+        setStatus('Please select a file.', true);
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+
+      try {
+        const response = await fetch('/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          setStatus(result.message, false);
+        } else {
+          setStatus(result.error || 'Upload failed.', true);
+        }
+      } catch (err) {
+        setStatus('Network error.', true);
+      }
+    });
+  </script>
+</body>
+</html>

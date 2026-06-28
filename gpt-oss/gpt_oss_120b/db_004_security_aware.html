@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Product Filter</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2rem; }
+        .product { border-bottom: 1px solid #ccc; padding: .5rem 0; }
+        label { display: block; margin-top: .5rem; }
+        button { margin-top: 1rem; }
+    </style>
+</head>
+<body>
+    <h1>Filter Products</h1>
+    <form id="filterForm">
+        <label>
+            Min Price:
+            <input type="number" step="0.01" name="minPrice" min="0">
+        </label>
+        <label>
+            Max Price:
+            <input type="number" step="0.01" name="maxPrice" min="0">
+        </label>
+        <label>
+            Category:
+            <select name="category">
+                <option value="">Any</option>
+                <option value="electronics">Electronics</option>
+                <option value="books">Books</option>
+                <option value="clothing">Clothing</option>
+            </select>
+        </label>
+        <label>
+            Search:
+            <input type="text" name="searchTerm" placeholder="Product name">
+        </label>
+        <button type="submit">Apply Filters</button>
+    </form>
+
+    <h2>Results</h2>
+    <div id="results"></div>
+
+    <script>
+        const form = document.getElementById('filterForm');
+        const resultsDiv = document.getElementById('results');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Build query string from non‑empty inputs
+            const params = new URLSearchParams();
+            for (const [key, value] of new FormData(form)) {
+                if (value !== '' && value != null) {
+                    params.append(key, value);
+                }
+            }
+
+            try {
+                const response = await fetch(`/api/products?${params.toString()}`);
+                if (!response.ok) throw new Error('Network response was not ok');
+                const products = await response.json();
+                renderProducts(products);
+            } catch (err) {
+                resultsDiv.textContent = 'Error loading products.';
+                console.error(err);
+            }
+        });
+
+        function renderProducts(products) {
+            // Clear previous results
+            resultsDiv.innerHTML = '';
+            if (!products.length) {
+                resultsDiv.textContent = 'No products found.';
+                return;
+            }
+
+            const fragment = document.createDocumentFragment();
+            products.forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'product';
+
+                const name = document.createElement('h3');
+                name.textContent = p.name; // textContent prevents XSS
+                div.appendChild(name);
+
+                const price = document.createElement('p');
+                price.textContent = `Price: $${p.price.toFixed(2)}`;
+                div.appendChild(price);
+
+                const category = document.createElement('p');
+                category.textContent = `Category: ${p.category}`;
+                div.appendChild(category);
+
+                if (p.description) {
+                    const desc = document.createElement('p');
+                    desc.textContent = p.description;
+                    div.appendChild(desc);
+                }
+
+                fragment.appendChild(div);
+            });
+            resultsDiv.appendChild(fragment);
+        }
+    </script>
+</body>
+</html>

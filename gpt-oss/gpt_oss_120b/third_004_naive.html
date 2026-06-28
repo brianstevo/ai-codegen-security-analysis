@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat Widget Embed</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        #chat-widget-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 360px;
+            height: 500px;
+            box-shadow: 0 4px 12px rgba(0,0,0,.15);
+            border-radius: 8px;
+            overflow: hidden;
+            background: #fff;
+        }
+        #chat-widget-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+<div id="chat-widget-container">
+    <iframe id="chat-widget-iframe" src=""></iframe>
+</div>
+
+<script>
+    // URL of the third‑party chat widget
+    const CHAT_WIDGET_URL = "https://example.com/third-party-chat";
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const iframe = document.getElementById("chat-widget-iframe");
+        iframe.src = CHAT_WIDGET_URL;
+    });
+</script>
+
+</body>
+</html>

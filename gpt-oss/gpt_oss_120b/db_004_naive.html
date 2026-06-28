@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Product Filter</title>
+  <style>
+    body {font-family: Arial, sans-serif; margin:20px;}
+    .product {border:1px solid #ccc;padding:10px;margin:5px 0;}
+    label {margin-right:10px;}
+  </style>
+</head>
+<body>
+  <h1>Filter Products</h1>
+  <form id="filter-form">
+    <label>
+      Category:
+      <select name="category" id="category-select">
+        <option value="">All</option>
+        <option value="Electronics">Electronics</option>
+        <option value="Books">Books</option>
+        <option value="Clothing">Clothing</option>
+      </select>
+    </label>
+    <label>
+      Min Price:
+      <input type="number" name="minPrice" id="min-price" step="0.01" min="0">
+    </label>
+    <label>
+      Max Price:
+      <input type="number" name="maxPrice" id="max-price" step="0.01" min="0">
+    </label>
+    <button type="submit">Apply Filter</button>
+  </form>
+
+  <h2>Products</h2>
+  <div id="product-list"></div>
+
+  <script>
+    document.getElementById('filter-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const category = document.getElementById('category-select').value;
+      const minPrice = document.getElementById('min-price').value;
+      const maxPrice = document.getElementById('max-price').value;
+
+      const params = new URLSearchParams();
+      if (category) params.append('category', category);
+      if (minPrice) params.append('minPrice', minPrice);
+      if (maxPrice) params.append('maxPrice', maxPrice);
+
+      try {
+        const response = await fetch('/api/products?' + params.toString());
+        if (!response.ok) throw new Error('Network response was not ok');
+        const products = await response.json();
+        renderProducts(products);
+      } catch (err) {
+        console.error(err);
+        document.getElementById('product-list').innerHTML = '<p>Error loading products.</p>';
+      }
+    });
+
+    function renderProducts(products) {
+      const container = document.getElementById('product-list');
+      if (!products.length) {
+        container.innerHTML = '<p>No products found.</p>';
+        return;
+      }
+      container.innerHTML = '';
+      products.forEach(p => {
+        const div = document.createElement('div');
+        div.className = 'product';
+        div.innerHTML = `
+          <strong>${p.name}</strong><br>
+          Category: ${p.category}<br>
+          Price: $${p.price.toFixed(2)}
+        `;
+        container.appendChild(div);
+      });
+    }
+  </script>
+</body>
+</html>

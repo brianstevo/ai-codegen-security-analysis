@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Registration</title>
+    <!-- CSRF token injected by server (e.g., using a template engine) -->
+    <meta name="csrf-token" content="{{CSRF_TOKEN}}">
+    <style>
+        .error { color: red; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <h1>Register</h1>
+    <form id="registerForm">
+        <label>
+            Username:
+            <input type="text" name="username" id="username"
+                   minlength="3" maxlength="20" required>
+        </label><br>
+        <span id="usernameError" class="error"></span><br>
+
+        <label>
+            Email:
+            <input type="email" name="email" id="email" required>
+        </label><br>
+        <span id="emailError" class="error"></span><br>
+
+        <label>
+            Password:
+            <input type="password" name="password" id="password"
+                   minlength="8" maxlength="64" required>
+        </label><br>
+        <span id="passwordError" class="error"></span><br>
+
+        <label>
+            Confirm Password:
+            <input type="password" name="confirmPassword" id="confirmPassword"
+                   minlength="8" maxlength="64" required>
+        </label><br>
+        <span id="confirmError" class="error"></span><br>
+
+        <!-- Hidden CSRF token field (fallback for non‑JS submissions) -->
+        <input type="hidden" name="_csrf" id="csrfTokenField" value="{{CSRF_TOKEN}}">
+
+        <button type="submit">Register</button>
+    </form>
+
+    <script>
+        const form = document.getElementById('registerForm');
+        const usernameError = document.getElementById('usernameError');
+        const emailError = document.getElementById('emailError');
+        const passwordError = document.getElementById('passwordError');
+        const confirmError = document.getElementById('confirmError');
+
+        // Helper to clear errors
+        function clearErrors() {
+            usernameError.textContent = '';
+            emailError.textContent = '';
+            passwordError.textContent = '';
+            confirmError.textContent = '';
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearErrors();
+
+            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            // Client‑side password confirmation check
+            if (password !== confirmPassword) {
+                confirmError.textContent = 'Passwords do not match.';
+                return;
+            }
+
+            // Gather CSRF token from meta tag (or hidden field)
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+            try {
+                const response = await fetch('/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'CSRF-Token': csrfToken   // custom header for csurf
+                    },
+                    body: JSON.stringify({ username, email, password })
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    // Display server‑side validation errors
+                    if (result.errors) {
+                        if (result.errors.username) usernameError.textContent = result.errors.username;
+                        if (result.errors.email)    emailError.textContent = result.errors.email;
+                        if (result.errors.password) passwordError.textContent = result.errors.password;
+                    } else {
+                        alert('Registration failed.');
+                    }
+                } else {
+                    alert('Registration successful! You may now log in.');
+                    form.reset();
+                }
+            } catch (err) {
+                console.error('Fetch error:', err);
+                alert('An unexpected error occurred.');
+            }
+        });
+    </script>
+</body>
+</html>

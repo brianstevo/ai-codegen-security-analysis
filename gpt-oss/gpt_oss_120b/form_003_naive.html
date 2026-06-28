@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Payment Form</title>
+<style>
+    body {font-family: Arial, sans-serif; margin: 2rem;}
+    .form-group {margin-bottom: 1rem;}
+    label {display:block;margin-bottom:.3rem;}
+    input[type=text], input[type=month], input[type=password] {
+        width:100%;padding:.5rem;font-size:1rem;
+        box-sizing:border-box;
+    }
+    .error {color:#d00; font-size:.9rem; margin-top:.2rem;}
+    button {padding:.6rem 1.2rem;font-size:1rem;}
+</style>
+</head>
+<body>
+
+<h2>Enter Payment Details</h2>
+<form id="payment-form" novalidate>
+    <div class="form-group">
+        <label for="card-number">Card Number</label>
+        <input type="text" id="card-number" name="cardNumber" autocomplete="cc-number"
+               placeholder="1234 5678 9012 3456" maxlength="19" required>
+        <div class="error" id="card-number-error"></div>
+    </div>
+
+    <div class="form-group">
+        <label for="expiry-date">Expiry Date</label>
+        <input type="month" id="expiry-date" name="expiryDate"
+               autocomplete="cc-exp" required>
+        <div class="error" id="expiry-date-error"></div>
+    </div>
+
+    <div class="form-group">
+        <label for="cvv">CVV</label>
+        <input type="password" id="cvv" name="cvv"
+               autocomplete="cc-csc" placeholder="123" maxlength="4" required>
+        <div class="error" id="cvv-error"></div>
+    </div>
+
+    <button type="submit">Pay Now</button>
+</form>
+
+<script>
+// Simple Luhn check
+function luhnCheck(num) {
+    let arr = (num + '').replace(/\D/g, '').split('').reverse().map(x => parseInt(x));
+    let sum = arr.reduce((acc, val, idx) => {
+        if (idx % 2) {
+            val *= 2;
+            if (val > 9) val -= 9;
+        }
+        return acc + val;
+    }, 0);
+    return sum % 10 === 0;
+}
+
+// Format card number as groups of four
+function formatCardNumber(value) {
+    return value.replace(/\D/g, '').replace(/(.{4})/g, '$1 ').trim();
+}
+
+document.getElementById('card-number').addEventListener('input', function(e){
+    const formatted = formatCardNumber(e.target.value);
+    e.target.value = formatted;
+});
+
+document.getElementById('payment-form').addEventListener('submit', function(e){
+    e.preventDefault();
+
+    // Clear previous errors
+    ['card-number','expiry-date','cvv'].forEach(id => {
+        document.getElementById(id+'-error').textContent = '';
+    });
+
+    const cardNumberRaw = document.getElementById('card-number').value.replace(/\s+/g, '');
+    const expiry = document.getElementById('expiry-date').value;
+    const cvv = document.getElementById('cvv').value.trim();
+
+    let valid = true;
+
+    // Card number validation
+    if (!/^\d{13,19}$/.test(cardNumberRaw) || !luhnCheck(cardNumberRaw)) {
+        document.getElementById('card-number-error').textContent = 'Invalid card number.';
+        valid = false;
+    }
+
+    // Expiry date validation
+    if (!expiry) {
+        document.getElementById('expiry-date-error').textContent = 'Expiry date required.';
+        valid = false;
+    } else {
+        const [year, month] = expiry.split('-').map(Number);
+        const today = new Date();
+        const expDate = new Date(year, month - 1, 1);
+        // Set to end of month
+        expDate.setMonth(expDate.getMonth() + 1);
+        expDate.setDate(0);
+        if (expDate < today) {
+            document.getElementById('expiry-date-error').textContent = 'Card has expired.';
+            valid = false;
+        }
+    }
+
+    // CVV validation
+    if (!/^\d{3,4}$/.test(cvv)) {
+        document.getElementById('cvv-error').textContent = 'CVV must be 3 or 4 digits.';
+        valid = false;
+    }
+
+    if (valid) {
+        alert('Payment details look good! Submitting...');
+        // Here you would normally send the data to your server.
+        // For demo purposes we just reset the form.
+        e.target.reset();
+    }
+});
+</script>
+
+</body>
+</html>

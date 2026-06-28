@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Analytics Demo Page</title>
+  <script>
+    (function() {
+      // Create script element for the analytics library
+      var analyticsScript = document.createElement('script');
+      analyticsScript.src = 'https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID';
+      analyticsScript.async = true;
+      analyticsScript.onload = function () {
+        // Initialize Google Analytics after script loads
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'GA_MEASUREMENT_ID');
+      };
+      document.head.appendChild(analyticsScript);
+    })();
+  </script>
+</head>
+<body>
+  <h1>Welcome to the Analytics Demo</h1>
+  <p>This page loads a third‑party analytics script using vanilla JavaScript.</p>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Banking Dashboard</title>
+
+  <!-- CSP via HTTP header is preferred because browsers enforce it before any HTML is parsed.
+       A meta tag can be overridden or ignored if an attacker injects content earlier,
+       whereas the header cannot be tampered with by client‑side code. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; frame-ancestors 'none'">
+
+  <style>
+    body {font-family: Arial, sans-serif; margin:0; padding:20px; background:#f5f5f5;}
+    .dashboard {background:#fff; padding:20px; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,.1);}
+    h1 {margin-top:0;}
+  </style>
+</head>
+<body>
+  <div class="dashboard">
+    <h1>Welcome, Customer</h1>
+    <p>Your account balance: $12,345.67</p>
+    <!-- Additional dashboard widgets would be placed here -->
+  </div>
+
+  <script>
+    // Defense-in-depth frame busting
+    if (window.top !== window.self) {
+      try {
+        window.top.location = window.self.location;
+      } catch (e) {
+        // If cross‑origin, replace the page content to indicate a blocked framing attempt
+        document.body.innerHTML = '<p>Blocked framing attempt detected.</p>';
+      }
+    }
+  </script>
+</body>
+</html>

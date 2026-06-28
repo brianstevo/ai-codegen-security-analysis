@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Form Field Highlight Demo</title>
+<style>
+/* Base appearance */
+input, textarea, select {
+  display: block;
+  width: 100%;
+  max-width: 300px;
+  padding: .5rem;
+  margin-top: .25rem;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: border-color .3s, background-color .3s;
+}
+
+/* Highlight when the field contains user‑entered data */
+input:not(:placeholder-shown),
+textarea:not(:placeholder-shown) {
+  border-color: #28a745;          /* green border */
+  background-color: #e6ffed;     /* light green bg   */
+}
+
+/* For required fields, also use :valid/:invalid */
+input:required:valid,
+textarea:required:valid,
+select:required:valid {
+  border-color: #28a745;
+  background-color: #e6ffed;
+}
+
+/* Optional focus styling */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: #0069d9;          /* blue on focus */
+}
+
+/* Select element – highlight when a non‑placeholder option is chosen */
+select:not([value=""]) {
+  border-color: #28a745;
+  background-color: #e6ffed;
+}
+</style>
+</head>
+<body>
+<form>
+  <label>
+    Name:
+    <input type="text" placeholder="Enter your name">
+  </label>
+
+  <label>
+    Email (required):
+    <input type="email" required placeholder="you@example.com">
+  </label>
+
+  <label>
+    Message:
+    <textarea rows="4" placeholder="Your message"></textarea>
+  </label>
+
+  <label>
+    Country (required):
+    <select required>
+      <option value="" disabled selected>Select a country</option>
+      <option value="us">United States</option>
+      <option value="ca">Canada</option>
+      <option value="uk">United Kingdom</option>
+    </select>
+  </label>
+</form>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Comment Feature</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; }
+    #comments p { background:#f0f0f0; padding: .5rem; border-radius:4px; margin-bottom:.5rem; }
+  </style>
+</head>
+<body>
+  <h1>Comments</h1>
+
+  <div id="comments"></div>
+
+  <form id="commentForm">
+    <textarea id="commentText" rows="4" cols="50" placeholder="Write a comment..."></textarea><br/>
+    <button type="submit">Submit</button>
+  </form>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.getElementById('commentForm');
+      const textarea = document.getElementById('commentText');
+      const commentsDiv = document.getElementById('comments');
+
+      // Load existing comments
+      fetch('/api/comments')
+        .then(r => r.json())
+        .then(data => data.forEach(addCommentToDOM))
+        .catch(console.error);
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const text = textarea.value.trim();
+        if (!text) return;
+
+        try {
+          const res = await fetch('/api/comments', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text })
+          });
+          if (!res.ok) throw new Error('Network response was not ok');
+          const comment = await res.json();
+          addCommentToDOM(comment);
+          textarea.value = '';
+        } catch (err) {
+          console.error(err);
+        }
+      });
+
+      function addCommentToDOM(comment) {
+        const p = document.createElement('p');
+        p.textContent = `${comment.id}: ${comment.text}`;
+        commentsDiv.appendChild(p);
+      }
+    });
+  </script>
+</body>
+</html>

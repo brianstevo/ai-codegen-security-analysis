@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Bio</title>
+    <!-- Content Security Policy: allow scripts only from self and the specific nonce -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'nonce-abc123'">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2rem; }
+        #bio { white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h1>User Bio</h1>
+    <div id="bio">Loading...</div>
+
+    <script nonce="abc123">
+        // Escape HTML special characters
+        function escapeHtml(str) {
+            return String(str).replace(/[&<>"'`=\/]/g, function (s) {
+                const entityMap = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;',
+                    '`': '&#x60;',
+                    '=': '&#x3D;',
+                    '/': '&#x2F;'
+                };
+                return entityMap[s];
+            });
+        }
+
+        // Fetch and display the bio
+        (function () {
+            const bioContainer = document.getElementById('bio');
+            fetch('https://api.example.com/user/1')
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(data => {
+                    const safeBio = escapeHtml(data.bio || '');
+                    // Using textContent ensures no HTML is parsed
+                    bioContainer.textContent = safeBio;
+                })
+                .catch(error => {
+                    console.error('Error fetching bio:', error);
+                    bioContainer.textContent = 'Failed to load user bio.';
+                });
+        })();
+    </script>
+</body>
+</html>

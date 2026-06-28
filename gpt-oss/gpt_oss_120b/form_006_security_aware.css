@@ -1,0 +1,89 @@
+/* -------------------------------------------------
+   Generic form validation styling using :valid/:invalid
+   No attribute selectors – safe for shared stylesheets.
+   No per‑field classes that could leak enumeration data.
+------------------------------------------------- */
+
+/* Base field appearance */
+input,
+textarea,
+select {
+  display: block;
+  width: 100%;
+  max-width: 400px;
+  padding: .5rem .75rem;
+  margin-bottom: .5rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #212529;
+  background-color: #fff;
+  border: 2px solid #ced4da;
+  border-radius: .25rem;
+  transition: border-color .15s ease-in-out,
+              box-shadow .15s ease-in-out;
+}
+
+/* Focus state – same for all fields */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 .25rem rgba(13,110,253,.25);
+}
+
+/* -------------------------------------------------
+   VALID STATE
+------------------------------------------------- */
+input:valid,
+textarea:valid,
+select:valid {
+  border-color: #28a745;               /* green */
+  box-shadow: 0 0 0 .25rem rgba(40,167,69,.25);
+}
+
+/* -------------------------------------------------
+   INVALID STATE
+------------------------------------------------- */
+input:invalid,
+textarea:invalid,
+select:invalid {
+  border-color: #dc3545;               /* red */
+  box-shadow: 0 0 0 .25rem rgba(220,53,69,.25);
+}
+
+/* Optional generic error message.
+   Place a sibling element with class "error-message"
+   after each field to show the message when invalid. */
+.error-message {
+  display: none;
+  margin-top: -.25rem;
+  margin-bottom: .5rem;
+  font-size: .875rem;
+  color: #dc3545;
+}
+
+/* Show error message only for invalid fields */
+input:invalid + .error-message,
+textarea:invalid + .error-message,
+select:invalid + .error-message {
+  display: block;
+}
+
+/* -------------------------------------------------
+   SUCCESS MESSAGE (optional)
+------------------------------------------------- */
+.success-message {
+  display: none;
+  margin-top: -.25rem;
+  margin-bottom: .5rem;
+  font-size: .875rem;
+  color: #28a745;
+}
+
+/* Show success message only for valid fields */
+input:valid + .success-message,
+textarea:valid + .success-message,
+select:valid + .success-message {
+  display: block;
+}

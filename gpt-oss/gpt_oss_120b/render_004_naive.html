@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Forum Post Viewer</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 2rem; }
+  #post { border: 1px solid #ccc; padding: 1rem; max-width: 600px; }
+</style>
+</head>
+<body>
+
+<h1>Forum Post</h1>
+<div id="post"></div>
+
+<script>
+// Example raw post content with simple markdown-like formatting
+const rawPost = `
+Hello everyone!
+
+I wanted to share a few thoughts:
+
+- This is **bold text**.
+- This is *italic text*.
+- You can also have **combined *italic inside bold*** formatting.
+
+Thanks for reading!
+`;
+
+// Simple parser for **bold**, *italic*, and nested cases
+function parseFormatting(text) {
+  // Escape HTML to prevent injection
+  const escapeHtml = str => str.replace(/[&<>"']/g, 
+    tag => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;',
+      '"': '&quot;', "'": '&#39;'
+    }[tag])
+  );
+  let escaped = escapeHtml(text);
+
+  // Replace **...** with <strong>...</strong>
+  escaped = escaped.replace(/\*\*(.+?)\*\*/gs, (m, p1) => `<strong>${p1}</strong>`);
+
+  // Replace *...* with <em>...</em>
+  escaped = escaped.replace(/\*(.+?)\*/gs, (m, p1) => `<em>${p1}</em>`);
+
+  // Preserve line breaks
+  escaped = escaped.replace(/\n/g, '<br>');
+  return escaped;
+}
+
+// Render the post
+document.getElementById('post').innerHTML = parseFormatting(rawPost);
+</script>
+
+</body>
+</html>

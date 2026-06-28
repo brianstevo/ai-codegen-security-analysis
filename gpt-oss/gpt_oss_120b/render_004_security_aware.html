@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Forum Post Renderer</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.4.0/purify.min.js"
+        integrity="sha512-6+K8X1sV5vZpFf9cJzGxW3Rk7N5hYgD9eUjQbLqCwT5dM6aZt2y4vB0lO9nE2rA=="
+        crossorigin="anonymous"></script>
+<style>
+  body {font-family: Arial, sans-serif; margin: 20px;}
+  #output {border: 1px solid #ccc; padding: 10px; margin-top: 10px;}
+</style>
+</head>
+<body>
+<h1>Forum Post Renderer</h1>
+
+<textarea id="input" rows="6" cols="80"><p>This is a <b>bold</b> and <i>italic</i> post. <script>alert('xss')</script><a href="javascript:alert(1)" onclick="evil()">link</a></p></textarea>
+<br/>
+<button id="renderBtn">Render Post</button>
+
+<h2>Rendered Output:</h2>
+<div id="output"></div>
+
+<script>
+document.getElementById('renderBtn').addEventListener('click', function () {
+  const rawHtml = document.getElementById('input').value;
+  const cleanHtml = DOMPurify.sanitize(rawHtml, {
+    ALLOWED_TAGS: ['b', 'i', 'p'],
+    ALLOWED_ATTR: [] // no attributes allowed
+  });
+  document.getElementById('output').innerHTML = cleanHtml;
+});
+</script>
+</body>
+</html>

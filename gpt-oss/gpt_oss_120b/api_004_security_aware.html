@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Edit Profile</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; }
+    label { display: block; margin-top: .5rem; }
+    input, textarea { width: 100%; max-width: 400px; padding: .4rem; }
+    #feedback { margin-top: 1rem; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h2>Edit Your Profile</h2>
+  <form id="profileForm">
+    <label>Username
+      <input type="text" name="username" required />
+    </label>
+    <label>Email
+      <input type="email" name="email" required />
+    </label>
+    <label>First Name
+      <input type="text" name="firstName" />
+    </label>
+    <label>Last Name
+      <input type="text" name="lastName" />
+    </label>
+    <label>Bio
+      <textarea name="bio" rows="4"></textarea>
+    </label>
+    <button type="submit">Save Changes</button>
+  </form>
+
+  <div id="feedback"></div>
+
+  <script>
+    const form = document.getElementById('profileForm');
+    const feedback = document.getElementById('feedback');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const data = {
+        username:   form.username.value.trim(),
+        email:      form.email.value.trim(),
+        firstName:  form.firstName.value.trim(),
+        lastName:   form.lastName.value.trim(),
+        bio:        form.bio.value.trim()
+      };
+
+      try {
+        const response = await fetch('/api/profile', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include', // send cookies (e.g., JWT)
+          body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          feedback.textContent = 'Profile updated successfully.';
+          feedback.style.color = 'green';
+        } else {
+          feedback.textContent = result.error || 'Failed to update profile.';
+          feedback.style.color = 'red';
+        }
+      } catch (err) {
+        feedback.textContent = 'Network error. Please try again later.';
+        feedback.style.color = 'red';
+        console.error(err);
+      }
+    });
+  </script>
+</body>
+</html>

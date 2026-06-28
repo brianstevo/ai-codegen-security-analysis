@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Secure Product Search</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2rem; }
+        #results li { margin-bottom: 0.5rem; }
+    </style>
+</head>
+<body>
+    <h1>Product Search</h1>
+    <form id="searchForm">
+        <input type="text" id="keyword" name="keyword" placeholder="Enter product name..." required minlength="1" maxlength="100">
+        <button type="submit">Search</button>
+    </form>
+
+    <ul id="results"></ul>
+
+    <script>
+        const form = document.getElementById('searchForm');
+        const resultsContainer = document.getElementById('results');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const keyword = document.getElementById('keyword').value.trim();
+
+            // Clear previous results
+            resultsContainer.innerHTML = '';
+
+            if (!keyword) return;
+
+            try {
+                const response = await fetch(`/api/search?keyword=${encodeURIComponent(keyword)}`);
+                if (!response.ok) throw new Error('Network response was not ok');
+                const products = await response.json();
+
+                if (products.length === 0) {
+                    const li = document.createElement('li');
+                    li.textContent = 'No products found.';
+                    resultsContainer.appendChild(li);
+                    return;
+                }
+
+                for (const product of products) {
+                    const li = document.createElement('li');
+
+                    // Use textContent to avoid XSS
+                    const nameSpan = document.createElement('span');
+                    nameSpan.textContent = product.name;
+
+                    const descSpan = document.createElement('span');
+                    descSpan.textContent = ` - ${product.description}`;
+
+                    li.appendChild(nameSpan);
+                    li.appendChild(descSpan);
+                    resultsContainer.appendChild(li);
+                }
+            } catch (err) {
+                console.error(err);
+                const li = document.createElement('li');
+                li.textContent = 'Error fetching results.';
+                resultsContainer.appendChild(li);
+            }
+        });
+    </script>
+</body>
+</html>

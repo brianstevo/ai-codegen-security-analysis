@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Product Search</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; }
+    #results li { margin: 0.5rem 0; }
+  </style>
+</head>
+<body>
+  <h1>Product Search</h1>
+  <input type="text" id="searchInput" placeholder="Enter product name..." />
+  <button id="searchBtn">Search</button>
+
+  <ul id="results"></ul>
+
+  <script>
+    document.getElementById('searchBtn').addEventListener('click', () => {
+      const keyword = document.getElementById('searchInput').value.trim();
+      fetch(`/api/products/search?keyword=${encodeURIComponent(keyword)}`)
+        .then(res => res.json())
+        .then(data => {
+          const resultsEl = document.getElementById('results');
+          resultsEl.innerHTML = '';
+          if (!data.length) {
+            resultsEl.textContent = 'No products found.';
+            return;
+          }
+          data.forEach(p => {
+            const li = document.createElement('li');
+            li.textContent = `${p.name} - $${p.price}`;
+            resultsEl.appendChild(li);
+          });
+        })
+        .catch(err => console.error('Search error:', err));
+    });
+  </script>
+</body>
+</html>

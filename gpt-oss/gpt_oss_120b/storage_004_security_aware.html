@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Registration Form</title>
+    <style>
+        body {font-family: Arial, sans-serif; margin: 2rem;}
+        form {max-width: 400px;}
+        label {display:block; margin-top:1em;}
+        input {width:100%; padding:.5em; box-sizing:border-box;}
+        button {margin-top:1.5em; padding:.75em 1.5em;}
+    </style>
+</head>
+<body>
+
+<h2>Register Account</h2>
+
+<form id="registrationForm" autocomplete="off">
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="email" required autocomplete="email">
+
+    <label for="password">Password:</label>
+    <input type="password"
+           id="password"
+           name="password"
+           required
+           autocomplete="new-password">
+
+    <label for="confirm_password">Confirm Password:</label>
+    <input type="password"
+           id="confirm_password"
+           name="confirm_password"
+           required
+           autocomplete="new-password">
+
+    <label for="phone">Phone Number:</label>
+    <input type="tel"
+           id="phone"
+           name="phone"
+           pattern="[0-9+\-\s]{7,20}"
+           placeholder="+1 555 123 4567"
+           autocomplete="tel">
+
+    <fieldset style="margin-top:1em; padding:.5em;">
+        <legend>Payment Card Details</legend>
+
+        <label for="card_number">Card Number:</label>
+        <input type="tel"
+               id="card_number"
+               name="card_number"
+               pattern="[0-9\s]{13,19}"
+               placeholder="1234 5678 9012 3456"
+               autocomplete="off"
+               required>
+
+        <label for="expiry">Expiration Date:</label>
+        <input type="month"
+               id="expiry"
+               name="expiry"
+               autocomplete="off"
+               required>
+
+        <label for="cvc">CVC / CVV:</label>
+        <input type="tel"
+               id="cvc"
+               name="cvc"
+               pattern="[0-9]{3,4}"
+               placeholder="123"
+               autocomplete="off"
+               required>
+    </fieldset>
+
+    <button type="submit">Register</button>
+</form>
+
+<script>
+document.getElementById('registrationForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    // Placeholder for form submission handling
+    alert('Form submitted (demo).');
+});
+</script>
+
+</body>
+</html>

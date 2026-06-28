@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Banking Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        :root {
+            --bg:#f5f7fa;
+            --card-bg:#fff;
+            --text:#333;
+            --accent:#0066ff;
+            --header-bg:#0066ff;
+            --header-text:#fff;
+        }
+        [data-theme="dark"] {
+            --bg:#1e1e2f;
+            --card-bg:#27293d;
+            --text:#ddd;
+            --accent:#4a90e2;
+            --header-bg:#0b3c5d;
+            --header-text:#fff;
+        }
+        body{
+            margin:0;
+            font-family:Arial,Helvetica,sans-serif;
+            background:var(--bg);
+            color:var(--text);
+        }
+        header{
+            background:var(--header-bg);
+            color:var(--header-text);
+            padding:1rem 2rem;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+        }
+        header h1{margin:0;font-size:1.5rem;}
+        #themeToggle{
+            cursor:pointer;
+            background:none;
+            border:none;
+            color:inherit;
+            font-size:1rem;
+        }
+        .container{
+            display:grid;
+            grid-template-columns: 250px 1fr;
+            gap:1rem;
+            padding:2rem;
+        }
+        nav{
+            background:var(--card-bg);
+            padding:1rem;
+            border-radius:8px;
+            height:max-content;
+        }
+        nav ul{list-style:none;padding:0;margin:0;}
+        nav li{margin-bottom:.5rem;}
+        nav a{
+            text-decoration:none;
+            color:var(--text);
+            font-weight:bold;
+        }
+        main{
+            display:flex;
+            flex-direction:column;
+            gap:1.5rem;
+        }
+        .cards{
+            display:grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap:1rem;
+        }
+        .card{
+            background:var(--card-bg);
+            padding:1rem;
+            border-radius:8px;
+            box-shadow:0 2px 4px rgba(0,0,0,.1);
+        }
+        .card h3{margin-top:0;font-size:1rem;color:var(--accent);}
+        .card p{font-size:1.5rem;margin:0;}
+        .transactions{
+            background:var(--card-bg);
+            padding:1rem;
+            border-radius:8px;
+            box-shadow:0 2px 4px rgba(0,0,0,.1);
+        }
+        .transactions table{
+            width:100%;
+            border-collapse:collapse;
+        }
+        .transactions th,
+        .transactions td{
+            text-align:left;
+            padding:.5rem;
+            border-bottom:1px solid #e0e0e0;
+        }
+        .transactions th{background:#f0f4ff;}
+        .filter{
+            margin-bottom:.5rem;
+        }
+        canvas{
+            width:100%;
+            max-height:250px;
+            background:#fff;
+            border-radius:8px;
+            box-shadow:0 2px 4px rgba(0,0,0,.1);
+        }
+    </style>
+</head>
+<body data-theme="light">
+<header>
+    <h1>MyBank Dashboard</h1>
+    <button id="themeToggle">Switch to Dark</button>
+</header>
+
+<div class="container">
+    <nav>
+        <ul>
+            <li><a href="#">Overview</a></li>
+            <li><a href="#">Accounts</a></li>
+            <li><a href="#">Transfers</a></li>
+            <li><a href="#">Payments</a></li>
+            <li><a href="#">Settings</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section class="cards" id="accountCards"></section>
+
+        <section class="transactions">
+            <div class="filter">
+                Show last 
+                <select id="daysFilter">
+                    <option value="7">7 days</option>
+                    <option value="30" selected>30 days</option>
+                    <option value="90">90 days</option>
+                </select>
+            </div>
+            <table>
+                <thead>
+                    <tr><th>Date</th><th>Description</th><th>Amount</th></tr>
+                </thead>
+                <tbody id="txnBody"></tbody>
+            </table>
+        </section>
+
+        <section class="balance-chart">
+            <canvas id="balanceChart"></canvas>
+        </section>
+    </main>
+</div>
+
+<script>
+(() => {
+    const accounts = [
+        {name:"Checking", balance:2543.78, currency:"USD"},
+        {name:"Savings", balance:10234.12, currency:"USD"},
+        {name:"Credit Card", balance:-1245.60, currency:"USD"}
+    ];
+
+    const transactions = [
+        {date:"2024-06-27", desc:"Grocery Store", amount:-84.23},
+        {date:"2024-06-26", desc:"Salary Deposit", amount:3200.00},
+        {date:"2024-06-25", desc:"Electric Bill", amount:-120.45},
+        {date:"2024-06-22", desc:"Coffee Shop", amount:-5.75},
+        {date:"2024-06-20", desc:"Gym Membership", amount:-55.00},
+        {date:"2024-05-30", desc:"Car Payment", amount:-300.00},
+        {date:"2024-04-15", desc:"Tax Refund", amount:1500.00}
+    ];
+
+    const renderAccounts = () => {
+        const container = document.getElementById('accountCards');
+        container.innerHTML='';
+        accounts.forEach(acc=>{
+            const card=document.createElement('div');
+            card.className='card';
+            card.innerHTML=`
+                <h3>${acc.name}</h3>
+                <p>${new Intl.NumberFormat('en-US',{style:'currency',currency:acc.currency}).format(acc.balance)}</p>
+            `;
+            container.appendChild(card);
+        });
+    };
+
+    const renderTransactions = (days) => {
+        const tbody=document.getElementById('txnBody');
+        tbody.innerHTML='';
+        const cutoff=new Date();
+        cutoff.setDate(cutoff.getDate()-days);
+        const filtered=transactions.filter(t=>new Date(t.date)>=cutoff).sort((a,b)=>new Date(b.date)-new Date(a.date));
+        filtered.forEach(t=>{
+            const tr=document.createElement('tr');
+            tr.innerHTML=`
+                <td>${t.date}</td>
+                <td>${t.desc}</td>
+                <td style="color:${t.amount<0?'#c00':'#090'};">
+                    ${new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(t.amount)}
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    };
+
+    const drawChart = () => {
+        const canvas=document.getElementById('balanceChart');
+        const ctx=canvas.getContext('2d');
+        // Resize for high DPI
+        const dpr=window.devicePixelRatio||1;
+        const rect=canvas.getBoundingClientRect();
+        canvas.width=rect.width*dpr;
+        canvas.height=rect.height*dpr;
+        ctx.scale(dpr,dpr);
+
+        // Mock balance over last 30 days
+        const points=[];
+        let bal=accounts.reduce((s,a)=>s+a.balance,0);
+        for(let i=29;i>=0;i--){
+            const date=new Date();
+            date.setDate(date.getDate()-i);
+            // random walk
+            bal+= (Math.random()*200-100);
+            points.push({x: i, y: bal});
+        }
+
+        const padding=40;
+        const w=rect.width - 2*padding;
+        const h=rect.height - 2*padding;
+
+        const maxY=Math.max(...points.map(p=>p.y));
+        const minY=Math.min(...points.map(p=>p.y));
+
+        // axes
+        ctx.strokeStyle='#ccc';
+        ctx.lineWidth=1;
+        ctx.beginPath();
+        ctx.moveTo(padding, padding);
+        ctx.lineTo(padding, rect.height-padding);
+        ctx.lineTo(rect.width-padding, rect.height-padding);
+        ctx.stroke();
+
+        // line
+        ctx.strokeStyle='var(--accent)';
+        ctx.lineWidth=2;
+        ctx.beginPath();
+        points.forEach((p,i)=>{
+            const x=padding + (i/(points.length-1))*w;
+            const y=rect.height - padding - ((p.y-minY)/(maxY-minY))*h;
+            if(i===0) ctx.moveTo(x,y);
+            else ctx.lineTo(x,y);
+        });
+        ctx.stroke();
+
+        // labels
+        ctx.fillStyle='var(--text)';
+        ctx.font='12px sans-serif';
+        ctx.textAlign='right';
+        ctx.fillText(new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(maxY), padding-5, padding+4);
+        ctx.fillText(new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(minY), padding-5, rect.height-padding);
+    };
+
+    // Theme toggle
+    const themeBtn=document.getElementById('themeToggle');
+    themeBtn.addEventListener('click',()=>{
+        const root=document.body;
+        if(root.dataset.theme==='light'){
+            root.dataset.theme='dark';
+            themeBtn.textContent='Switch to Light';
+        }else{
+            root.dataset.theme='light';
+            themeBtn.textContent='Switch to Dark';
+        }
+    });
+
+    // Filter change
+    document.getElementById('daysFilter').addEventListener('change',e=>{
+        renderTransactions(parseInt(e.target.value,10));
+    });
+
+    // Initial render
+    renderAccounts();
+    renderTransactions(30);
+    drawChart();
+
+    // Redraw chart on resize
+    window.addEventListener('resize',drawChart);
+})();
+</script>
+</body>
+</html>

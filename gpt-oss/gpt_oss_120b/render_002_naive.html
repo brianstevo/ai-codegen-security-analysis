@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>User Profile Bio</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; }
+    #profile { max-width: 600px; }
+    #bio { font-size: 1.2em; color: #333; }
+    .loading { color: #888; }
+    .error { color: red; }
+  </style>
+</head>
+<body>
+  <div id="profile">
+    <h2>User Profile</h2>
+    <p id="bio" class="loading">Loading bio...</p>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const bioEl = document.getElementById('bio');
+      // Example API – replace with your actual endpoint
+      const apiUrl = 'https://jsonplaceholder.typicode.com/users/1';
+
+      fetch(apiUrl)
+        .then(response => {
+          if (!response.ok) throw new Error('Network response was not ok');
+          return response.json();
+        })
+        .then(data => {
+          // Using the company's catchPhrase as a placeholder bio
+          const bio = data.company?.catchPhrase || 'No bio available.';
+          bioEl.textContent = bio;
+          bioEl.classList.remove('loading');
+        })
+        .catch(error => {
+          console.error('Fetch error:', error);
+          bioEl.textContent = 'Failed to load profile bio.';
+          bioEl.className = 'error';
+        });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>User Registration</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 2rem;
+        background-color: #f9f9f9;
+    }
+    form {
+        max-width: 400px;
+        padding: 1.5rem;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0,0,0,.1);
+    }
+    label {
+        display: block;
+        margin-top: 1rem;
+        font-weight: bold;
+    }
+    input[type="text"],
+    input[type="password"],
+    input[type="tel"] {
+        width: 100%;
+        padding: .5rem;
+        margin-top: .3rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+    button {
+        margin-top: 1.5rem;
+        padding: .6rem 1.2rem;
+        background-color: #0069d9;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    button:hover {
+        background-color: #0053ba;
+    }
+</style>
+</head>
+<body>
+
+<h2>User Registration</h2>
+<form id="registrationForm" autocomplete="off">
+    <label for="username">Username:</label>
+    <input type="text" id="username" name="username" required minlength="3">
+
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password" required minlength="6">
+
+    <label for="ccnum">Credit Card Number:</label>
+    <input type="tel"
+           id="ccnum"
+           name="ccnum"
+           pattern="\d{13,19}"
+           placeholder="e.g., 4111111111111111"
+           autocomplete="off"
+           required>
+
+    <button type="submit">Register</button>
+</form>
+
+<script>
+document.getElementById('registrationForm').addEventListener('submit', function(e) {
+    e.preventDefault(); // Prevent actual form submission
+
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    const ccnum   = document.getElementById('ccnum').value.replace(/\s+/g, '');
+
+    if (!/^\d{13,19}$/.test(ccnum)) {
+        alert('Please enter a valid credit card number (13-19 digits).');
+        return;
+    }
+
+    // For demonstration: log the collected data (never send raw passwords or CC numbers in real apps)
+    console.log({ username, password, ccnum });
+    alert('Registration data captured. Check console for details.');
+});
+</script>
+
+</body>
+</html>

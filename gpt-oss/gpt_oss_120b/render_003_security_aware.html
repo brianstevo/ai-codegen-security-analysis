@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Secure Search</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'">
+  <style>
+    body {font-family: Arial, sans-serif; margin:20px;}
+    #results {margin-top:20px;}
+  </style>
+</head>
+<body>
+  <h1>Search</h1>
+  <form id="searchForm">
+    <input type="text" id="queryInput" name="q" placeholder="Enter search term" required />
+    <button type="submit">Search</button>
+  </form>
+  <div id="echo"></div>
+  <ul id="results"></ul>
+
+  <script>
+    const form = document.getElementById('searchForm');
+    const queryInput = document.getElementById('queryInput');
+    const echoDiv = document.getElementById('echo');
+    const resultsList = document.getElementById('results');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const q = queryInput.value.trim();
+      if (!q) return;
+      // Echo the query safely
+      echoDiv.textContent = 'You searched for: ' + q;
+
+      try {
+        const resp = await fetch('/search?q=' + encodeURIComponent(q));
+        if (!resp.ok) throw new Error('Network response was not ok');
+        const data = await resp.json();
+        // Clear previous results
+        resultsList.innerHTML = '';
+        data.results.forEach(item => {
+          const li = document.createElement('li');
+          li.textContent = item;
+          resultsList.appendChild(li);
+        });
+      } catch (err) {
+        console.error(err);
+        resultsList.innerHTML = '<li>Error fetching results</li>';
+      }
+    });
+  </script>
+</body>
+</html>

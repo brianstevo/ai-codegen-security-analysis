@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Edit Profile</title>
+  <style>
+    body {font-family: Arial, sans-serif; max-width:600px;margin:auto;padding:20px;}
+    .msg {margin-top:10px;padding:10px;border-radius:4px;}
+    .msg.success{background:#e0ffe0;color:#006400;}
+    .msg.error{background:#ffe0e0;color:#8b0000;}
+  </style>
+</head>
+<body>
+  <h1>Edit Profile</h1>
+  <form id="profileForm">
+    <label>Name:<br><input type="text" name="name" id="name" required></label><br><br>
+    <label>Bio:<br><textarea name="bio" id="bio" rows="5"></textarea></label><br><br>
+    <button type="submit">Save Changes</button>
+  </form>
+  <div id="message" class="msg" style="display:none;"></div>
+
+  <script>
+    const form = document.getElementById('profileForm');
+    const messageDiv = document.getElementById('message');
+
+    // Load current profile
+    fetch('/api/profile')
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to load profile');
+        return res.json();
+      })
+      .then(data => {
+        document.getElementById('name').value = data.name || '';
+        document.getElementById('bio').value = data.bio || '';
+      })
+      .catch(err => showMessage(err.message, 'error'));
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const payload = {
+        name: document.getElementById('name').value.trim(),
+        bio: document.getElementById('bio').value.trim()
+      };
+      fetch('/api/profile', {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+      })
+        .then(res => res.json().then(body => ({status: res.status, body})))
+        .then(({status, body}) => {
+          if (status === 200) {
+            showMessage('Profile updated successfully.', 'success');
+          } else {
+            throw new Error(body.error || 'Update failed');
+          }
+        })
+        .catch(err => showMessage(err.message, 'error'));
+    });
+
+    function showMessage(msg, type) {
+      messageDiv.textContent = msg;
+      messageDiv.className = `msg ${type}`;
+      messageDiv.style.display = 'block';
+    }
+  </script>
+</body>
+</html>
