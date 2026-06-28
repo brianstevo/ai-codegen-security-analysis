@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Field Highlighting</title>
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --bg-color: #f8fafc;
+            --text-color: #334155;
+            --input-bg: #ffffff;
+            --border-color: #cbd5e1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .form-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h2 {
+            margin-top: 0;
+            color: var(--text-color);
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        /* Base Input Styles */
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            background-color: var(--input-bg);
+            font-size: 1rem;
+            color: var(--text-color);
+            box-sizing: border-box; /* Ensures padding doesn't affect width */
+            transition: all 0.3s ease;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* 
+           THE HIGHLIGHT LOGIC 
+           
+           We use the :user-valid pseudo-class (supported in modern browsers) 
+           to detect if the user has entered data that matches the input type.
+           Fallbacks are provided via :focus and :not(:placeholder-shown).
+        */
+
+        /* 1. Highlight on Focus (Immediate feedback) */
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        /* 2. Highlight when data is entered (The "Active" state) */
+        
+        /* Method A: Modern approach using :user-valid */
+        input:user-valid, textarea:user-valid {
+            border-color: var(--primary-color);
+            background-color: #f0fdf4; /* Very light green tint to indicate success/active */
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+        }
+
+        /* Method B: Fallback for browsers not supporting :user-valid 
+           Highlights if focused AND placeholder is hidden (meaning text exists) */
+        input:focus:not(:placeholder-shown),
+        textarea:focus:not(:placeholder-shown) {
+            border-color: var(--primary-color);
+            background-color: #f0fdf4;
+        }
+
+        /* Optional: Add a subtle glow animation for valid fields */
+        @keyframes pulse-border {
+            0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
+            70% { box-shadow: 0 0 0 6px rgba(99, 102, 241, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+        }
+
+        input:user-valid:not(:focus) {
+            animation: pulse-border 1s ease-out;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #4f46e5;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <h2>Contact Us</h2>
+    <form id="demoForm">
+        <div class="form-group">
+            <label for="name">Full Name</label>
+            <input type="text" id="name" name="name" placeholder="John Doe" required>
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" placeholder="john@example.com" required>
+        </div>
+
+        <div class="form-group">
+            <label for="subject">Subject</label>
+            <select id="subject" name="subject">
+                <option value="" disabled selected>Select a topic...</option>
+                <option value="general">General Inquiry</option>
+                <option value="support">Technical Support</option>
+                <option value="billing">Billing Question</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="message">Message</label>
+            <textarea id="message" name="message" placeholder="Type your message here..." required></textarea>
+        </div>
+
+        <button type="submit">Send Message</button>
+    </form>
+</div>
+
+<script>
+    // Simple script to prevent form submission for demonstration purposes
+    document.getElementById('demoForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Visual feedback that the form was "submitted"
+        const btn = this.querySelector('button');
+        const originalText = btn.innerText;
+        
+        btn.innerText = 'Sent!';
+        btn.style.backgroundColor = '#10b981'; // Green
+        
+        setTimeout(() => {
+            btn.innerText = originalText;
+            btn.style.backgroundColor = ''; // Reset to CSS default
+            this.reset();
+        }, 2000);
+    });
+</script>
+
+</body>
+</html>

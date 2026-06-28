@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure File Upload</title>
+    <style>
+        body { font-family: sans-serif; padding: 2rem; max-width: 600px; margin: 0 auto; }
+        .upload-container { border: 1px solid #ccc; padding: 2rem; border-radius: 8px; background: #f9f9f9; }
+        button { margin-top: 1rem; padding: 10px 20px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 4px; }
+        button:hover { background-color: #0056b3; }
+        #response-area { margin-top: 1rem; padding: 1rem; background: #fff; border: 1px solid #ddd; display: none; white-space: pre-wrap; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+
+<div class="upload-container">
+    <h2>Secure File Upload</h2>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <label for="fileInput">Select a file (Images/PDFs only):</label><br><br>
+        <input type="file" id="fileInput" name="file" required>
+        <br>
+        <button type="submit">Upload File</button>
+    </form>
+    <div id="response-area"></div>
+</div>
+
+<script>
+    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const fileInput = document.getElementById('fileInput');
+        const responseArea = document.getElementById('response-area');
+        const file = fileInput.files[0];
+
+        if (!file) {
+            alert("Please select a file.");
+            return;
+        }
+
+        // Basic client-side check (optional, server is source of truth)
+        const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+        if (!allowedTypes.includes(file.type)) {
+            responseArea.style.display = 'block';
+            responseArea.className = 'error';
+            responseArea.textContent = `Client-side rejection: Unsupported file type ${file.type}`;
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+            
+            responseArea.style.display = 'block';
+            if (response.ok) {
+                responseArea.className = 'success';
+                responseArea.textContent = JSON.stringify(result, null, 2);
+            } else {
+                responseArea.className = 'error';
+                responseArea.textContent = `Error: ${result.message || 'Upload failed'}`;
+            }
+        } catch (error) {
+            responseArea.style.display = 'block';
+            responseArea.className = 'error';
+            responseArea.textContent = `Network Error: ${error.message}`;
+        }
+    });
+</script>
+
+</body>
+</html>

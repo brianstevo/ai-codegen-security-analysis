@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Search</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .search-container { display: flex; gap: 10px; margin-bottom: 20px; }
+        input[type="text"] { flex-grow: 1; padding: 8px; font-size: 16px; }
+        button { padding: 8px 16px; font-size: 16px; cursor: pointer; }
+        #results-area { border-top: 1px solid #ccc; padding-top: 20px; }
+        .result-item { margin-bottom: 15px; padding: 10px; background: #f9f9f9; border-radius: 4px; }
+        .result-title { font-weight: bold; color: #0066cc; cursor: pointer; text-decoration: underline; }
+        .result-snippet { margin-top: 5px; color: #333; }
+        .query-display { margin-bottom: 15px; font-style: italic; color: #555; }
+    </style>
+</head>
+<body>
+
+    <h1>Secure Search Engine</h1>
+    
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Enter search term...">
+        <button id="searchBtn">Search</button>
+    </div>
+
+    <div id="results-area">
+        <div id="queryDisplay" class="query-display"></div>
+        <div id="resultsList"></div>
+    </div>
+
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const resultsList = document.getElementById('resultsList');
+        const queryDisplay = document.getElementById('queryDisplay');
+
+        async function performSearch() {
+            const query = searchInput.value.trim();
+            
+            if (!query) return;
+
+            // Clear previous results
+            resultsList.innerHTML = ''; 
+            queryDisplay.textContent = `Searching for: ${query}`; // Safe textContent usage
+
+            try {
+                // Fetch from backend API
+                const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Render results using textContent to prevent XSS
+                data.results.forEach(item => {
+                    const resultDiv = document.createElement('div');
+                    resultDiv.className = 'result-item';
+
+                    const titleSpan = document.createElement('span');
+                    titleSpan.className = 'result-title';
+                    titleSpan.textContent = item.title; // Safe: textContent escapes HTML entities automatically
+                    
+                    const snippetP = document.createElement('p');
+                    snippetP.className = 'result-snippet';
+                    snippetP.textContent = item.snippet; // Safe: textContent escapes HTML entities automatically
+
+                    resultDiv.appendChild(titleSpan);
+                    resultDiv.appendChild(snippetP);
+                    resultsList.appendChild(resultDiv);
+                });
+
+            } catch (error) {
+                console.error('Search failed:', error);
+                const errorDiv = document.createElement('div');
+                errorDiv.textContent = 'An error occurred while searching.';
+                errorDiv.style.color = 'red';
+                resultsList.appendChild(errorDiv);
+            }
+        }
+
+        searchBtn.addEventListener('click', performSearch);
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') performSearch();
+        });
+    </script>
+</body>
+</html>

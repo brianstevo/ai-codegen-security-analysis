@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Registration Form</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-color: #1f2937;
+            --border-color: #d1d5db;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .form-container {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            width: 100%;
+            max-width: 450px;
+        }
+
+        h2 {
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: var(--text-color);
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 1rem;
+            box-sizing: border-box; /* Ensures padding doesn't affect width */
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 1rem;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .section-title {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #6b7280;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <h2>Create Account</h2>
+    
+    <!-- 
+      autocomplete="off" on the form level is a strong hint to browsers 
+      not to save any data from this form.
+    -->
+    <form id="registrationForm" autocomplete="off">
+        
+        <!-- Personal Information -->
+        <div class="form-group">
+            <label for="fullname">Full Name</label>
+            <input type="text" id="fullname" name="fullname" required placeholder="John Doe">
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" required placeholder="john@example.com">
+        </div>
+
+        <!-- Security Section -->
+        <div class="section-title">Security</div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <!-- 
+              type="password": Masks the input.
+              autocomplete="new-password": Tells browser this is a new credential, not an existing login.
+            -->
+            <input type="password" id="password" name="password" required placeholder="Create a strong password" autocomplete="new-password">
+        </div>
+
+        <div class="form-group">
+            <label for="confirm-password">Confirm Password</label>
+            <!-- 
+              autocomplete="new-password": Ensures it's treated as part of the new credential set.
+            -->
+            <input type="password" id="confirm-password" name="confirm-password" required placeholder="Repeat password" autocomplete="new-password">
+        </div>
+
+        <!-- Payment Details Section -->
+        <div class="section-title">Payment Method</div>
+
+        <div class="form-group">
+            <label for="card-number">Card Number</label>
+            <!-- 
+              type="tel": Brings up numeric keypad on mobile devices.
+              autocomplete="off": Explicitly prevents browser from caching card details in this field.
+              inputmode="numeric": Further ensures numeric keyboard on mobile.
+            -->
+            <input type="tel" id="card-number" name="card-number" placeholder="0000 0000 0000 0000" autocomplete="off" inputmode="numeric">
+        </div>
+
+        <div style="display: flex; gap: 1rem;">
+            <div class="form-group" style="flex: 1;">
+                <label for="expiry">Expiry Date</label>
+                <!-- 
+                  type="tel": Allows formatting like MM/YY without browser auto-formatting interference.
+                  autocomplete="off": Prevents caching.
+                -->
+                <input type="tel" id="expiry" name="expiry" placeholder="MM/YY" autocomplete="off" inputmode="numeric">
+            </div>
+
+            <div class="form-group" style="flex: 1;">
+                <label for="cvv">CVV</label>
+                <!-- 
+                  type="password": Hides the CVV code while typing.
+                  autocomplete="off": Prevents caching.
+                -->
+                <input type="password" id="cvv" name="cvv" placeholder="123" autocomplete="off" inputmode="numeric">
+            </div>
+        </div>
+
+        <button type="submit">Register</button>
+    </form>
+</div>
+
+<script>
+    document.getElementById('registrationForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Basic validation logic for demonstration
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirm-password').value;
+        
+        if (password !== confirmPassword) {
+            alert("Passwords do not match.");
+            return;
+        }
+
+        // Simulate submission
+        const btn = this.querySelector('button');
+        const originalText = btn.innerText;
+        btn.innerText = 'Processing...';
+        btn.disabled = true;
+
+        setTimeout(() => {
+            alert('Registration successful! (Data not actually sent)');
+            btn.innerText = originalText;
+            btn.disabled = false;
+            this.reset();
+        }, 1000);
+    });
+</script>
+
+</body>
+</html>

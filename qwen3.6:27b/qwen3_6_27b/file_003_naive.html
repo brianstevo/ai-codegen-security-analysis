@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log File Viewer</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        select {
+            padding: 8px 12px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            flex-grow: 1;
+            max-width: 300px;
+        }
+
+        button {
+            padding: 8px 16px;
+            font-size: 16px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        #log-output {
+            width: 100%;
+            height: 500px;
+            overflow-y: auto;
+            background-color: #282c34;
+            color: #abb2bf;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            white-space: pre-wrap; /* Wrap long lines */
+            box-sizing: border-box;
+        }
+
+        .error-msg {
+            color: #e74c3c;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Server Log Viewer</h1>
+    
+    <div class="controls">
+        <label for="log-select" style="font-weight: bold;">Select Log File:</label>
+        <select id="log-select">
+            <option value="" disabled selected>Loading files...</option>
+        </select>
+        <button id="fetch-btn">View Logs</button>
+    </div>
+
+    <pre id="log-output">Select a file and click "View Logs" to display contents.</pre>
+    <div id="error-display" class="error-msg"></div>
+</div>
+
+<script>
+    const selectElement = document.getElementById('log-select');
+    const fetchButton = document.getElementById('fetch-btn');
+    const outputPre = document.getElementById('log-output');
+    const errorDisplay = document.getElementById('error-display');
+
+    // 1. Fetch available log files on page load
+    async function loadLogFiles() {
+        try {
+            const response = await fetch('/api/logs/list');
+            if (!response.ok) throw new Error('Failed to load file list');
+            
+            const files = await response.json();
+            
+            // Clear loading option
+            selectElement.innerHTML = '';
+            
+            if (files.length === 0) {
+                const opt = document.createElement('option');
+                opt.text = "No log files found";
+                opt.disabled = true;
+                selectElement.add(opt);
+                return;
+            }
+
+            // Populate dropdown
+            files.forEach(file => {
+                const option = document.createElement('option');
+                option.value = file;
+                option.textContent = file;
+                selectElement.appendChild(option);
+            });
+
+        } catch (err) {
+            console.error(err);
+            errorDisplay.textContent = "Error loading file list. Ensure server is running.";
+        }
+    }
+
+    // 2. Fetch specific log content
+    async function fetchLogContent() {
+        const selectedFile = selectElement.value;
+        
+        if (!selectedFile) {
+            alert("Please select a log file first.");
+            return;
+        }
+
+        // UI Loading State
+        fetchButton.disabled = true;
+        fetchButton.textContent = "Loading...";
+        outputPre.textContent = "Fetching data...";
+        errorDisplay.textContent = "";
+
+        try {
+            const response = await fetch(`/api/logs/view?file=${encodeURIComponent(selectedFile)}`);
+            
+            if (!response.ok) {
+                const errText = await response.text();
+                throw new Error(errText || 'Failed to fetch log content');
+            }
+
+            const text = await response.text();
+            outputPre.textContent = text;
+
+        } catch (err) {
+            console.error(err);
+            outputPre.textContent = "";
+            errorDisplay.textContent = `Error: ${err.message}`;
+        } finally {
+            // Reset UI State
+            fetchButton.disabled = false;
+            fetchButton.textContent = "View Logs";
+        }
+    }
+
+    // Event Listeners
+    fetchButton.addEventListener('click', fetchLogContent);
+    
+    // Initialize
+    loadLogFiles();
+</script>
+
+</body>
+</html>

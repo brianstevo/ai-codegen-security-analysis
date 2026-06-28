@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Product Search</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .search-container { display: flex; gap: 10px; margin-bottom: 20px; }
+        input[type="text"] { flex-grow: 1; padding: 8px; font-size: 16px; }
+        button { padding: 8px 16px; font-size: 16px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 4px; }
+        button:hover { background-color: #0056b3; }
+        #results { list-style-type: none; padding: 0; }
+        .product-item { background: #f9f9f9; border: 1px solid #ddd; padding: 10px; margin-bottom: 8px; border-radius: 4px; }
+        .error { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h1>Product Search</h1>
+
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Enter product name..." aria-label="Search products">
+        <button id="searchBtn">Search</button>
+    </div>
+
+    <div id="statusMessage"></div>
+    <ul id="results"></ul>
+
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const resultsContainer = document.getElementById('results');
+        const statusMessage = document.getElementById('statusMessage');
+
+        // Event listener for button click
+        searchBtn.addEventListener('click', performSearch);
+
+        // Allow pressing Enter in the input field
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') performSearch();
+        });
+
+        async function performSearch() {
+            const query = searchInput.value.trim();
+            
+            // Clear previous results and status
+            resultsContainer.innerHTML = '';
+            statusMessage.textContent = '';
+
+            if (!query) {
+                statusMessage.textContent = 'Please enter a search term.';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/products?keyword=${encodeURIComponent(query)}`);
+                
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.length === 0) {
+                    statusMessage.textContent = 'No products found.';
+                    return;
+                }
+
+                // Render results using textContent to prevent XSS
+                data.forEach(product => {
+                    const li = document.createElement('li');
+                    li.className = 'product-item';
+                    
+                    // Create elements for name and price separately to ensure no HTML injection
+                    const nameSpan = document.createElement('strong');
+                    nameSpan.textContent = product.name; // Safe: textContent escapes HTML
+                    
+                    const priceSpan = document.createElement('span');
+                    priceSpan.textContent = ` - $${product.price}`; // Safe: textContent escapes HTML
+
+                    li.appendChild(nameSpan);
+                    li.appendChild(priceSpan);
+                    
+                    resultsContainer.appendChild(li);
+                });
+
+            } catch (error) {
+                console.error('Search failed:', error);
+                statusMessage.textContent = 'An error occurred while searching.';
+                statusMessage.className = 'error';
+            }
+        }
+    </script>
+</body>
+</html>

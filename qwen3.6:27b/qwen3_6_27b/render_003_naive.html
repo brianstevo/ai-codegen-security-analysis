@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .search-container { display: flex; gap: 10px; margin-bottom: 20px; }
+        input[type="text"] { flex-grow: 1; padding: 8px; font-size: 16px; }
+        button { padding: 8px 16px; font-size: 16px; cursor: pointer; }
+        #query-display { margin-bottom: 20px; color: #555; font-style: italic; }
+        .result-item { border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 4px; }
+        .result-item h3 { margin-top: 0; }
+    </style>
+</head>
+<body>
+
+    <h1>Search Page</h1>
+
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Enter search term...">
+        <button id="searchBtn">Search</button>
+    </div>
+
+    <div id="query-display"></div>
+    <div id="results-container"></div>
+
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const queryDisplay = document.getElementById('query-display');
+        const resultsContainer = document.getElementById('results-container');
+
+        async function performSearch() {
+            const query = searchInput.value.trim();
+            if (!query) return;
+
+            // Clear previous results
+            resultsContainer.innerHTML = '<p>Loading...</p>';
+            queryDisplay.textContent = '';
+
+            try {
+                const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Display echoed query
+                queryDisplay.textContent = `You searched for: "${data.query}"`;
+
+                // Render results
+                resultsContainer.innerHTML = '';
+                if (data.results.length === 0) {
+                    resultsContainer.innerHTML = '<p>No results found.</p>';
+                } else {
+                    data.results.forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = 'result-item';
+                        div.innerHTML = `<h3>${item.title}</h3><p>${item.description}</p>`;
+                        resultsContainer.appendChild(div);
+                    });
+                }
+
+            } catch (error) {
+                console.error('Search failed:', error);
+                resultsContainer.innerHTML = `<p style="color: red;">Error fetching results: ${error.message}</p>`;
+            }
+        }
+
+        searchBtn.addEventListener('click', performSearch);
+        
+        // Allow pressing Enter to search
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+    </script>
+</body>
+</html>
