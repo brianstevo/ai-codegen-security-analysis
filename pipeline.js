@@ -57,9 +57,14 @@ const MODELS = {
   //   base_url: 'http://localhost:11434',
   //   think:    false,   // disable chain-of-thought — faster, no blank files
   // },
-  gemma4_31b: {
+  // gemma4_31b: {
+  //   provider: 'ollama',
+  //   model:    'gemma4:31b',
+  //   base_url: 'http://localhost:11434',
+  // },
+  gpt_oss_120b: {
     provider: 'ollama',
-    model:    'gemma4:31b',
+    model:    'gpt-oss:120b',
     base_url: 'http://localhost:11434',
   },
   // codellama: {
