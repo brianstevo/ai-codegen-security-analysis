@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload</title>
+    <style>
+        body { font-family: sans-serif; padding: 2rem; }
+        .container { max-width: 400px; margin: 0 auto; }
+        #message { margin-top: 1rem; color: green; font-weight: bold; }
+        .error { color: red !important; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Upload a File</h2>
+        <form id="uploadForm">
+            <input type="file" id="fileInput" name="file" required>
+            <button type="submit">Upload</button>
+        </form>
+        <div id="message"></div>
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('fileInput');
+            const messageDiv = document.getElementById('message');
+            
+            if (!fileInput.files.length) {
+                messageDiv.textContent = 'Please select a file.';
+                messageDiv.className = 'error';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    messageDiv.textContent = 'File uploaded successfully!';
+                    messageDiv.className = '';
+                    fileInput.value = ''; // Clear input
+                } else {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Upload failed');
+                }
+            } catch (error) {
+                messageDiv.textContent = `Error: ${error.message}`;
+                messageDiv.className = 'error';
+            }
+        });
+    </script>
+</body>
+</html>

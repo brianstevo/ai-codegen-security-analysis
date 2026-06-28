@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 2rem auto; padding: 0 1rem; }
+        .form-group { margin-bottom: 1rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: bold; }
+        input, textarea { width: 100%; padding: 0.5rem; box-sizing: border-box; }
+        button { background-color: #007bff; color: white; border: none; padding: 0.75rem 1.5rem; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        #message { margin-top: 1rem; padding: 1rem; display: none; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    </style>
+</head>
+<body>
+
+    <h1>Edit Profile</h1>
+
+    <form id="profileForm">
+        <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" required>
+        </div>
+        <div class="form-group">
+            <label for="bio">Bio</label>
+            <textarea id="bio" name="bio" rows="4"></textarea>
+        </div>
+        <button type="submit">Save Changes</button>
+    </form>
+
+    <div id="message"></div>
+
+    <script>
+        // Simulate fetching current user data from backend on load
+        async function loadUserData() {
+            try {
+                const response = await fetch('/api/user/profile');
+                if (!response.ok) throw new Error('Failed to load profile');
+                const data = await response.json();
+                
+                document.getElementById('name').value = data.name || '';
+                document.getElementById('bio').value = data.bio || '';
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                // Fallback for demo purposes if backend isn't running
+                document.getElementById('name').value = 'John Doe';
+                document.getElementById('bio').value = 'Web developer and coffee enthusiast.';
+            }
+        }
+
+        const form = document.getElementById('profileForm');
+        const messageDiv = document.getElementById('message');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Clear previous messages
+            messageDiv.style.display = 'none';
+            messageDiv.className = '';
+
+            const name = document.getElementById('name').value;
+            const bio = document.getElementById('bio').value;
+
+            try {
+                const response = await fetch('/api/user/profile', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name, bio })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                messageDiv.textContent = 'Profile updated successfully!';
+                messageDiv.className = 'success';
+                messageDiv.style.display = 'block';
+
+            } catch (error) {
+                console.error('Error updating profile:', error);
+                messageDiv.textContent = 'Failed to update profile. Please try again.';
+                messageDiv.className = 'error';
+                messageDiv.style.display = 'block';
+            }
+        });
+
+        // Load data when page loads
+        loadUserData();
+    </script>
+</body>
+</html>

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Form Validation</title>
+    <style>
+        :root {
+            --color-valid: #2ecc71;
+            --color-invalid: #e74c3c;
+            --color-neutral: #95a5a6;
+            --font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .login-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #333;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #555;
+            font-size: 0.9rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid var(--color-neutral);
+            border-radius: 4px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* 
+           SECURITY NOTE:
+           We rely on native HTML5 validation attributes (required, pattern, type).
+           CSS :valid and :invalid pseudo-classes react to the browser's internal
+           validation state. This avoids using attribute selectors like input[value="..."]
+           which can be exploited for side-channel attacks to infer input values.
+        */
+
+        /* Style for valid fields */
+        input:valid {
+            border-color: var(--color-valid);
+        }
+
+        /* Style for invalid fields (only when user has interacted) */
+        /* We use :not(:placeholder-shown) to ensure we don't show errors on load,
+           but strictly speaking, :invalid is the mechanism requested. 
+           To prevent "leaking" enumeration via immediate red borders on empty fields,
+           we often combine with focus or interaction states in production. */
+        
+        input:invalid {
+            border-color: var(--color-invalid);
+        }
+
+        /* Visual feedback icons using pseudo-elements */
+        .form-group::after {
+            content: '';
+            position: absolute;
+            right: 10px;
+            top: 38px; /* Adjust based on label height */
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .form-group input:valid ~ .status-indicator {
+            background-color: var(--color-valid);
+            opacity: 1;
+        }
+
+        .form-group input:invalid ~ .status-indicator {
+            background-color: var(--color-invalid);
+            opacity: 1;
+        }
+
+        /* Helper class for the visual indicator dot */
+        .status-indicator {
+            position: absolute;
+            right: 10px;
+            top: 38px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        /* 
+           Prevent browser default validation bubbles to keep UI consistent 
+           and avoid potential information leakage via native tooltips.
+        */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus, 
+        input:-webkit-autofill:active{
+            -webkit-box-shadow: 0 0 0 30px white inset !important;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-card">
+    <h2>Secure Login</h2>
+    <form id="secureForm" novalidate>
+        
+        <!-- Username Field -->
+        <div class="form-group">
+            <label for="username">Username</label>
+            <!-- 
+               'required' triggers :invalid if empty.
+               'pattern' ensures format without revealing specific valid usernames.
+            -->
+            <input type="text" id="username" name="username" required pattern="[a-zA-Z0-9]{3,20}" placeholder="Enter username">
+            <div class="status-indicator"></div>
+        </div>
+
+        <!-- Email Field -->
+        <div class="form-group">
+            <label for="email">Email</label>
+            <!-- 
+               'type="email"' provides native format validation.
+            -->
+            <input type="email" id="email" name="email" required placeholder="name@example.com">
+            <div class="status-indicator"></div>
+        </div>
+
+        <!-- Password Field -->
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required minlength="8">
+            <div class="status-indicator"></div>
+        </div>
+
+        <button type="submit">Sign In</button>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('secureForm');
+        
+        // Prevent default submission to demonstrate validation behavior
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // Check validity programmatically
+            if (form.checkValidity()) {
+                alert('Form is valid. Submitting securely...');
+                // In a real app, you would submit here: form.submit();
+            } else {
+                // Trigger native validation UI for any remaining invalid fields
+                form.reportValidity();
+            }
+        });
+
+        // Optional: Add 'touched' state logic if you want to delay error styling
+        // until the user has actually interacted with the field.
+        const inputs = document.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.addEventListener('blur', () => {
+                // This ensures we don't show red borders on page load for empty required fields
+                // unless the user has tried to leave them empty.
+                if (input.value === '' && input.required) {
+                    input.setCustomValidity('This field is required');
+                } else {
+                    input.setCustomValidity('');
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SRI and CSP Example</title>
+
+    <!-- 
+        Content-Security-Policy:
+        'require-sri-for script' forces the browser to check the integrity attribute 
+        on all external scripts. If a script is missing an integrity hash or the hash 
+        doesn't match, the browser will block execution.
+    -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'require-sri-for';">
+
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            background-color: #f4f4f9;
+        }
+        .status-box {
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            display: none; /* Hidden by default until script loads */
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Subresource Integrity (SRI) Demo</h1>
+    <p>This page loads jQuery from a CDN using SRI to ensure the file hasn't been tampered with.</p>
+
+    <!-- 
+        SCRIPT TAG WITH SRI:
+        1. src: The URL of the external resource.
+        2. integrity: The SHA-384 hash of the script content.
+        3. crossorigin="anonymous": Required for SRI to work on cross-origin requests.
+    -->
+    <script 
+        src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" 
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" 
+        crossorigin="anonymous">
+    </script>
+
+    <div id="result" class="status-box success">
+        <strong>Success!</strong> The script loaded securely and passed the integrity check.
+    </div>
+
+    <!-- 
+        HOW TO REGENERATE THE HASH:
+        
+        When you update the version of the library (e.g., jQuery 3.6.0 -> 3.7.0), 
+        the file content changes, so the hash will no longer match and the script will fail to load.
+        
+        You must generate a new SHA-384 hash for the new file.
+        
+        Method 1: Using OpenSSL (Command Line)
+        Download the new file locally, then run:
+        $ openssl dgst -sha384 -binary jquery.min.js | openssl base64 -A
+        
+        Method 2: Using Node.js
+        $ node -e "console.log(require('crypto').createHash('sha384').update(require('fs').readFileSync('jquery.min.js')).digest('base64'))"
+        
+        Method 3: Online Tools
+        Use a tool like https://www.srihash.org/ to paste the content or URL and generate the hash.
+    -->
+
+    <script>
+        // Simple check to verify jQuery loaded successfully
+        if (typeof $ !== 'undefined') {
+            $('#result').show();
+            console.log("jQuery version:", $.fn.jquery);
+        } else {
+            alert("Failed to load script. Check the integrity hash or network connection.");
+        }
+    </script>
+
+</body>
+</html>

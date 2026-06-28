@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Payment Form</title>
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-color: #1f2937;
+            --border-color: #d1d5db;
+            --error-color: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .payment-container {
+            background-color: var(--card-bg);
+            width: 100%;
+            max-width: 450px;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        }
+
+        .header {
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .header h2 {
+            color: var(--text-color);
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-color);
+            font-size: 0.9rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .col {
+            flex: 1;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .card-icons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+            opacity: 0.6;
+        }
+
+        /* Simple SVG icons for visual flair */
+        .icon {
+            width: 30px;
+            height: 20px;
+            background-color: #ccc;
+            border-radius: 4px;
+        }
+
+        .secure-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 20px;
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+
+        .secure-badge svg {
+            width: 14px;
+            height: 14px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="payment-container">
+    <div class="header">
+        <h2>Payment Details</h2>
+        <p>Enter your card information to complete the purchase.</p>
+    </div>
+
+    <!-- Visual representation of accepted cards -->
+    <div class="card-icons">
+        <svg width="30" height="20" viewBox="0 0 30 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="30" height="20" rx="2" fill="#EB001B"/><path d="M15.5 6H19V14H15.5V6Z" fill="white"/><path d="M11 6H14.5L11 14H7.5L11 6Z" fill="white"/></svg>
+        <svg width="30" height="20" viewBox="0 0 30 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="30" height="20" rx="2" fill="#006FCF"/><circle cx="11" cy="10" r="5" fill="#EB001B"/><circle cx="19" cy="10" r="5" fill="#F79E1B"/></svg>
+    </div>
+
+    <form id="paymentForm">
+        <!-- Card Number -->
+        <div class="form-group">
+            <label for="cardNumber">Card Number</label>
+            <div class="input-wrapper">
+                <input type="text" id="cardNumber" name="cardNumber" placeholder="0000 0000 0000 0000" maxlength="19" autocomplete="cc-number" required>
+            </div>
+        </div>
+
+        <!-- Cardholder Name -->
+        <div class="form-group">
+            <label for="cardName">Cardholder Name</label>
+            <input type="text" id="cardName" name="cardName" placeholder="John Doe" autocomplete="cc-name" required>
+        </div>
+
+        <!-- Expiry and CVV Row -->
+        <div class="row">
+            <div class="col">
+                <div class="form-group">
+                    <label for="expiryDate">Expiry Date</label>
+                    <input type="text" id="expiryDate" name="expiryDate" placeholder="MM / YY" maxlength="5" autocomplete="cc-exp" required>
+                </div>
+            </div>
+            <div class="col">
+                <div class="form-group">
+                    <label for="cvv">CVV</label>
+                    <input type="text" id="cvv" name="cvv" placeholder="123" maxlength="4" autocomplete="cc-csc" required>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit">Pay Now</button>
+    </form>
+
+    <div class="secure-badge">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        <span>Payments are secure and encrypted</span>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const cardNumberInput = document.getElementById('cardNumber');
+        const expiryDateInput = document.getElementById('expiryDate');
+        const cvvInput = document.getElementById('cvv');
+        const form = document.getElementById('paymentForm');
+
+        // Format Card Number: Add spaces every 4 digits
+        cardNumberInput.addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+            value = value.substring(0, 16); // Limit to 16 digits
+            
+            // Add space after every 4th digit
+            let formattedValue = '';
+            for (let i = 0; i < value.length; i++) {
+                if (i > 0 && i % 4 === 0) {
+                    formattedValue += ' ';
+                }
+                formattedValue += value[i];
+            }
+            
+            e.target.value = formattedValue;
+        });
+
+        // Format Expiry Date: Add slash after MM
+        expiryDateInput.addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+            
+            if (value.length >= 2) {
+                // Ensure month is valid (01-12)
+                const month = parseInt(value.substring(0, 2));
+                if (month > 12) {
+                    value = '12' + value.substring(2);
+                } else if (month === 0 && value.length > 2) {
+                     // Handle leading zero logic if needed, simple approach here:
+                     value = value.substring(1); 
+                }
+
+                e.target.value = value.substring(0, 2) + ' / ' + value.substring(2, 4);
+            } else {
+                e.target.value = value;
+            }
+        });
+
+        // CVV: Allow only numbers
+        cvvInput.addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/\D/g, '');
+        });
+
+        // Form Submission Handler
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // Basic validation check
+            const cardNum = cardNumberInput.value.replace(/\s/g, '');
+            if (cardNum.length < 13 || cardNum.length > 19) {
+                alert('Please enter a valid credit card number.');
+                return;
+            }
+
+            const expiry = expiryDateInput.value.replace(/\D/g, '');
+            if (expiry.length !== 4) {
+                alert('Please enter a valid expiry date.');
+                return;
+            }
+
+            // Simulate processing
+            const submitBtn = form.querySelector('button');
+            const originalText = submitBtn.innerText;
+            
+            submitBtn.innerText = 'Processing...';
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.7';
+
+            setTimeout(() => {
+                alert('Payment Successful! (This is a demo)');
+                submitBtn.innerText = originalText;
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = '1';
+                form.reset();
+            }, 1500);
+        });
+    });
+</script>
+
+</body>
+</html>

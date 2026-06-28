@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Embedded Chat Widget</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-width: 600px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        /* 
+           Styles for the Chat Widget Container 
+           This ensures the iframe stays fixed in the bottom-right corner
+           regardless of scroll position or screen size.
+        */
+        .chat-widget-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 350px;
+            height: 450px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            z-index: 9999;
+            background-color: #fff;
+            transition: all 0.3s ease;
+        }
+
+        .chat-widget-container:hover {
+            box-shadow: 0 15px 30px rgba(0,0,0,0.25);
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+        /* Optional: A toggle button to show/hide the widget */
+        .chat-toggle-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 10000;
+            font-size: 24px;
+            border: none;
+            transition: transform 0.2s;
+        }
+
+        .chat-toggle-btn:hover {
+            transform: scale(1.1);
+            background-color: #0056b3;
+        }
+
+        /* Utility class to hide elements */
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Welcome to Our Website</h1>
+        <p>
+            This is a demo page demonstrating how to embed a third-party chat widget using an iframe. 
+            Look at the bottom right corner of your screen to see the embedded chat interface.
+        </p>
+        <p>
+            The widget is loaded from a public sandbox URL for demonstration purposes. In a real-world scenario, 
+            you would replace the <code>src</code> attribute with the URL provided by your chat service provider (e.g., Intercom, Zendesk, Tawk.to).
+        </p>
+    </div>
+
+    <!-- Chat Widget Container -->
+    <div id="chatWidget" class="chat-widget-container">
+        <!-- 
+            Using a public sandbox page for demonstration. 
+            Replace this URL with your actual third-party chat widget URL.
+        -->
+        <iframe 
+            src="https://www.w3schools.com/html/tryit.asp?filename=tryhtml_default" 
+            title="Chat Widget"
+            allow="microphone; camera"
+            loading="lazy">
+        </iframe>
+    </div>
+
+    <!-- Toggle Button -->
+    <button id="chatToggleBtn" class="chat-toggle-btn" aria-label="Toggle Chat">
+        💬
+    </button>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const chatWidget = document.getElementById('chatWidget');
+            const toggleBtn = document.getElementById('chatToggleBtn');
+            let isChatVisible = true;
+
+            // Function to toggle visibility
+            const toggleChat = () => {
+                if (isChatVisible) {
+                    chatWidget.classList.add('hidden');
+                    toggleBtn.innerHTML = '💬'; // Icon for open
+                    toggleBtn.style.backgroundColor = '#007bff';
+                } else {
+                    chatWidget.classList.remove('hidden');
+                    toggleBtn.innerHTML = '✕'; // Icon for close
+                    toggleBtn.style.backgroundColor = '#dc3545';
+                }
+                isChatVisible = !isChatVisible;
+            };
+
+            // Add click event listener
+            toggleBtn.addEventListener('click', toggleChat);
+
+            // Optional: Log when iframe loads (cross-origin restrictions may apply)
+            const iframe = chatWidget.querySelector('iframe');
+            iframe.onload = () => {
+                console.log('Chat widget iframe loaded successfully.');
+            };
+        });
+    </script>
+</body>
+</html>

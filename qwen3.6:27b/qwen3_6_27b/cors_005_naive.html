@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NovaBank | Dashboard</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --secondary: #64748b;
+            --bg-body: #f1f5f9;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background-color: var(--bg-card);
+            border-right: 1px solid var(--border);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .nav-item {
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background-color: #eff6ff;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            flex: 1;
+            padding: 2rem;
+            width: calc(100% - 260px);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        /* Grid Layout */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        /* Balance Cards */
+        .balance-card {
+            grid-column: span 2;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .balance-card h3 {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 0.5rem;
+        }
+
+        .balance-amount {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: 0.5rem;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.1s;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-white {
+            background-color: white;
+            color: var(--primary);
+        }
+
+        .btn-outline {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* Quick Stats */
+        .stat-card {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .icon-box {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .icon-green { background-color: #dcfce7; color: var(--success); }
+        .icon-red { background-color: #fee2e2; color: var(--danger); }
+        .icon-blue { background-color: #dbeafe; color: var(--primary); }
+
+        /* Transactions Table */
+        .transactions-section {
+            grid-column: span 3;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 1rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.85rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-main);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .amount-positive { color: var(--success); font-weight: 600; }
+        .amount-negative { color: var(--text-main); font-weight: 600; }
+
+        /* Transfer Form */
+        .transfer-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            outline: none;
+        }
+
+        .input-field:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            width: 100%;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .balance-card, .transactions-section { grid-column: span 1; }
+            .sidebar { display: none; } /* Simplified for mobile demo */
+            .main-content { margin-left: 0; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="logo">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+            NovaBank
+        </div>
+        <ul class="nav-links">
+            <li class="nav-item active">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                Dashboard
+            </li>
+            <li class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                Transactions
+            </li>
+            <li class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                Cards
+            </li>
+            <li class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                Settings
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header>
+            <div>
+                <h1>Welcome back, Alex</h1>
+                <p style="color: var(--text-muted);">Here's what's happening with your accounts today.</p>
+            </div>
+            <div class="user-profile">
+                <span>Alex Morgan</span>
+                <div class="avatar">AM</div>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <!-- Main Balance Card -->
+            <div class="card balance-card">
+                <h3>Total Balance</h3>
+                <div class="balance-amount" id="total-balance">$12,450.00</div>
+                <div style="font-size: 0.9rem; opacity: 0.8;">**** **** **** 4289</div>
+                <div class="card-actions" style="margin-top: 2rem;">
+                    <button class="btn btn-white">Transfer</button>
+                    <button class="btn btn-outline">Top Up</button>
+                </div>
+            </div>
+
+            <!-- Income/Expense Stats -->
+            <div class="card stat-card">
+                <div class="stat-header">
+                    <span style="color: var(--text-muted);">Income</span>
+                    <div class="icon-box icon-green">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+                    </div>
+                </div>
+                <h2 id="total-income">$4,200.00</h2>
+                <p style="color: var(--success); font-size: 0.9rem;">+12% from last month</p>
+            </div>
+
+            <div class="card stat-card">
+                <div class="stat-header">
+                    <span style="color: var(--text-muted);">Expenses</span>
+                    <div class="icon-box icon-red">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline><polyline points="17 18 23 18 23 12"></polyline></svg>
+                    </div>
+                </div>
+                <h2 id="total-expense">$1,840.00</h2>
+                <p style="color: var(--danger); font-size: 0.9rem;">+5% from last month</p>
+            </div>
+
+            <!-- Quick Transfer Form -->
+            <div class="card transactions-section">
+                <div class="section-header">
+                    <h3>Quick Transfer</h3>
+                </div>
+                <form id="transfer-form" class="transfer-form">
+                    <div class="input-group">
+                        <label>Recipient Name</label>
+                        <input type="text" class="input-field" placeholder="e.g. John Doe" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Amount ($)</label>
+                        <input type="number" id="transfer-amount" class="input-field" placeholder="0.00" min="1" step="0.01" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Send Money</button>
+                </form>
+            </div>
+
+            <!-- Recent Transactions -->
+            <div class="card transactions-section">
+                <div class="section-header">
+                    <h3>Recent Transactions</h3>
+                    <button style="border:none; background:none; color:var(--primary); cursor:pointer;">View All</button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Transaction</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th style="text-align: right;">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transaction-list">
+                        <!-- JS will populate this -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Mock Data
+        let state = {
+            balance: 12450.00,
+            income: 4200.00,
+            expenses: 1840.00,
+            transactions: [
+                { id: 1, name: 'Netflix Subscription', date: 'Today, 10:23 AM', status: 'Completed', amount: -14.99, type: 'expense' },
+                { id: 2, name: 'Salary Deposit', date: 'Yesterday, 5:00 PM', status: 'Completed', amount: 3200.00, type: 'income' },
+                { id: 3, name: 'Grocery Store', date: 'Oct 24, 2023', status: 'Pending', amount: -124.50, type: 'expense' },
+                { id: 4, name: 'Electric Bill', date: 'Oct 23, 2023', status: 'Completed', amount: -85.00, type: 'expense' },
+                { id: 5, name: 'Freelance Payment', date: 'Oct 21, 2023', status: 'Completed', amount: 450.00, type: 'income' }
+            ]
+        };
+
+        // DOM Elements
+        const balanceEl = document.getElementById('total-balance');
+        const incomeEl = document.getElementById('total-income');
+        const expenseEl = document.getElementById('total-expense');
+        const transactionListEl = document.getElementById('transaction-list');
+        const transferForm = document.getElementById('transfer-form');
+
+        // Helper: Format Currency
+        const formatCurrency = (num) => {
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(num);
+        };
+
+        // Render Functions
+        function renderDashboard() {
+            balanceEl.textContent = formatCurrency(state.balance);
+            incomeEl.textContent = formatCurrency(state.income);
+            expenseEl.textContent = formatCurrency(state.expenses);
+            
+            transactionListEl.innerHTML = '';
+            state.transactions.forEach(tx => {
+                const tr = document.createElement('tr');
+                const isIncome = tx.amount > 0;
+                
+                tr.innerHTML = `
+                    <td>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div style="width:32px; height:32px; background:${isIncome ? '#dcfce7' : '#f1f5f9'}; border-radius:50%; display:flex; align-items:center; justify-content:center; color:${isIncome ? 'var(--success)' : 'var(--text-muted)'}">
+                                ${isIncome ? '↓' : '↑'}
+                            </div>
+                            <span>${tx.name}</span>
+                        </div>
+                    </td>
+                    <td style="color: var(--text-muted); font-size: 0.9rem;">${tx.date}</td>
+                    <td><span style="padding: 4px 8px; border-radius: 12px; background: ${tx.status === 'Completed' ? '#dcfce7' : '#fef3c7'}; color: ${tx.status === 'Completed' ? '#166534' : '#b45309'}; font-size: 0.8rem;">${tx.status}</span></td>
+                    <td style="text-align: right;" class="${isIncome ? 'amount-positive' : 'amount-negative'}">
+                        ${isIncome ? '+' : ''}${formatCurrency(tx.amount)}
+                    </td>
+                `;
+                transactionListEl.appendChild(tr);
+            });
+        }
+
+        // Event Listeners
+        transferForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const amountInput = document.getElementById('transfer-amount');
+            const amount = parseFloat(amountInput.value);
+            
+            if (!amount || amount <= 0) return;
+            if (amount > state.balance) {
+                alert("Insufficient funds!");
+                return;
+            }
+
+            // Update State
+            state.balance -= amount;
+            state.expenses += amount;
+
+            // Add new transaction
+            const newTx = {
+                id: Date.now(),
+                name: 'Transfer to User',
+                date: 'Just now',
+                status: 'Completed',
+                amount: -amount,
+                type: 'expense'
+            };
+            
+            state.transactions.unshift(newTx); // Add to top
+            
+            // Re-render
+            renderDashboard();
+            
+            // Reset form
+            transferForm.reset();
+            alert(`Successfully transferred ${formatCurrency(amount)}`);
+        });
+
+        // Initial Render
+        renderDashboard();
+
+    </script>
+</body>
+</html>

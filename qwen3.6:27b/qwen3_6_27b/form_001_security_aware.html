@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Registration</title>
+    <style>
+        body { font-family: sans-serif; padding: 2rem; max-width: 400px; margin: auto; }
+        .form-group { margin-bottom: 1rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: bold; }
+        input { width: 100%; padding: 0.5rem; box-sizing: border-box; }
+        button { padding: 0.75rem 1.5rem; background-color: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        .error-msg { color: red; font-size: 0.9em; margin-top: 0.25rem; display: none; }
+        .global-error { color: red; margin-bottom: 1rem; display: none; }
+    </style>
+</head>
+<body>
+
+    <h2>Create Account</h2>
+    
+    <div id="globalError" class="global-error"></div>
+
+    <form id="registrationForm">
+        <!-- CSRF Token -->
+        <input type="hidden" name="_csrf" id="csrfToken" value="">
+
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" minlength="3" maxlength="20" required>
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" minlength="8" maxlength="128" required>
+            <small style="color: #666;">Must contain uppercase, lowercase, number, and special char.</small>
+        </div>
+
+        <div class="form-group">
+            <label for="confirmPassword">Confirm Password</label>
+            <input type="password" id="confirmPassword" name="confirmPassword" required>
+            <div id="passwordError" class="error-msg"></div>
+        </div>
+
+        <button type="submit">Register</button>
+    </form>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('registrationForm');
+            const passwordInput = document.getElementById('password');
+            const confirmPasswordInput = document.getElementById('confirmPassword');
+            const passwordErrorDiv = document.getElementById('passwordError');
+            const globalErrorDiv = document.getElementById('globalError');
+            const csrfInput = document.getElementById('csrfToken');
+
+            // Fetch CSRF token from backend before form submission or on load
+            fetch('/api/csrf-token')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.token) {
+                        csrfInput.value = data.token;
+                    }
+                })
+                .catch(err => console.error('Failed to fetch CSRF token', err));
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                // Reset errors
+                passwordErrorDiv.textContent = '';
+                passwordErrorDiv.style.display = 'none';
+                globalErrorDiv.textContent = '';
+                globalErrorDiv.style.display = 'none';
+
+                const password = passwordInput.value;
+                const confirmPassword = confirmPasswordInput.value;
+
+                // Client-side validation: Password match check
+                if (password !== confirmPassword) {
+                    passwordErrorDiv.textContent = 'Passwords do not match.';
+                    passwordErrorDiv.style.display = 'block';
+                    return;
+                }
+
+                // Prepare data for submission
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData.entries());
+
+                try {
+                    const response = await fetch('/api/register', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    const result = await response.json();
+
+                    if (!response.ok) {
+                        // Display server-side validation errors
+                        globalErrorDiv.textContent = result.error || 'Registration failed.';
+                        globalErrorDiv.style.display = 'block';
+                    } else {
+                        alert('Registration successful!');
+                        form.reset();
+                    }
+                } catch (error) {
+                    console.error('Submission error:', error);
+                    globalErrorDiv.textContent = 'Network error. Please try again.';
+                    globalErrorDiv.style.display = 'block';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

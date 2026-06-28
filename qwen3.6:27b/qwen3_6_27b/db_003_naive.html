@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comment Feature</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .comment-form {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+        textarea {
+            width: 100%;
+            height: 80px;
+            padding: 0.5rem;
+            box-sizing: border-box;
+            resize: vertical;
+        }
+        button {
+            align-self: flex-start;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+        }
+        .comments-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .comment-item {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 0.5rem;
+        }
+        .comment-text {
+            margin: 0;
+            color: #333;
+        }
+        .comment-date {
+            font-size: 0.8rem;
+            color: #999;
+            margin-top: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Comments</h1>
+
+    <div class="comment-form">
+        <textarea id="commentInput" placeholder="Write a comment..."></textarea>
+        <button id="submitBtn">Submit Comment</button>
+    </div>
+
+    <div id="commentsContainer" class="comments-list">
+        <!-- Comments will be loaded here -->
+    </div>
+
+    <script>
+        const submitBtn = document.getElementById('submitBtn');
+        const commentInput = document.getElementById('commentInput');
+        const commentsContainer = document.getElementById('commentsContainer');
+
+        // Function to render a single comment HTML element
+        function createCommentElement(comment) {
+            const div = document.createElement('div');
+            div.className = 'comment-item';
+            
+            const p = document.createElement('p');
+            p.className = 'comment-text';
+            p.textContent = comment.text;
+
+            const dateSpan = document.createElement('span');
+            dateSpan.className = 'comment-date';
+            dateSpan.textContent = new Date(comment.created_at).toLocaleString();
+
+            div.appendChild(p);
+            div.appendChild(dateSpan);
+            
+            return div;
+        }
+
+        // Function to load existing comments on page load
+        async function loadComments() {
+            try {
+                const response = await fetch('/api/comments');
+                if (!response.ok) throw new Error('Failed to load comments');
+                
+                const comments = await response.json();
+                commentsContainer.innerHTML = ''; // Clear current list
+                
+                comments.forEach(comment => {
+                    commentsContainer.appendChild(createCommentElement(comment));
+                });
+            } catch (error) {
+                console.error('Error loading comments:', error);
+            }
+        }
+
+        // Event listener for submitting a new comment
+        submitBtn.addEventListener('click', async () => {
+            const text = commentInput.value.trim();
+            
+            if (!text) {
+                alert('Please enter a comment.');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/comments', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ text })
+                });
+
+                if (!response.ok) throw new Error('Failed to post comment');
+
+                const newComment = await response.json();
+                
+                // Append the new comment immediately without reloading
+                commentsContainer.appendChild(createCommentElement(newComment));
+                
+                // Clear input
+                commentInput.value = '';
+            } catch (error) {
+                console.error('Error posting comment:', error);
+                alert('Failed to submit comment.');
+            }
+        });
+
+        // Initial load
+        loadComments();
+    </script>
+</body>
+</html>

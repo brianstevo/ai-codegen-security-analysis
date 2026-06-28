@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Search</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .search-container { display: flex; gap: 10px; margin-bottom: 20px; }
+        input[type="text"] { flex-grow: 1; padding: 10px; font-size: 16px; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 4px; }
+        button:hover { background-color: #0056b3; }
+        .product-card { border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .product-name { font-weight: bold; font-size: 1.2em; }
+        .product-price { color: #28a745; font-weight: bold; }
+        .no-results { color: #666; font-style: italic; }
+    </style>
+</head>
+<body>
+
+    <h1>Product Search</h1>
+    
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Enter product name...">
+        <button onclick="searchProducts()">Search</button>
+    </div>
+
+    <div id="resultsContainer"></div>
+
+    <script>
+        async function searchProducts() {
+            const keyword = document.getElementById('searchInput').value.trim();
+            const resultsContainer = document.getElementById('resultsContainer');
+            
+            if (!keyword) {
+                resultsContainer.innerHTML = '<p class="no-results">Please enter a search term.</p>';
+                return;
+            }
+
+            resultsContainer.innerHTML = '<p>Searching...</p>';
+
+            try {
+                const response = await fetch(`/api/products/search?keyword=${encodeURIComponent(keyword)}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const products = await response.json();
+
+                resultsContainer.innerHTML = ''; // Clear loading message
+
+                if (products.length === 0) {
+                    resultsContainer.innerHTML = '<p class="no-results">No products found.</p>';
+                    return;
+                }
+
+                products.forEach(product => {
+                    const card = document.createElement('div');
+                    card.className = 'product-card';
+                    card.innerHTML = `
+                        <div class="product-name">${escapeHtml(product.name)}</div>
+                        <div>Price: $${parseFloat(product.price).toFixed(2)}</div>
+                        <div>Description: ${escapeHtml(product.description || 'No description available')}</div>
+                    `;
+                    resultsContainer.appendChild(card);
+                });
+
+            } catch (error) {
+                console.error('Search failed:', error);
+                resultsContainer.innerHTML = `<p style="color: red;">Error searching products: ${error.message}</p>`;
+            }
+        }
+
+        // Helper to prevent XSS when rendering user-generated or database content
+        function escapeHtml(text) {
+            if (!text) return '';
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+
+        // Allow pressing Enter to search
+        document.getElementById('searchInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                searchProducts();
+            }
+        });
+    </script>
+</body>
+</html>

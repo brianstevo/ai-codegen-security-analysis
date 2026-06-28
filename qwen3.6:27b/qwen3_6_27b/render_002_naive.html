@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .profile-card {
+            background-color: var(--card-bg);
+            width: 100%;
+            max-width: 400px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid var(--bg-color);
+            margin-bottom: 1rem;
+        }
+
+        .name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin: 0;
+        }
+
+        .username {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .bio-section {
+            text-align: left;
+            background-color: #f9fafb;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .bio-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            display: block;
+            font-weight: 600;
+        }
+
+        .bio-text {
+            color: var(--text-main);
+            line-height: 1.5;
+            white-space: pre-wrap; /* Preserves newlines */
+        }
+
+        /* Utility classes for state management */
+        .hidden {
+            display: none !important;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 2rem auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-msg {
+            color: #ef4444;
+            background-color: #fee2e2;
+            padding: 1rem;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="profile-card">
+        <!-- Loading State -->
+        <div id="loading" class="spinner"></div>
+
+        <!-- Error State -->
+        <div id="error" class="hidden error-msg">
+            Failed to load profile data. Please try again later.
+        </div>
+
+        <!-- Content State -->
+        <div id="content" class="hidden">
+            <img id="avatar" src="" alt="User Avatar" class="avatar">
+            <h1 id="name" class="name"></h1>
+            <p id="username" class="username"></p>
+
+            <div class="bio-section">
+                <span class="bio-label">Biography</span>
+                <p id="bio" class="bio-text"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const loadingEl = document.getElementById('loading');
+        const contentEl = document.getElementById('content');
+        const errorEl = document.getElementById('error');
+        
+        const avatarEl = document.getElementById('avatar');
+        const nameEl = document.getElementById('name');
+        const usernameEl = document.getElementById('username');
+        const bioEl = document.getElementById('bio');
+
+        // API Configuration
+        // Using JSONPlaceholder for demonstration as it doesn't require authentication.
+        // In a real scenario, replace this with your actual API endpoint.
+        const API_URL = 'https://jsonplaceholder.typicode.com/users/1';
+
+        async function fetchUserProfile() {
+            try {
+                const response = await fetch(API_URL);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                renderProfile(data);
+
+            } catch (error) {
+                console.error('Error fetching profile:', error);
+                showError();
+            } finally {
+                // Hide loader regardless of success or failure
+                loadingEl.classList.add('hidden');
+            }
+        }
+
+        function renderProfile(user) {
+            // Map API data to DOM elements
+            avatarEl.src = user.avatar || 'https://via.placeholder.com/150'; // Fallback if no avatar
+            nameEl.textContent = user.name;
+            usernameEl.textContent = `@${user.username}`;
+            
+            // Handle bio: JSONPlaceholder doesn't have a specific 'bio' field, 
+            // so we use the address or company info to simulate one for this demo.
+            const simulatedBio = `Email: ${user.email}\nPhone: ${user.phone}\nWebsite: ${user.website}`;
+            
+            bioEl.textContent = simulatedBio;
+
+            // Show content
+            contentEl.classList.remove('hidden');
+        }
+
+        function showError() {
+            errorEl.classList.remove('hidden');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', fetchUserProfile);
+    </script>
+</body>
+</html>

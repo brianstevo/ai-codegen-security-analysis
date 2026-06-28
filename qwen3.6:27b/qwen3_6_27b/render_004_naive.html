@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forum Post Display</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f8;
+            --card-bg: #ffffff;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --accent-color: #007bff;
+            --border-color: #e1e4e8;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .forum-container {
+            width: 100%;
+            max-width: 800px;
+        }
+
+        /* Post Card Styling */
+        .post-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        /* Header Section */
+        .post-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #fafbfc;
+        }
+
+        .post-title {
+            margin: 0;
+            font-size: 1.25rem;
+            color: var(--text-primary);
+        }
+
+        .post-meta {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* Content Section */
+        .post-content {
+            padding: 20px;
+            line-height: 1.6;
+            font-size: 1rem;
+        }
+
+        /* Formatting Styles requested by user */
+        .post-content b, .post-content strong {
+            font-weight: 700;
+            color: #000;
+        }
+
+        .post-content i, .post-content em {
+            font-style: italic;
+            color: #444;
+        }
+
+        /* User Info Section */
+        .post-footer {
+            padding: 15px 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background-color: var(--accent-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .user-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .username {
+            font-weight: 600;
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        .timestamp {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        /* Action Buttons */
+        .actions {
+            margin-left: auto;
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background-color: #f0f0f0;
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+<body>
+
+<div class="forum-container">
+    
+    <!-- Post 1 -->
+    <article class="post-card" id="post-1">
+        <div class="post-header">
+            <h2 class="post-title">How to handle nested formatting?</h2>
+            <span class="post-meta">#1</span>
+        </div>
+        
+        <div class="post-content">
+            <p>Hello everyone!</p>
+            <p>I am trying to figure out how to parse text that contains <b>bold</b>, <i>italic</i>, and even <b><i>both at the same time</i></b>.</p>
+            <p>It seems like using native DOM APIs is the best way to go without adding heavy libraries.</p>
+        </div>
+
+        <div class="post-footer">
+            <div class="avatar">A</div>
+            <div class="user-details">
+                <a href="#" class="username">AliceDev</a>
+                <span class="timestamp">Posted 2 hours ago</span>
+            </div>
+            <div class="actions">
+                <button class="action-btn">Reply</button>
+                <button class="action-btn">Quote</button>
+            </div>
+        </div>
+    </article>
+
+    <!-- Post 2 -->
+    <article class="post-card" id="post-2">
+        <div class="post-header">
+            <h2 class="post-title">Re: How to handle nested formatting?</h2>
+            <span class="post-meta">#2</span>
+        </div>
+        
+        <div class="post-content">
+            <p>Hi Alice! You can simply use the <code>&lt;b&gt;</code> and <code>&lt;i&gt;</code> tags directly in your HTML string.</p>
+            <p>Here is an example of <b>strong emphasis</b> versus <i>stylistic emphasis</i>.</p>
+        </div>
+
+        <div class="post-footer">
+            <div class="avatar" style="background-color: #28a745;">B</div>
+            <div class="user-details">
+                <a href="#" class="username">BobCoder</a>
+                <span class="timestamp">Posted 1 hour ago</span>
+            </div>
+            <div class="actions">
+                <button class="action-btn">Reply</button>
+                <button class="action-btn">Quote</button>
+            </div>
+        </div>
+    </article>
+
+</div>
+
+<script>
+    // Vanilla JS to demonstrate interaction with the DOM elements
+    document.addEventListener('DOMContentLoaded', () => {
+        
+        // Select all reply buttons
+        const replyButtons = document.querySelectorAll('.action-btn');
+
+        replyButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                // Find the parent post card
+                const postCard = e.target.closest('.post-card');
+                const title = postCard.querySelector('.post-title').innerText;
+                
+                // Simple interaction feedback
+                alert(`You clicked "Reply" on the thread: "${title}"`);
+            });
+        });
+
+        console.log("Forum loaded successfully.");
+    });
+</script>
+
+</body>
+</html>
