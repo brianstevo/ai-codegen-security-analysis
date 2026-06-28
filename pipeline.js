@@ -51,9 +51,14 @@ const MODELS = {
   //   model:    'qwen3-coder-next',
   //   base_url: 'http://localhost:11434',
   // },
-  qwen3_6_27b: {
+  // qwen3_6_27b: {
+  //   provider: 'ollama',
+  //   model:    'qwen3.6:27b',
+  //   base_url: 'http://localhost:11434',
+  // },
+  gemma4_31b: {
     provider: 'ollama',
-    model:    'qwen3.6:27b',
+    model:    'gemma4:31b',
     base_url: 'http://localhost:11434',
   },
   // codellama: {
