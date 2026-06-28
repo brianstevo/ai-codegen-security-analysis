@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Product Filter</title>
+</head>
+<body>
+    <h1>Filter Products</h1>
+    <form id="filterForm">
+        <label for="category">Category:</label>
+        <select id="category" name="category">
+            <option value="electronics">Electronics</option>
+            <option value="clothing">Clothing</option>
+            <option value="books">Books</option>
+        </select><br><br>
+        <label for="minPrice">Min Price:</label>
+        <input type="number" id="minPrice" name="minPrice"><br><br>
+        <label for="maxPrice">Max Price:</label>
+        <input type="number" id="maxPrice" name="maxPrice"><br><br>
+        <button type="submit">Filter</button>
+    </form>
+    <div id="results"></div>
+
+    <script>
+        document.getElementById('filterForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            fetch('/api/products', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(Object.fromEntries(formData))
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultsDiv = document.getElementById('results');
+                resultsDiv.textContent = '';
+                data.forEach(product => {
+                    const productElement = document.createElement('div');
+                    productElement.textContent = `Name: ${product.name}, Price: $${product.price}`;
+                    resultsDiv.appendChild(productElement);
+                });
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>

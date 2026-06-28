@@ -1,0 +1,270 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- 
+        SECURITY NOTE: The Content-Security-Policy (CSP) header should be configured on the web server 
+        to send the 'frame-ancestors' directive. HTTP headers cannot be overridden by malicious 
+        scripts injected via XSS, whereas meta tags can potentially be manipulated if an attacker 
+        has partial control over the DOM. The meta tag below serves as a fallback or development 
+        convenience but is not a replacement for the HTTP header in production security posture.
+    -->
+    <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'none'; default-src 'self'">
+    
+    <title>Secure Banking Dashboard</title>
+    <style>
+        :root {
+            --primary-color: #0f3460;
+            --accent-color: #16213e;
+            --highlight-color: #e94560;
+            --text-light: #f1f1f1;
+            --text-dark: #333;
+            --bg-color: #f4f7f6;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Frame-busting visual indicator */
+        #busted {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--highlight-color);
+            color: white;
+            text-align: center;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 9999;
+        }
+
+        #busted h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            width: 250px;
+            background-color: var(--primary-color);
+            color: var(--text-light);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            padding: 30px 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+
+        .nav-links {
+            list-style: none;
+            padding: 0;
+            margin-top: 20px;
+        }
+
+        .nav-links li a {
+            display: block;
+            padding: 15px 25px;
+            color: var(--text-light);
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+
+        .nav-links li a:hover, .nav-links li a.active {
+            background-color: rgba(255,255,255,0.1);
+            border-left: 4px solid var(--highlight-color);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        h2 {
+            color: var(--primary-color);
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .balance-card {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .balance-amount {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .transactions {
+            display: grid;
+            gap: 20px;
+        }
+
+        .transaction-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .transaction-details h4 {
+            margin: 0 0 5px 0;
+            color: var(--primary-color);
+        }
+
+        .transaction-amount {
+            font-weight: bold;
+            color: var(--text-dark);
+        }
+        
+        .transaction-date {
+            font-size: 0.85rem;
+            color: #777;
+        }
+
+        button.btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        .btn-primary {
+            background-color: var(--highlight-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #c72c48;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Frame-busting UI element -->
+    <div id="busted">
+        <h1>Security Alert</h1>
+        <p>This application cannot be displayed within a frame.</p>
+        <p>For your security, we prohibit embedding of our banking interface.</p>
+        <button class="btn btn-primary" onclick="window.location.reload()">I understand</button>
+    </div>
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="logo">SecureBank</div>
+        <ul class="nav-links">
+            <li><a href="#" class="active">Dashboard</a></li>
+            <li><a href="#">Accounts</a></li>
+            <li><a href="#">Transfers</a></li>
+            <li><a href="#">Cards</a></li>
+            <li><a href="#">Security Settings</a></li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header>
+            <div>
+                <h2>Account Overview</h2>
+                <p>Current Date: <span id="current-date"></span></p>
+            </div>
+            <div class="user-info">
+                <p>Welcome, <strong>John Doe</strong></p>
+                <button class="btn btn-primary" onclick="alert('Logged out securely')">Logout</button>
+            </div>
+        </header>
+
+        <!-- Balance Section -->
+        <section class="balance-card">
+            <p>Total Balance</p>
+            <div class="balance-amount">$12,450.85</div>
+            <p>Available: $12,450.85 | Pending: $0.00</p>
+            <br>
+            <button class="btn btn-primary" style="background-color: white; color: var(--primary-color);">View Statement</button>
+        </section>
+
+        <!-- Recent Transactions -->
+        <h3>Recent Transactions</h3>
+        <div class="transactions">
+            <div class="transaction-card">
+                <div class="transaction-details">
+                    <h4>Online Purchase - TechStore</h4>
+                    <span class="transaction-date">Oct 24, 2023</span>
+                </div>
+                <div class="transaction-amount" style="color: var(--highlight-color);">-$129.99</div>
+            </div>
+
+            <div class="transaction-card">
+                <div class="transaction-details">
+                    <h4>Direct Deposit - Employer Inc.</h4>
+                    <span class="transaction-date">Oct 20, 2023</span>
+                </div>
+                <div class="transaction-amount" style="color: green;">+$3,200.00</div>
+            </div>
+
+            <div class="transaction-card">
+                <div class="transaction-details">
+                    <h4>ATM Withdrawal - Chase Bank</h4>
+                    <span class="transaction-date">Oct 15, 2023</span>
+                </div>
+                <div class="transaction-amount" style="color: var(--highlight-color);">-$200.00</div>
+            </div>
+
+            <div class="transaction-card">
+                <div class="transaction-details">
+                    <h4>Monthly Subscription - Streaming Service</h4>
+                    <span class="transaction-date">Oct 01, 2023</span>
+                </div>
+                <div class="transaction-amount" style="color: var(--highlight-color);">-$14.99</div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Frame-busting logic
+        (function() {
+            // 1. Check if the current window is embedded in a frame
+            try {
+                // Accessing window.top will throw a SecurityError if the page is inside an iframe 
+                // from a different origin due to same-origin policy.
+                if (window.self !== window.top) {
+                    // If we reach here, it means we are inside a frame
+                    bust

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Filter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .filter-form {
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            display: inline-block;
+            margin-right: 15px;
+            vertical-align: middle;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        select, input[type="number"] {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 100%;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .products-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .product-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            background-color: white;
+        }
+        .product-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .product-category {
+            color: #666;
+            font-style: italic;
+        }
+        .product-price {
+            font-size: 1.1em;
+            color: #333;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Product Filter</h1>
+    
+    <div class="filter-form">
+        <form id="filterForm">
+            <div class="form-group">
+                <label for="category">Category:</label>
+                <select id="category" name="category">
+                    <option value="">All Categories</option>
+                    <option value="Electronics">Electronics</option>
+                    <option value="Clothing">Clothing</option>
+                    <option value="Books">Books</option>
+                    <option value="Home & Garden">Home & Garden</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="minPrice">Min Price ($):</label>
+                <input type="number" id="minPrice" name="minPrice" min="0" step="0.01">
+            </div>
+            
+            <div class="form-group">
+                <label for="maxPrice">Max Price ($):</label>
+                <input type="number" id="maxPrice" name="maxPrice" min="0" step="0.01">
+            </div>
+            
+            <button type="submit">Filter Products</button>
+        </form>
+    </div>
+    
+    <h2>Products</h2>
+    <div class="products-container" id="productsContainer">
+        <!-- Products will be rendered here -->
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterForm = document.getElementById('filterForm');
+            const productsContainer = document.getElementById('productsContainer');
+
+            // Load all products on page load
+            fetchProducts();
+
+            // Handle form submission
+            filterForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                fetchProducts();
+            });
+
+            async function fetchProducts() {
+                const category = document.getElementById('category').value;
+                const minPrice = document.getElementById('minPrice').value || 0;
+                const maxPrice = document.getElementById('maxPrice').value || Infinity;
+
+                try {
+                    const params = new URLSearchParams({
+                        category: category,
+                        minPrice: minPrice,
+                        maxPrice: maxPrice
+                    });
+
+                    const response = await fetch(`/api/products?${params.toString()}`);
+                    const products = await response.json();
+
+                    renderProducts(products);
+                } catch (error) {
+                    console.error('Error fetching products:', error);
+                    productsContainer.innerHTML = '<p>Error loading products. Please try again.</p>';
+                }
+            }
+
+            function renderProducts(products) {
+                if (products.length === 0) {
+                    productsContainer.innerHTML = '<p>No products found matching your criteria.</p>';
+                    return;
+                }
+
+                const html = products.map(product => `
+                    <div class="product-card">
+                        <div class="product-name">${product.name}</div>
+                        <div class="product-category">Category: ${product.category}</div>
+                        <div class="product-price">$${product.price.toFixed(2)}</div>
+                    </div>
+                `).join('');
+
+                productsContainer.innerHTML = html;
+            }
+        });
+    </script>
+</body>
+</html>

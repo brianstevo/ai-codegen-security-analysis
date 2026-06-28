@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Forum Post</title>
+    <style>
+        :root {
+            --bg-color: #f4f4f9;
+            --card-bg: #ffffff;
+            --text-primary: #333;
+            --text-secondary: #666;
+            --accent-color: #007bff;
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+            margin: 0;
+        }
+
+        .forum-container {
+            width: 100%;
+            max-width: 800px;
+        }
+
+        /* Header Styles */
+        .forum-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 15px;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin: 0;
+            color: var(--text-primary);
+        }
+
+        .breadcrumb {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .breadcrumb a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        /* Post Card Styles */
+        .post-card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+
+        .post-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+        }
+
+        .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #ddd;
+            margin-right: 15px;
+            object-fit: cover;
+            border: 2px solid var(--accent-color);
+        }
+
+        .user-info h3 {
+            margin: 0 0 5px 0;
+            font-size: 18px;
+        }
+
+        .meta-data {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* Content Styles */
+        .post-content {
+            line-height: 1.6;
+            font-size: 16px;
+            color: #444;
+        }
+
+        .post-content p {
+            margin-bottom: 15px;
+        }
+
+        .post-content b, 
+        .post-content strong {
+            color: #222;
+            font-weight: 700;
+        }
+
+        .post-content i, 
+        .post-content em {
+            font-style: italic;
+            color: #555;
+        }
+
+        .post-content u {
+            text-decoration: underline;
+            color: #4a4a4a;
+        }
+
+        .post-content strike {
+            text-decoration: line-through;
+            color: #888;
+        }
+
+        /* Code Block Styling */
+        pre {
+            background-color: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            margin-bottom: 20px;
+        }
+
+        .code-comment { color: #8e8e8e; }
+        .code-keyword { color: #cc7832; }
+        .code-string { color: #6a8759; }
+
+        /* Footer Actions */
+        .post-actions {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-secondary {
+            background-color: #e9ecef;
+            color: #495057;
+        }
+
+        .btn-secondary:hover {
+            background-color: #dee2e6;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="forum-container">
+        <!-- Forum Header -->
+        <div class="forum-header">
+            <h1>General Discussion</h1>
+            <div class="breadcrumb">
+                Home / Tech Talk / <a href="#">Web Development</a>
+            </div>
+        </div>
+
+        <!-- Main Post -->
+        <article class="post-card">
+            <div class="post-header">
+                <img src="https://i.pravatar.cc/150?u=dev_user" alt="User Avatar" class="avatar">
+                <div class="user-info">
+                    <h3>DevEnthusiast</h3>
+                    <div class="meta-data">
+                        Posted on: October 24, 2023 at 10:30 AM • ID: #4928
+                    </div>
+                </div>
+            </div>
+
+            <div class="post-content">
+                <p><b>Hello everyone!</b> I hope you're all having a great day. I wanted to share some insights regarding modern web development practices.</p>
+
+                <p>As many of you know, <i>Cascading Style Sheets (CSS)</i> have evolved significantly over the last few years. Features like CSS Grid and Flexbox have made layout design much more intuitive and robust compared to older methods involving floats or tables.</p>
+
+                <p>Here is a quick example of how to center an element using Flexbox:</p>
+
+                <pre><code><span class="code-comment">// CSS Container Style</span>
+.container {
+  display: <span class="code-keyword">flex</span>;
+  justify-content: <span class="code-string">'center'</span>;
+  align-items: <span class="code-string">'center'</span>;
+  height: <span class="code-string">100vh</span>;
+}</code></pre>
+
+                <p>Always remember to keep your code <u>semantic</u> and accessible. For instance, use the &lt;strong&gt; tag instead of &lt;b&gt; when the text is important, and use &lt;em&gt; instead of &lt;i&gt; for stress emphasis.</p>
+
+                <p>If you have any questions about this post, please feel free to reply below. <i>Happy coding!</i></p>
+                
+                <p><strike>Note: This feature is deprecated in older browsers.</strike></p>
+            </div>
+
+            <div class="post-actions">
+                <button class="btn-primary">Like</button>
+                <button class="btn-secondary">Reply</button>
+                <button class="btn-secondary">Share</button>
+            </div>
+        </article>
+
+        <!-- Reply Post -->
+        <article class="post-card" style="padding: 20px; border-left: 4px solid #ccc;">
+            <div class="post-header">
+                <img src="https://i.pravatar.cc/150?u=moderator" alt="User Avatar" class="avatar">
+                <div class="user-info">
+                    <h3>CodeMod</h3>
+                    <div class="meta-data">
+                        Replied on: October 24, 2023 at 11:15 AM
+                    </div>
+                </div>
+            </div>
+            <div class="post-content">
+                <p><b>Great summary!</b> I especially agree with the point about accessibility. It's easy to get caught up in the aesthetics, but functionality comes first.</p>
+                <p>You might also want to check out the latest updates on <i>Container Queries</i>—they are changing how we handle responsive components.</p>
+            </div>
+        </article>
+
+    </div>
+
+</body>
+</html>

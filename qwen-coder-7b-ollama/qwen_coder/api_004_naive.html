@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile</title>
+</head>
+<body>
+    <h1>Edit Your Profile</h1>
+    <form id="profileForm">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name"><br><br>
+        <label for="bio">Bio:</label>
+        <textarea id="bio" name="bio"></textarea><br><br>
+        <button type="submit">Update Profile</button>
+    </form>
+    <p id="message"></p>
+
+    <script>
+        document.getElementById('profileForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            fetch('/api/updateProfile', {
+                method: 'PUT',
+                body: JSON.stringify(Object.fromEntries(formData)),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('message').textContent = data.message;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('message').textContent = 'An error occurred. Please try again.';
+            });
+        });
+    </script>
+</body>
+</html>

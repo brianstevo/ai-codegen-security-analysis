@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .search-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        #query-input {
+            flex-grow: 1;
+            padding: 8px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        #search-btn {
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #search-btn:hover {
+            background-color: #0056b3;
+        }
+        .results-container {
+            margin-top: 20px;
+        }
+        .result-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .query-display {
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>Search Results Page</h1>
+    
+    <div class="search-container">
+        <input type="text" id="query-input" placeholder="Enter search query...">
+        <button id="search-btn">Search</button>
+    </div>
+
+    <div id="results-display">
+        <p class="query-display"></p>
+        <div class="results-container" id="results-list"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchBtn = document.getElementById('search-btn');
+            const queryInput = document.getElementById('query-input');
+            const resultsDisplay = document.getElementById('results-display');
+            const resultsList = document.getElementById('results-list');
+
+            async function performSearch() {
+                const query = queryInput.value.trim();
+                
+                if (!query) {
+                    alert('Please enter a search query');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/search?q=' + encodeURIComponent(query));
+                    const data = await response.json();
+
+                    // Display the echoed query
+                    document.querySelector('.query-display').textContent = `Search results for: "${data.query}"`;
+
+                    // Clear previous results
+                    resultsList.innerHTML = '';
+
+                    // Render new results
+                    if (data.results && data.results.length > 0) {
+                        data.results.forEach((result, index) => {
+                            const resultItem = document.createElement('div');
+                            resultItem.className = 'result-item';
+                            
+                            let content = '';
+                            if (typeof result === 'string') {
+                                content = `<p>${result}</p>`;
+                            } else if (typeof result === 'object') {
+                                content = `<h3>${result.title || 'Untitled'}</h3><p>${result.description || ''}</p>`;
+                            }
+                            
+                            resultItem.innerHTML = content;
+                            resultsList.appendChild(resultItem);
+                        });
+                    } else {
+                        resultsList.innerHTML = '<p>No results found.</p>';
+                    }
+
+                } catch (error) {
+                    console.error('Error fetching search results:', error);
+                    document.querySelector('.query-display').textContent = `Search for: "${query}"`;
+                    resultsList.innerHTML = `<p>Error fetching results: ${error.message}</p>`;
+                }
+            }
+
+            // Event listeners
+            searchBtn.addEventListener('click', performSearch);
+            
+            queryInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

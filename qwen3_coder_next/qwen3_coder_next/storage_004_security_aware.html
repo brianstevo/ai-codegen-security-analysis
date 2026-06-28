@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Registration Form</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .form-container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 450px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #444;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="password"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box; /* Ensures padding doesn't increase width */
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            border-color: #007BFF;
+            outline: none;
+        }
+
+        .card-info {
+            background-color: #f9f9f9;
+            padding: 1rem;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
+        }
+
+        button[type="submit"] {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #007BFF;
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="form-container">
+        <h2>Create Account</h2>
+        <form action="#" method="POST" autocomplete="on"> <!-- Form level autocomplete on for general fields -->
+            
+            <!-- Standard User Information -->
+            <div class="form-group">
+                <label for="fullname">Full Name</label>
+                <input type="text" id="fullname" name="fullname" autocomplete="name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" autocomplete="email" required>
+            </div>
+
+            <!-- Sensitive Fields: Password -->
+            <div class="form-group">
+                <label for="password">Password</label>
+                <!-- 
+                    autocomplete='new-password': Instructs browsers to not auto-fill existing passwords.
+                    Browser password managers will typically suggest generating a new password here.
+                -->
+                <input type="password" id="password" name="password" 
+                       autocomplete="new-password" required minlength="8">
+            </div>
+
+            <!-- Sensitive Fields: Payment Card Information -->
+            <div class="card-info">
+                <h3>Payment Details</h3>
+                
+                <div class="form-group">
+                    <label for="card-name">Name on Card</label>
+                    <input type="text" id="card-name" name="card_name" autocomplete="cc-name">
+                </div>
+
+                <div class="form-group">
+                    <label for="card-number">Card Number</label>
+                    <!-- 
+                        type='tel': Allows mobile keyboards to show numeric keys for easier entry.
+                        autocomplete='off': Prevents browser from caching this sensitive financial data.
+                    -->
+                    <input type="tel" id="card-number" name="card_number" 
+                           placeholder="0000 0000 0000 0000" 
+                           maxlength="19" autocomplete="off" required>
+                </div>
+
+                <div style="display: flex; gap: 1rem;">
+                    <div class="form-group" style="flex: 1;">
+                        <label for="expiry">Expiry Date</label>
+                        <input type="text" id="expiry" name="expiry" placeholder="MM/YY" maxlength="5" autocomplete="off">
+                    </div>
+                    
+                    <div class="form-group" style="flex: 1;">
+                        <label for="cvv">CVV</label>
+                        <!-- 
+                            type='tel': Numeric keyboard on mobile.
+                            autocomplete='off': Prevents caching of security codes.
+                        -->
+                        <input type="tel" id="cvv" name="cvv" maxlength="4" placeholder="123" autocomplete="off" required pattern="\d*">
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit">Register</button>
+        </form>
+    </div>
+
+</body>
+</html>

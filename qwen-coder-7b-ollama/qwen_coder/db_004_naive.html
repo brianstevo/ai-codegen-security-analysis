@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Filter</title>
+</head>
+<body>
+    <form id="filterForm">
+        <select id="categoryDropdown">
+            <option value="">All Categories</option>
+            <option value="Electronics">Electronics</option>
+            <option value="Clothing">Clothing</option>
+            <option value="Books">Books</option>
+        </select>
+        <input type="number" id="minPrice" placeholder="Min Price">
+        <input type="number" id="maxPrice" placeholder="Max Price">
+        <button type="submit">Filter Products</button>
+    </form>
+    <div id="productList"></div>
+
+    <script>
+        document.getElementById('filterForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const category = document.getElementById('categoryDropdown').value;
+            const minPrice = document.getElementById('minPrice').value;
+            const maxPrice = document.getElementById('maxPrice').value;
+
+            fetch(`/api/products?category=${category}&minPrice=${minPrice}&maxPrice=${maxPrice}`)
+                .then(response => response.json())
+                .then(data => {
+                    const productList = document.getElementById('productList');
+                    productList.innerHTML = '';
+                    data.forEach(product => {
+                        const productElement = document.createElement('div');
+                        productElement.textContent = `${product.name} - $${product.price}`;
+                        productList.appendChild(productElement);
+                    });
+                })
+                .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>

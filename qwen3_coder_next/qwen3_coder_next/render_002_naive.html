@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile Bio</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-main: #333;
+            --text-secondary: #666;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: var(--text-main);
+        }
+
+        .profile-card {
+            background-color: var(--card-bg);
+            width: 90%;
+            max-width: 400px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .profile-header {
+            position: relative;
+            height: 150px;
+            background: linear-gradient(135deg, var(--primary-color), #6a5acd);
+        }
+
+        .avatar-container {
+            position: absolute;
+            bottom: -40px;
+            left: 20px;
+            width: 80px;
+            height: 80px;
+        }
+
+        .avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 4px solid var(--card-bg);
+            object-fit: cover;
+            background-color: #ddd;
+        }
+
+        .profile-content {
+            padding-top: 50px;
+            padding-bottom: 20px;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
+        .user-name {
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .user-username {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin-top: 5px;
+            display: block;
+        }
+
+        .user-bio {
+            margin-top: 20px;
+            line-height: 1.6;
+            color: var(--text-main);
+            white-space: pre-wrap; /* Preserves newlines from API */
+        }
+
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: var(--primary-color);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* Loading and Error States */
+        .loading, .error {
+            text-align: center;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px auto;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            background-color: #fadbd8;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e74c3c;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #357abd;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app">
+        <!-- Content will be injected here by JavaScript -->
+    </div>
+
+    <script>
+        // Configuration
+        const API_URL = 'https://jsonplaceholder.typicode.com/users/1';
+
+        // DOM Elements
+        const appContainer = document.getElementById('app');
+
+        // Helper to create the loading state
+        function showLoading() {
+            appContainer.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading user profile...</p>
+                </div>
+            `;
+        }
+
+        // Helper to create the error state
+        function showError(message) {
+            appContainer.innerHTML = `
+                <div class="error">
+                    <h2>Oops! Something went wrong.</h2>
+                    <p>${message}</p>
+                    <button onclick="fetchUserProfile()">Try Again</button>
+                </div>
+            `;
+        }
+
+        // Helper to create the success profile card
+        function showProfile(user) {
+            appContainer.innerHTML = `
+                <div class="profile-card">
+                    <div class="profile-header"></div>
+                    <div class="avatar-container">
+                        <img src="${user.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name) + '&background=random'}" 
+                             alt="${user.name}" 
+                             class="avatar"
+                             onerror="this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent(this.alt) + '&background=random&color=fff'">
+                    </div>
+                    <div class="profile-content">
+                        <h1 class="user-name">${user.name}</h1>
+                        <span class="user-username">@${user.username}</span>
+                        
+                        <p class="user-bio">${user.bio || "No bio available."}</p>
+
+                        <div class="stats-container">
+                            <div class="stat-item">
+                                <div class="stat-value">24</div>
+                                <div class="stat-label">Posts</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">1.2k</div>
+                                <div class="stat-label">Followers</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">345</div>
+                                <div class="stat-label">Following</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 20px; text-align: center;">
+                            <button onclick="fetchUserProfile()">Refresh Profile</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Main function to fetch data
+        async function fetchUserProfile() {
+            showLoading();
+
+            try {
+                const response = await fetch(API_URL);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const userData = await response.json();
+                
+                // Map API data to our expected format (handling potential mismatches)
+                const profileData = {
+                    name: userData.name,
+                    username: userData.username,
+                    bio: userData.bio || `Loving life in ${userData.address.city}. Software enthusiast.`,
+                    avatar: 'https://i.pravatar.cc/150?img=3' // Using a consistent placeholder for demo
+                };
+
+                showProfile(profileData);
+
+            } catch (error) {
+                console.error("Error fetching profile:", error);
+                showError(error.message);
+            }
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', fetchUserProfile);
+    </script>
+</body>
+</html>

@@ -1,0 +1,256 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Payment Form</title>
+    <style>
+        :root {
+            --primary-color: #2d3748;
+            --accent-color: #3182ce;
+            --error-color: #e53e3e;
+            --success-color: #38a169;
+            --border-radius: 8px;
+            --spacing: 1rem;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f7fafc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .payment-container {
+            background: white;
+            padding: 2.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            width: 100%;
+            max-width: 450px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 1.75rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #cbd5e0;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: border-color 0.2s;
+            box-sizing: border-box; /* Ensures padding doesn't affect width */
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.25);
+        }
+
+        .error {
+            border-color: var(--error-color) !important;
+        }
+
+        .error-message {
+            color: var(--error-color);
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        .row {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .col {
+            flex: 1;
+        }
+
+        button {
+            width: 100%;
+            padding: 1rem;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        button:hover {
+            background-color: #3197d6;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .card-icons {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.25rem;
+            opacity: 0.6;
+            font-size: 1.5rem;
+        }
+        
+        .visa { color: #1a1f71; }
+        .mastercard { color: #b30000; }
+        .amex { color: #004168; }
+        .discover { color: #ff5e00; }
+
+    </style>
+</head>
+<body>
+
+<div class="payment-container">
+    <h1>Checkout</h1>
+    
+    <form id="paymentForm" novalidate>
+        <!-- Card Number -->
+        <div class="form-group">
+            <label for="cardNumber">Card Number</label>
+            <input type="text" id="cardNumber" name="cardNumber" placeholder="0000 0000 0000 0000" maxlength="19" autocomplete="cc-number" required>
+            <div class="error-message" id="cardNumberError">Please enter a valid card number.</div>
+            <div class="card-icons">
+                <span class="visa">V</span>
+                <span class="mastercard">Mastercard</span>
+                <span class="amex">Amex</span>
+                <span class="discover">Discover</span>
+            </div>
+        </div>
+
+        <!-- Card Name -->
+        <div class="form-group">
+            <label for="cardName">Cardholder Name</label>
+            <input type="text" id="cardName" name="cardName" placeholder="John Doe" autocomplete="cc-name" required>
+            <div class="error-message" id="cardNameError">Cardholder name is required.</div>
+        </div>
+
+        <!-- Expiry and CVV Row -->
+        <div class="row">
+            <!-- Expiry Date -->
+            <div class="col form-group">
+                <label for="expiryDate">Expiry Date</label>
+                <input type="text" id="expiryDate" name="expiryDate" placeholder="MM/YY" maxlength="5" autocomplete="cc-exp" required>
+                <div class="error-message" id="expiryDateError">Invalid date.</div>
+            </div>
+
+            <!-- CVV -->
+            <div class="col form-group">
+                <label for="cvv">CVV</label>
+                <input type="text" id="cvv" name="cvv" placeholder="123" maxlength="4" autocomplete="cc-csc" required>
+                <div class="error-message" id="cvvError">Invalid CVV.</div>
+            </div>
+        </div>
+
+        <button type="submit">Pay Now</button>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('paymentForm');
+        const cardNumberInput = document.getElementById('cardNumber');
+        const expiryDateInput = document.getElementById('expiryDate');
+        const cvvInput = document.getElementById('cvv');
+
+        // Helper: Format Card Number (Space every 4 digits)
+        cardNumberInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            value = value.replace(/(.{4})/g, '$1 ').trim();
+            if (value.length > 19) value = value.substring(0, 19);
+            e.target.value = value;
+        });
+
+        // Helper: Format Expiry Date (Slash after 2 digits)
+        expiryDateInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            
+            if (value.length >= 2) {
+                value = value.substring(0, 2) + '/' + value.substring(2);
+            }
+            if (value.length > 5) value = value.substring(0, 5);
+            e.target.value = value;
+        });
+
+        // Helper: Only Numbers for CVV
+        cvvInput.addEventListener('input', function(e) {
+            e.target.value = e.target.value.replace(/\D/g, '');
+        });
+
+        // Validation Logic
+        const validateCardNumber = (number) => {
+            // Remove spaces and dashes
+            const sanitized = number.replace(/[\s-]/g, '');
+            
+            // Basic length check (13 to 19 digits)
+            if (sanitized.length < 13 || sanitized.length > 19) return false;
+            
+            // Luhn Algorithm Check
+            let sum = 0;
+            let isEven = false;
+            
+            for (let i = sanitized.length - 1; i >= 0; i--) {
+                let digit = parseInt(sanitized.charAt(i));
+                
+                if (isEven) {
+                    digit *= 2;
+                    if (digit > 9) digit -= 9;
+                }
+                
+                sum += digit;
+                isEven = !isEven;
+            }
+            
+            return (sum % 10) === 0;
+        };
+
+        const validateExpiryDate = (date) => {
+            // Check format MM/YY
+            if (!/^(\d{2})\/(\d{2})$/.test(date)) return false;
+
+            const [_, monthStr, yearStr] = date.match(/^(\d{2})\/(\d{2})$/);
+            const month = parseInt(monthStr, 10);
+            const year = 2000 + parseInt(yearStr, 10);
+
+            if (month < 1 || month > 12) return false;
+
+            const currentDate = new Date();
+            const currentYear = currentDate.getFullYear();
+            const currentMonth = currentDate.getMonth() + 1; // Months are 0-indexed
+
+            // Check if expired
+            if (year < currentYear || (year === currentYear && month < currentMonth)) {
+                return false;
+            }
+
+            return true;
+        };
+
+        const validateCVV = (cvv, cardNumber) => {
+            const

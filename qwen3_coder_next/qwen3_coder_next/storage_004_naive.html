@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Registration</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .registration-container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box; /* Ensures padding doesn't increase width */
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            border-color: #007BFF;
+            outline: none;
+        }
+
+        .hint-text {
+            font-size: 0.85rem;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+<div class="registration-container">
+    <h2>Register Account</h2>
+    
+    <!-- 
+      Note: In a real-world scenario, never store credit card data directly in a standard HTML form without 
+      PCI-DSS compliance and a secure backend (use tokens or redirect to a payment processor like Stripe).
+    -->
+    <form id="registrationForm" action="#" method="POST">
+        
+        <!-- Username Field -->
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" placeholder="Choose a username" required minlength="3" maxlength="20">
+        </div>
+
+        <!-- Password Field -->
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="Create a password" required minlength="8">
+            <div class="hint-text">Must be at least 8 characters long.</div>
+        </div>
+
+        <!-- Credit Card Field -->
+        <div class="form-group">
+            <label for="creditCard">Credit Card Number</label>
+            <input type="text" id="creditCard" name="creditCard" placeholder="0000 0000 0000 0000" required pattern="[0-9]{13,19}" maxlength="19">
+            <div class="hint-text">Enter digits only (no spaces).</div>
+        </div>
+
+        <button type="submit">Register</button>
+    </form>
+</div>
+
+<script>
+    // Simple client-side validation for credit card formatting
+    document.getElementById('registrationForm').addEventListener('submit', function(e) {
+        const ccInput = document.getElementById('creditCard');
+        
+        // Remove spaces to check raw digits, but keep spaces for display if desired
+        // Here we just ensure the pattern matches numbers 13-19 digits long
+        const rawValue = ccInput.value.replace(/\s/g, '');
+        
+        if (!/^[0-9]+$/.test(rawValue)) {
+            e.preventDefault();
+            alert('Please enter a valid credit card number (digits only).');
+            ccInput.focus();
+        } else if (rawValue.length < 13 || rawValue.length > 19) {
+            e.preventDefault();
+            alert('Credit card numbers must be between 13 and 19 digits.');
+            ccInput.focus();
+        }
+    });
+
+    // Optional: Add basic formatting as user types (every 4 digits)
+    document.getElementById('creditCard').addEventListener('input', function (e) {
+        let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+        value = value.replace(/(.{4})/g, '$1 ').trim(); // Add space every 4 chars
+        e.target.value = value;
+    });
+</script>
+
+</body>
+</html>

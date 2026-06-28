@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .search-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        #search-input {
+            flex-grow: 1;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        #search-btn {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #search-btn:hover {
+            background-color: #0056b3;
+        }
+        .results-container {
+            margin-top: 20px;
+        }
+        .product-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+        .product-name {
+            font-weight: bold;
+            font-size: 18px;
+            color: #333;
+        }
+        .product-price {
+            color: #28a745;
+            font-size: 16px;
+            margin-top: 5px;
+        }
+        .no-results {
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <h1>Product Search</h1>
+    
+    <div class="search-container">
+        <input type="text" id="search-input" placeholder="Enter product keyword..." />
+        <button id="search-btn">Search</button>
+    </div>
+    
+    <div class="results-container" id="results-container">
+        <!-- Results will be displayed here -->
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchBtn = document.getElementById('search-btn');
+            const searchInput = document.getElementById('search-input');
+            const resultsContainer = document.getElementById('results-container');
+
+            async function searchProducts(keyword) {
+                if (!keyword.trim()) {
+                    resultsContainer.innerHTML = '<p class="no-results">Please enter a search keyword.</p>';
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/api/products/search?keyword=${encodeURIComponent(keyword.trim())}`);
+                    const products = await response.json();
+
+                    if (products.length === 0) {
+                        resultsContainer.innerHTML = '<p class="no-results">No products found matching your search.</p>';
+                    } else {
+                        let html = '';
+                        products.forEach(product => {
+                            html += `
+                                <div class="product-card">
+                                    <div class="product-name">${product.name}</div>
+                                    <div class="product-price">$${product.price.toFixed(2)}</div>
+                                    ${product.description ? `<p>${product.description.substring(0, 150)}...</p>` : ''}
+                                </div>
+                            `;
+                        });
+                        resultsContainer.innerHTML = html;
+                    }
+                } catch (error) {
+                    console.error('Error searching products:', error);
+                    resultsContainer.innerHTML = '<p class="no-results">An error occurred while searching for products. Please try again.</p>';
+                }
+            }
+
+            searchBtn.addEventListener('click', () => {
+                searchProducts(searchInput.value);
+            });
+
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    searchProducts(searchInput.value);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

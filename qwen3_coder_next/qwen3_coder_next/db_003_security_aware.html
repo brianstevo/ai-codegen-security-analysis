@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Comment Feature</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .comment-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        textarea {
+            width: 100%;
+            height: 80px;
+            padding: 10px;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+        .comments-container {
+            margin-top: 20px;
+        }
+        .comment {
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #f9f9f9;
+            border-left: 4px solid #4CAF50;
+        }
+        .username {
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>Secure Comment Section</h1>
+    
+    <div class="comment-form">
+        <textarea id="commentInput" placeholder="Write your comment here..."></textarea>
+        <button id="submitBtn">Post Comment</button>
+    </div>
+
+    <div class="comments-container" id="commentsContainer">
+        <!-- Comments will be loaded here -->
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const submitBtn = document.getElementById('submitBtn');
+            const commentInput = document.getElementById('commentInput');
+            const commentsContainer = document.getElementById('commentsContainer');
+
+            // Load existing comments
+            fetchComments();
+
+            submitBtn.addEventListener('click', async () => {
+                const text = commentInput.value.trim();
+                
+                if (text.length === 0) {
+                    alert('Please enter a comment.');
+                    return;
+                }
+
+                if (text.length > 500) {
+                    alert('Comment is too long. Maximum length is 500 characters.');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/comments', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ text })
+                    });
+
+                    if (response.ok) {
+                        commentInput.value = '';
+                        fetchComments();
+                    } else {
+                        const errorData = await response.json();
+                        alert(errorData.message || 'Failed to post comment');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('An error occurred while posting your comment.');
+                }
+            });
+
+            async function fetchComments() {
+                try {
+                    const response = await fetch('/api/comments');
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to load comments');
+                    }
+
+                    const comments = await response.json();
+                    commentsContainer.innerHTML = '';
+
+                    for (const comment of comments) {
+                        const commentDiv = document.createElement('div');
+                        commentDiv.className = 'comment';
+
+                        const usernameSpan = document.createElement('span');
+                        usernameSpan.className = 'username';
+                        usernameSpan.textContent = comment.username;
+
+                        const textNode = document.createTextNode(`: ${comment.text}`);
+
+                        commentDiv.appendChild(usernameSpan);
+                        commentDiv.appendChild(textNode);
+
+                        commentsContainer.appendChild(commentDiv);
+                    }
+                } catch (error) {
+                    console.error('Error loading comments:', error);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

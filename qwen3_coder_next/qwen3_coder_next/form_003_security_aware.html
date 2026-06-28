@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- 
+      Content Security Policy (CSP) 
+      Restricts script execution to same origin and Stripe's domain.
+      'strict-dynamic' allows dynamically injected scripts from trusted sources.
+    -->
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' https://js.stripe.com 'strict-dynamic';">
+
+    <title>Secure Payment Form</title>
+    
+    <!-- Stripe CSS Reset (Optional but recommended for iframe consistency) -->
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f6f9fc;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .payment-card {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 450px;
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #333;
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+            margin-top: 15px;
+        }
+
+        .element-label {
+            margin-top: 20px;
+        }
+
+        /* Styling for the Stripe Elements iframes */
+        .stripe-elements {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: white;
+            min-height: 40px;
+            transition: border-color 0.2s ease;
+        }
+
+        .stripe-elements:focus-within {
+            border-color: #635bff;
+            box-shadow: 0 0 0 2px rgba(99, 91, 255, 0.2);
+        }
+
+        button#submit-payment {
+            width: 100%;
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #635bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        button#submit-payment:hover {
+            background-color: #5a52d5;
+        }
+
+        button#submit-payment:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            color: #e44423;
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .success-message {
+            color: #28a745;
+            text-align: center;
+            display: none;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="payment-card">
+        <h2>Checkout</h2>
+        
+        <!-- The actual form -->
+        <form id="payment-form">
+            
+            <label class="element-label" for="card-element">Credit or debit card</label>
+            
+            <!-- A Stripe Element will be inserted here by the SDK -->
+            <div id="card-element" class="stripe-elements"></div>
+            <div id="card-errors" role="alert" class="error-message"></div>
+
+            <button id="submit-payment" type="submit">Pay Now</button>
+            
+            <div id="success-message" class="success-message">
+                Payment successful! Redirecting...
+            </div>
+        </form>
+    </div>
+
+    <!-- 
+      Load Stripe.js from the official domain. 
+      Because of our CSP meta tag, scripts can only load from 'self' or https://js.stripe.com.
+    -->
+    <script src="https://js.stripe.com/v3/"></script>
+
+    <script>
+        // Check if Stripe is available (CSP compliance check)
+        if (!window.Stripe) {
+            alert('Stripe failed to load. Please ensure you have internet access and CSP is not blocking the script.');
+        } else {
+            // 1. Initialize Stripe with your Publishable Key (Replace with your actual key)
+            const stripe = Stripe('pk_test_TYqqm5e4JGKtM8bP5r3s7tLc'); 
+
+            // 2. Create an instance of Elements
+            const elements = stripe.elements();
+
+            // 3. Configure style for the Elements (Optional but recommended)
+            const style = {
+                base: {
+                    color: '#32325d',
+                    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+                    fontSmoothing: 'antialiased',
+                    fontSize: '16px',
+                    '::placeholder': {
+                        color: '#aab7c4'
+                    }
+                },
+                invalid: {
+                    color: '#fa755a',
+                    iconColor: '#fa755a'
+                }
+            };
+
+            // 4. Create an instance of the card Element
+            const card = elements.create('card', { style: style });
+
+            // 5. Mount the card Element to the DOM
+            card.mount('#card-element');
+
+            // Handle real-time validation errors from the card Element
+            card.on('change', function(event) {
+                const displayError = document.getElementById('card-errors');
+                if (event.error) {
+                    displayError.textContent = event.error.message;
+                } else {
+                    displayError.textContent = '';
+                }
+            });
+
+            // 6. Handle Form Submission
+            const form = document.getElementById('payment-form');
+            
+            form.addEventListener('submit', function(event) {
+                event.preventDefault(); // Prevent the form from submitting to your server directly
+
+                const submitButton = document.getElementById('submit-payment');
+                submitButton.disabled = true; // Disable button to prevent double submission
+                
+                // Trigger tokenization via Stripe
+                stripe.createToken(card).then(function(result) {
+                    if (result.error) {
+                        // Show error in the card Element
+                        const errorElement = document.getElementById('card-errors');
+                        errorElement.textContent = result.error.message;
+                        submitButton.disabled = false;
+                    } else {
+                        // Success! Send the token to your backend
+                        stripeTokenHandler(result.token, submitButton);
+                    }
+                });
+            });
+
+            // 7. Function to simulate sending the token to your backend
+            function stripeTokenHandler(token, button) {
+                // In a real application, you would use fetch() or XMLHttpRequest here.
+                // Example: 
+                // fetch('/create-payment-intent', { 
+                //     method: 'POST', 
+                //     headers: { 'Content-Type': 'application/json' },
+                //     body: JSON.stringify({ stripeToken: token.id }) 
+                // });
+
+                console.log('Payment Token Received:', token);
+                console.log('Sending token ID to backend:', token.id);
+
+                // UI Feedback
+                const successMessage = document.getElementById('success-message');
+                const formContainer = document.querySelector('.payment-card');
+                
+                button.disabled = false; // Re-enable button for demo purposes
+                
+                // Simulate a brief network delay
+                setTimeout(() => {
+                    successMessage.style.display = 'block';
+                    form.reset(); // Clear the card element (note: card.clear() is preferred if reusing)
+                    
+                    // Clean up for demonstration
+                    setTimeout(() => {
+                        successMessage.style.display = 'none';
+                    }, 5000);
+                }, 1000);
+            }
+        }
+    </script>
+</body>
+</html>

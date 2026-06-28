@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure File Upload</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .upload-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        input[type="file"] {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #response {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <h1>Secure File Upload</h1>
+    <form id="uploadForm" class="upload-form">
+        <label for="fileInput">Select a file to upload:</label>
+        <input type="file" id="fileInput" name="file" required>
+        <button type="submit">Upload</button>
+    </form>
+
+    <div id="response"></div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('fileInput');
+            const responseDiv = document.getElementById('response');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showResponse("Please select a file to upload.", "error");
+                return;
+            }
+            
+            // Validate file size client-side (optional, but good UX)
+            const maxSizeMB = 5; // Match server limit
+            if (file.size > maxSizeMB * 1024 * 1024) {
+                showResponse(`File is too large. Maximum size is ${maxSizeMB} MB.`, "error");
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    showResponse(`File uploaded successfully! Saved as: ${result.filename}`, "success");
+                } else {
+                    const errorData = await response.json();
+                    showResponse(errorData.message || "Upload failed", "error");
+                }
+            } catch (error) {
+                showResponse("An error occurred during upload: " + error.message, "error");
+            }
+        });
+        
+        function showResponse(message, type) {
+            const responseDiv = document.getElementById('response');
+            responseDiv.textContent = message;
+            responseDiv.className = type; // 'success' or 'error'
+            responseDiv.style.display = 'block';
+            
+            // Hide after 5 seconds
+            setTimeout(() => {
+                responseDiv.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log File Viewer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        h1 {
+            color: #333;
+        }
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        select, button {
+            padding: 0.6rem 1rem;
+            font-size: 1rem;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        pre {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            padding: 1rem;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 70vh;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>Log File Viewer</h1>
+    
+    <div class="controls">
+        <select id="logFileSelect">
+            <option value="" disabled selected>Select a log file...</option>
+        </select>
+        <button id="fetchButton">Fetch Log</button>
+    </div>
+
+    <pre id="logContent">Log content will appear here...</pre>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const logFileSelect = document.getElementById('logFileSelect');
+            const fetchButton = document.getElementById('fetchButton');
+            const logContent = document.getElementById('logContent');
+
+            // Populate dropdown with available log files
+            async function populateLogFiles() {
+                try {
+                    const response = await fetch('/api/logs/list');
+                    if (!response.ok) throw new Error('Failed to fetch log list');
+                    
+                    const logFiles = await response.json();
+                    logFileSelect.innerHTML = '<option value="" disabled selected>Select a log file...</option>';
+                    
+                    logFiles.forEach(file => {
+                        const option = document.createElement('option');
+                        option.value = file;
+                        option.textContent = file;
+                        logFileSelect.appendChild(option);
+                    });
+                } catch (error) {
+                    console.error('Error populating log files:', error);
+                    logContent.textContent = 'Error loading log file list.';
+                }
+            }
+
+            // Fetch and display selected log file
+            async function fetchLogFile() {
+                const filename = logFileSelect.value;
+                
+                if (!filename) {
+                    alert('Please select a log file first.');
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/api/logs/read?file=${encodeURIComponent(filename)}`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`Failed to read log file: ${response.statusText}`);
+                    }
+                    
+                    const content = await response.text();
+                    logContent.textContent = content;
+                } catch (error) {
+                    console.error('Error fetching log file:', error);
+                    logContent.textContent = `Error reading log file: ${error.message}`;
+                }
+            }
+
+            // Event listeners
+            fetchButton.addEventListener('click', fetchLogFile);
+            
+            // Initialize on page load
+            populateLogFiles();
+        });
+    </script>
+</body>
+</html>

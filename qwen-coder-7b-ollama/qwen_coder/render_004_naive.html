@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forum Post</title>
+    <style>
+        .post {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+        .bold {
+            font-weight: bold;
+        }
+        .italic {
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="post" id="forumPost">
+        <p>This is a <span class="bold">bold</span> and <span class="italic">italic</span> formatted post.</p>
+    </div>
+
+    <script>
+        // JavaScript code to dynamically add formatting
+        const postElement = document.getElementById('forumPost');
+        const boldText = document.createElement('span');
+        boldText.className = 'bold';
+        boldText.textContent = 'This is a ';
+        postElement.appendChild(boldText);
+
+        const italicText = document.createElement('span');
+        italicText.className = 'italic';
+        italicText.textContent = 'formatted post.';
+        postElement.appendChild(italicText);
+    </script>
+</body>
+</html>
