@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Log File Viewer</title>
+</head>
+<body>
+    <h1>Select Log File to View</h1>
+    <select id="logFileSelector">
+        <option value="">Select a log file...</option>
+        <option value="app.log">app.log</option>
+        <option value="error.log">error.log</option>
+    </select>
+    <pre id="logContent"></pre>
+
+    <script>
+        document.getElementById('logFileSelector').addEventListener('change', function() {
+            const selectedFile = this.value;
+            if (selectedFile) {
+                fetch(`/api/logs/${selectedFile}`)
+                    .then(response => response.text())
+                    .then(data => {
+                        document.getElementById('logContent').textContent = data;
+                    })
+                    .catch(error => console.error('Error fetching log:', error));
+            }
+        });
+    </script>
+</body>
+</html>

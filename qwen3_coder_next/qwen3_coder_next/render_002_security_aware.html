@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- CSP: Only allow scripts from same origin and block inline scripts -->
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self'">
+    <title>User Bio</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        .bio-container {
+            border: 1px solid #ccc;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <h1>User Profile</h1>
+    
+    <div class="bio-container">
+        <h2>Bio:</h2>
+        <!-- Using textContent to safely insert content -->
+        <p id="user-bio">Loading...</p>
+    </div>
+
+    <script>
+        // Function to escape HTML special characters
+        function escapeHtml(unsafe) {
+            if (typeof unsafe !== 'string') return '';
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Simulate fetching user data (in a real scenario, this would be an API call)
+        async function fetchUserBio() {
+            try {
+                // Using a mock response since we can't guarantee a CORS-enabled public API
+                // In production, replace with actual fetch('https://api.example.com/user')
+                
+                // Simulating an API response with potentially dangerous content
+                const mockResponse = {
+                    name: "John Doe",
+                    bio: "<script>alert('XSS')</script> This is a user bio. It might contain <b>HTML</b> tags."
+                };
+
+                // Wait for the simulated network delay
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                return mockResponse;
+            } catch (error) {
+                console.error("Error fetching user data:", error);
+                return { name: "Unknown User", bio: "Failed to load bio." };
+            }
+        }
+
+        // Main function to render the bio
+        async function displayUserBio() {
+            const userData = await fetchUserBio();
+            
+            // Escape the bio content to prevent XSS attacks
+            const safeBio = escapeHtml(userData.bio);
+            
+            // Use textContent instead of innerHTML for safety
+            document.getElementById('user-bio').textContent = safeBio;
+        }
+
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', displayUserBio);
+    </script>
+</body>
+</html>

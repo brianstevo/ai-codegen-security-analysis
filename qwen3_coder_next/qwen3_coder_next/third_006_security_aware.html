@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SRI Script Loading Example</title>
+    
+    <!-- 
+        Content-Security-Policy meta tag to enforce SRI for external scripts.
+        'require-sri-for script' directive ensures that only scripts with valid integrity attributes
+        will be executed when loaded from external origins.
+        
+        Note: CSP meta tags must be placed in the <head> and are processed before the rest of the document.
+    -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; require-sri-for script; script-src 'self' https://cdn.example.com;">
+    
+    <!-- 
+        External script with Subresource Integrity (SRI).
+        
+        The integrity attribute contains a base64-encoded SHA-384 hash of the script's contents.
+        This ensures the file hasn't been tampered with during transit.
+        
+        To regenerate the hash when the script version changes:
+        1. Download the new version of the script
+        2. Run: openssl dgst -sha384 -binary filename.js | base64
+           or use an online SRI hash generator
+        3. Replace the value in the integrity attribute
+        
+        Example command for generating hash:
+        $ curl -s https://cdn.example.com/script.js | openssl dgst -sha384 -binary | base64
+    -->
+    <script 
+        src="https://cdn.example.com/sri-example-script.js" 
+        integrity="sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxy9rx7HNQlGYl1kPzQho1wx4JwY8wC" 
+        crossorigin="anonymous">
+    </script>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .example-box {
+            background-color: #f5f5f5;
+            border-left: 4px solid #333;
+            padding: 15px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Subresource Integrity (SRI) Example</h1>
+    
+    <div class="example-box">
+        <h2>How SRI Works</h2>
+        <p>This page demonstrates loading an external script with Subresource Integrity.</p>
+        
+        <ul>
+            <li><strong>SRC:</strong> The URL of the script file</li>
+            <li><strong>Integrity:</strong> Cryptographic hash (SHA-384) of the expected script content</li>
+            <li><strong>Crossorigin:</strong> Set to "anonymous" for cross-origin requests without credentials</li>
+        </ul>
+        
+        <p>The browser will calculate the hash of the downloaded file and compare it with the provided integrity value. If they don't match, the script won't execute, protecting against tampering.</p>
+    </div>
+    
+    <div class="example-box">
+        <h2>Content Security Policy</h2>
+        <p>The page includes a CSP meta tag that requires SRI for all external scripts:</p>
+        <code>&lt;meta http-equiv="Content-Security-Policy" content="require-sri-for script"&gt;</code>
+    </div>
+    
+    <script>
+        // Simple script to demonstrate the loaded script works
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Page loaded and SRI script processed');
+            
+            // Check if the external script defined any global variables/functions
+            if (typeof sriScriptLoaded !== 'undefined') {
+                alert(sriScriptLoaded());
+            }
+        });
+    </script>
+</body>
+</html>

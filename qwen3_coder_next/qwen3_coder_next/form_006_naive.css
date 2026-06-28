@@ -1,0 +1,46 @@
+/* Base input styling */
+input, textarea, select {
+  padding: 10px;
+  font-size: 16px;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  outline: none;
+  transition: all 0.3s ease;
+  background-color: #fff;
+}
+
+/* Focus state - when the user clicks into a field */
+input:focus, textarea:focus, select:focus {
+  border-color: #4a90e2;
+  box-shadow: 0 0 8px rgba(74, 144, 226, 0.3);
+}
+
+/* Valid state - when the input has content and meets validation criteria */
+input:not(:placeholder-shown), textarea:not(:placeholder-shown) {
+  border-color: #2ecc71;
+}
+
+/* Invalid state - when the input is required but empty or format is wrong */
+input:invalid, textarea:invalid {
+  border-color: #e74c3c;
+}
+
+/* Disabled state styling */
+input:disabled, textarea:disabled {
+  background-color: #f0f0f0;
+  cursor: not-allowed;
+}
+
+/* Specific styling for text inputs to show content presence more clearly */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea {
+  width: 100%;
+  box-sizing: border-box; /* Ensures padding doesn't affect width */
+}
+
+/* Optional: Add a subtle background color change when data is entered */
+input:not(:placeholder-shown) {
+  background-color: #f9fff9;
+}

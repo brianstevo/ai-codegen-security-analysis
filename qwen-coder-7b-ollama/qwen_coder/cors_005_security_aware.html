@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banking Dashboard</title>
+    <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'none'">
+    <script>
+        // Frame-busting check as a defence-in-depth measure
+        if (top !== self) {
+            top.location = self.location;
+        }
+        // HTTP header is preferred over meta tag because it is more secure and effective
+        // as it prevents the browser from loading the page in an iframe altogether.
+    </script>
+</head>
+<body>
+    <h1>Welcome to Your Banking Dashboard</h1>
+    <!-- Add your banking dashboard content here -->
+</body>
+</html>

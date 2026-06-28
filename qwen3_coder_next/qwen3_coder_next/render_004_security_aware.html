@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sanitized Forum Post</title>
+    
+    <!-- 
+        Load DOMPurify from CDN with Subresource Integrity (SRI).
+        The hash ensures the file has not been tampered with.
+    -->
+    <script src="https://unpkg.com/dompurify@3.0.9/dist/purify.min.js"
+            integrity="sha384-5djUWqKoJ1LH+9Rk6Z3b2T2uJ1j0VqzgVw6iF8jXQfGq6eMvB7hPq9aO6S0uE7m"
+            crossorigin="anonymous"></script>
+
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+        .forum-container {
+            width: 100%;
+            max-width: 800px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        .post-header {
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .post-title {
+            font-size: 24px;
+            color: #333;
+            margin: 0;
+        }
+        .post-meta {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .post-content {
+            line-height: 1.6;
+            color: #444;
+            white-space: pre-wrap; /* Preserves formatting from user input */
+        }
+        .badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+        .tag-safe { background-color: #d4edda; color: #155724; }
+    </style>
+</head>
+<body>
+
+<div class="forum-container">
+    <div class="post-header">
+        <h1 class="post-title">Welcome to the Secure Forum</h1>
+        <div class="post-meta">
+            Posted by <strong>Admin</strong> on <span id="post-date">Loading...</span>
+            <span class="badge tag-safe" title="Content is sanitized using DOMPurify">Safe Content</span>
+        </div>
+    </div>
+
+    <!-- The container where the sanitized HTML will be injected -->
+    <div id="forum-post-content" class="post-content">
+        Loading post...
+    </div>
+</div>
+
+<script>
+    // 1. Define the raw user input (simulating a forum post body).
+    // This string contains allowed tags, disallowed tags, event handlers, and malicious scripts.
+    const rawUserInput = `
+<p>This is a <b>bold</b> and <i>italic</i> example of safe text.</p>
+<p>Here is an attempt to inject a <script>alert('XSS')</script> script tag.</p>
+<p>Here is an image with an <img src=x onerror=alert('XSS')> event handler.</p>
+<p>Here is a link with a <a href="javascript:alert('XSS')">malicious URL</a>.</p>
+<p>And here is a <span style="color:red">span tag</span> that should be stripped.</p>
+    `;
+
+    // 2. Configure DOMPurify
+    // We create a configuration object to strictly allow only 'b', 'i', and 'p' tags.
+    const config = {
+        ALLOWED_TAGS: ['b', 'i', 'p'],
+        ADD_ATTR: [], // No extra attributes allowed beyond defaults
+        FORBID_TAGS: [], // Explicitly forbid everything not in ALLOWED_TAGS
+        USE_PROFILES: false, // Don't use HTML5 profile
+        SANITIZE_DOM: true, // Sanitize the DOM (e.g., remove event handlers)
+        KEEP_CONTENT: false, // If a tag is forbidden, remove it and its content (or just the tag)
+        IS_IN_SANDBOX: false,
+        ALLOW_DATA_ATTR: false
+    };
+
+    // 3. Sanitize the input
+    const sanitizedHTML = DOMPurify.sanitize(rawUserInput, config);
+
+    // 4. Inject the sanitized HTML into the DOM
+    document.getElementById('forum-post-content').innerHTML = sanitizedHTML;
+
+    // Set a simple date for display
+    document.getElementById('post-date').textContent = new Date().toLocaleDateString();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload</title>
+</head>
+<body>
+    <form id="uploadForm">
+        <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.gif">
+        <button type="submit">Upload</button>
+    </form>
+    <div id="response"></div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const file = document.getElementById('fileInput').files[0];
+            if (!file) return;
+
+            fetch('/upload', {
+                method: 'POST',
+                body: file
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('response').innerText = JSON.stringify(data, null, 2);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>
