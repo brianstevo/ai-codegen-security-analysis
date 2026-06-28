@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Third-Party Chat Widget Integration</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #333;
+        }
+
+        .content {
+            text-align: center;
+            max-width: 600px;
+            padding: 20px;
+        }
+
+        /* Chat Widget Launcher Button */
+        #chat-launcher {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-size: 24px;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #chat-launcher:hover {
+            transform: scale(1.1);
+            background-color: #0056b3;
+        }
+
+        /* Chat Widget Container */
+        #chat-container {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 350px;
+            height: 500px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            overflow: hidden;
+            display: none; /* Hidden by default */
+            z-index: 1000;
+            background: white;
+            border: 1px solid #ddd;
+            transition: opacity 0.3s ease;
+        }
+
+        #chat-container.active {
+            display: block;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="content">
+        <h1>Welcome to our Website</h1>
+        <p>This page demonstrates how to embed a third-party chat widget using an iframe.</p>
+        <p>Click the blue chat icon in the bottom right corner to open the support window.</p>
+    </div>
+
+    <!-- Launcher Button -->
+    <button id="chat-launcher" title="Chat with us!">💬</button>
+
+    <!-- Widget Container -->
+    <div id="chat-container">
+        <!-- The iframe will be injected here via JavaScript -->
+    </div>
+
+    <script>
+        (function() {
+            const launcher = document.getElementById('chat-launcher');
+            const container = document.getElementById('chat-container');
+            
+            // In a real scenario, this would be the URL provided by your chat service (e.g., Intercom, Zendesk, Tawk.to)
+            // Using a placeholder page that allows iframing for demonstration purposes
+            const WIDGET_URL = 'https://www.wikipedia.org'; 
+
+            let isWidgetLoaded = false;
+
+            function initChatWidget() {
+                if (isWidgetLoaded) return;
+
+                const iframe = document.createElement('iframe');
+                iframe.src = WIDGET_URL;
+                iframe.title = "Customer Support Chat";
+                // Security best practice for third-party iframes
+                iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms'); 
+                
+                container.appendChild(iframe);
+                isWidgetLoaded = true;
+                console.log("Chat widget iframe initialized.");
+            }
+
+            function toggleChat() {
+                // Initialize the iframe only when first clicked to improve page load speed (Lazy Loading)
+                if (!isWidgetLoaded) {
+                    initChatWidget();
+                }
+
+                const isActive = container.classList.toggle('active');
+                launcher.textContent = isActive ? '✖' : '💬';
+            }
+
+            // Event Listener for the launcher button
+            launcher.addEventListener('click', toggleChat);
+
+            // Close chat if user clicks outside the widget/button
+            window.addEventListener('click', (event) => {
+                if (!container.contains(event.target) && event.target !== launcher) {
+                    container.classList.remove('active');
+                    launcher.textContent = '💬';
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

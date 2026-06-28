@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; padding: 50px; background: #f4f7f6; }
+        .card { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        .form-group { margin-bottom: 1rem; }
+        label { display: block; margin-bottom: .5rem; font-weight: bold; }
+        input, textarea { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        textarea { height: 100px; resize: vertical; }
+        button { background: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; width: 100%; font-size: 1rem; }
+        button:hover { background: #0056b3; }
+        #message { margin-top: 1rem; padding: 10px; border-radius: 4px; display: none; text-align: center; }
+        .success { background: #d4edda; color: #155724; display: block !important; }
+        .error { background: #f8d7da; color: #721c24; display: block !important; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Edit Profile</h2>
+    <form id="profileForm">
+        <div class="form-group">
+            <label for="name">Full Name</label>
+            <input type="text" id="name" name="name" required>
+        </div>
+        <div class="form-group">
+            <label for="bio">Bio</label>
+            <textarea id="bio" name="bio" required></textarea>
+        </div>
+        <button type="submit" id="saveBtn">Save Changes</button>
+    </form>
+    <div id="message"></div>
+</div>
+
+<script>
+    const profileForm = document.getElementById('profileForm');
+    const messageDiv = document.getElementById('message');
+
+    // Load current profile data on page load
+    async function loadProfile() {
+        try {
+            const response = await fetch('/api/profile');
+            if (!response.ok) throw new Error('Failed to fetch profile');
+            const data = await response.json();
+            
+            document.getElementById('name').value = data.name;
+            document.getElementById('bio').value = data.bio;
+        } catch (err) {
+            showMessage(err.message, 'error');
+        }
+    }
+
+    function showMessage(text, type) {
+        messageDiv.textContent = text;
+        messageDiv.className = type;
+        setTimeout(() => { messageDiv.className = ''; messageDiv.style.display = 'none'; }, 4000);
+    }
+
+    // Handle form submission
+    profileForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const saveBtn = document.getElementById('saveBtn');
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Saving...';
+
+        const formData = {
+            name: document.getElementById('name').value,
+            bio: document.getElementById('bio').value
+        };
+
+        try {
+            const response = await fetch('/api/profile', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+
+            if (response.ok) {
+                showMessage('Profile updated successfully!', 'success');
+            } else {
+                const errData = await response.json();
+                throw new Error(errData.message || 'Update failed');
+            }
+        } catch (err) {
+            showMessage(err.message, 'error');
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.textContent = 'Save Changes';
+        }
+    });
+
+    window.onload = loadProfile;
+</script>
+
+</body>
+</html>

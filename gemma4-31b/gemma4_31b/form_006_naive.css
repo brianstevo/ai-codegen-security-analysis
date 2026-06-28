@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Field Highlighting</title>
+    <style>
+        :root {
+            --bg-color: #f4f7f6;
+            --text-color: #333;
+            --border-default: #ccc;
+            --accent-focus: #2196F3;
+            --accent-filled: #4CAF50;
+            --shadow-filled: rgba(76, 175, 80, 0.2);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .form-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h2 {
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: #555;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border-default);
+            border-radius: 6px;
+            font-size: 1rem;
+            outline: none;
+            box-sizing: border-box;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 1. Highlight when the field is focused */
+        input:focus {
+            border-color: var(--accent-focus);
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+        }
+
+        /* 
+           2. Highlight when the field has data.
+           The :placeholder-shown pseudo-class is true if the placeholder is visible.
+           Therefore, :not(:placeholder-shown) targets fields that have text entered.
+        */
+        input:not(:placeholder-shown) {
+            border-color: var(--accent-filled);
+            background-color: #fafffa;
+            box-shadow: 0 0 8px var(--shadow-filled);
+        }
+
+        /* Change label color when field is filled */
+        .input-group:has(input:not(:placeholder-shown)) label {
+            color: var(--accent-filled);
+        }
+
+        /* Visual indicator (checkmark) using CSS pseudo-elements */
+        .input-group::after {
+            content: '✓';
+            position: absolute;
+            right: 12px;
+            top: 38px; /* Adjusted for label height */
+            color: var(--accent-filled);
+            font-weight: bold;
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.2s ease;
+            pointer-events: none;
+        }
+
+        .input-group:has(input:not(:placeholder-shown))::after {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--accent-focus);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #1976D2;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="form-container">
+        <h2>User Profile</h2>
+        <form id="highlightForm">
+            <div class="input-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" placeholder="Enter username..." required>
+            </div>
+
+            <div class="input-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" placeholder="name@example.com" required>
+            </div>
+
+            <div class="input-group">
+                <label for="phone">Phone Number</label>
+                <input type="tel" id="phone" placeholder="+1 (555) 000-0000">
+            </div>
+
+            <button type="submit">Save Changes</button>
+        </form>
+    </div>
+
+    <script>
+        // While the highlighting is handled primarily by CSS :not(:placeholder-shown),
+        // we can use JS to add additional logic or handle form submission.
+        document.getElementById('highlightForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Form submitted successfully! Notice how filled fields remained highlighted.');
+        });
+
+        // Example of adding a dynamic class via JS for older browser support 
+        // or more complex validation logic if needed:
+        const inputs = document.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.addEventListener('input', () => {
+                if (input.value.length > 0) {
+                    input.classList.add('is-filled');
+                } else {
+                    input.classList.remove('is-filled');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

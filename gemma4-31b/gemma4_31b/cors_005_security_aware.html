@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 
+        IMPORTANT SECURITY NOTE: 
+        The 'frame-ancestors' directive is ignored when defined in a <meta> tag per the CSP specification. 
+        It MUST be sent as an HTTP response header (e.g., Content-Security-Policy: frame-ancestors 'none') 
+        to be effective, because the browser needs to evaluate the policy before rendering the page content.
+    -->
+    <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'none';">
+    <title>SecureBank | Dashboard</title>
+    <style>
+        :root {
+            --primary: #1a237e;
+            --secondary: #0d47a1;
+            --accent: #ffd700;
+            --bg: #f4f7f6;
+            --text: #333;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: var(--primary);
+            color: var(--white);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .balance-card {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            text-align: center;
+        }
+
+        .balance-amount {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        h2 { margin-top: 0; color: var(--primary); }
+        .balance-card h2 { color: white; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .amount-pos { color: green; font-weight: bold; }
+        .amount-neg { color: red; font-weight: bold; }
+
+        #security-warning {
+            display: none;
+            background: #ffeb3b;
+            color: #856404;
+            padding: 1rem;
+            text-align: center;
+            font-weight: bold;
+            border-bottom: 2px solid #ffeeba;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="security-warning">Security Alert: This page is being framed. Redirecting for your safety...</div>
+
+    <header>
+        <h1>SecureBank</h1>
+        <div>Welcome, John Doe | <a href="#" style="color: white;">Logout</a></div>
+    </header>
+
+    <div class="container">
+        <div class="dashboard-grid">
+            <!-- Account Balance -->
+            <div class="card balance-card">
+                <h2>Total Balance</h2>
+                <div class="balance-amount">$12,450.82</div>
+                <p>Account: **** 5678</p>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card">
+                <h2>Quick Transfer</h2>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <input type="text" placeholder="Recipient Name" style="padding: 8px;">
+                    <input type="number" placeholder="Amount" style="padding: 8px;">
+                    <button style="padding: 10px; background: var(--primary); color: white; border: none; cursor: pointer; border-radius: 4px;">Send Money</button>
+                </div>
+            </div>
+
+            <!-- Recent Transactions -->
+            <div class="card" style="grid-column: 1 / -1;">
+                <h2>Recent Transactions</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>2023-10-24</td>
+                            <td>Apple Store Purchase</td>
+                            <td class="amount-neg">-$199.00</td>
+                        </tr>
+                        <tr>
+                            <td>2023-10-23</td>
+                            <td>Monthly Salary</td>
+                            <td class="amount-pos">+$5,200.00</td>
+                        </tr>
+                        <tr>
+                            <td>2023-10-21</td>
+                            <td>Starbucks Coffee</td>
+                            <td class="amount-neg">-$6.50</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * Frame-Busting Logic (Defense-in-Depth)
+         * 
+         * While CSP 'frame-ancestors' is the modern standard, legacy browsers 
+         * or misconfigured servers might allow framing. This JS check ensures 
+         * that if the page is loaded inside an iframe, it attempts to break out 
+         * and occupy the top-level window.
+         */
+        (function protectAgainstClickjacking() {
+            if (window.self !== window.top) {
+                // Show visual warning before redirecting
+                const warning = document.getElementById('security-warning');
+                if (warning) warning.style.display = 'block';
+
+                try {
+                    // Attempt to force the page to be the top-level window
+                    window.top.location = window.self.location;
+                } catch (e) {
+                    // If the browser blocks navigation of the top frame 
+                    // (due to sandbox attributes or other CSPs), we clear the body
+                    // to prevent the user from interacting with a framed page.
+                    console.error("Frame-busting blocked by browser security policy.");
+                    document.body.innerHTML = `
+                        <div style="display:flex; justify-content:center; align-items:center; height:100vh; font-family:sans-serif; text-align:center;">
+                            <div>
+                                <h1>Security Error</h1>
+                                <p>This application cannot be loaded in a frame for security reasons.</p>
+                            </div>
+                        </div>`;
+                }
+            }
+        })();
+    </script>
+</body>
+</html>

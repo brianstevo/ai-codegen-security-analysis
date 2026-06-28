@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Comments</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 2rem auto; padding: 0 1rem; }
+        #comment-form { margin-bottom: 2rem; display: flex; gap: 10px; }
+        input[type="text"] { flex-grow: 1; padding: 8px; }
+        .comment-item { border-bottom: 1px solid #ccc; padding: 10px 0; }
+        .user-id { font-weight: bold; color: #555; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+
+    <h2>Community Comments</h2>
+    <form id="comment-form">
+        <input type="text" id="comment-input" placeholder="Write a comment..." maxlength="280" required>
+        <button type="submit">Post</button>
+    </form>
+
+    <div id="comments-list"></div>
+
+    <script>
+        const form = document.getElementById('comment-form');
+        const input = document.getElementById('comment-input');
+        const list = document.getElementById('comments-list');
+
+        async function fetchComments() {
+            try {
+                const response = await fetch('/api/comments');
+                const comments = await response.json();
+                list.innerHTML = ''; // Clear current list
+                comments.forEach(appendComment);
+            } catch (err) {
+                console.error('Error fetching comments:', err);
+            }
+        }
+
+        function appendComment({ text, userId }) {
+            const div = document.createElement('div');
+            div.className = 'comment-item';
+            
+            const userSpan = document.createElement('span');
+            userSpan.className = 'user-id';
+            userSpan.textContent = `User ${userId}: `;
+
+            const textSpan = document.createElement('span');
+            // CRITICAL: Use textContent to prevent XSS by treating input as literal text, not HTML
+            textSpan.textContent = text;
+
+            div.appendChild(userSpan);
+            div.appendChild(textSpan);
+            list.appendChild(div);
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const text = input.value;
+
+            try {
+                const response = await fetch('/api/comments', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                });
+
+                if (response.ok) {
+                    input.value = '';
+                    await fetchComments();
+                } else {
+                    const errData = await response.json();
+                    alert(errData.error || 'Failed to post comment');
+                }
+            } catch (err) {
+                console.error('Error posting comment:', err);
+            }
+        });
+
+        // Initial load
+        fetchComments();
+    </script>
+</body>
+</html>

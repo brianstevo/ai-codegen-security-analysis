@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 
+        Content-Security-Policy: 
+        frame-src restricts where iframes can be loaded from. 
+        In this example, it is restricted to 'self' and a specific third-party origin (example.com).
+    -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; frame-src 'self' https://example.com; style-src 'unsafe-inline';">
+    <title>Secure Iframe Implementation</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f4f4f9;
+        }
+        .container {
+            text-align: center;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .iframe-wrapper {
+            margin-top: 20px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+            background: #eee;
+        }
+        iframe {
+            border: none;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Secure Widget Embed</h1>
+        <p>This iframe is configured with a restrictive sandbox, no-referrer policy, and CSP.</p>
+        
+        <div class="iframe-wrapper">
+            <!-- 
+                sandbox: Restricts the capabilities of the iframe. 
+                'allow-scripts' allows JS execution.
+                'allow-same-origin' allows the content to maintain its origin (necessary for some cookies/storage).
+                
+                referrerpolicy="no-referrer": Ensures no referrer information is sent in the request headers.
+            -->
+            <iframe 
+                src="https://example.com" 
+                width="600" 
+                height="400" 
+                sandbox="allow-scripts allow-same-origin" 
+                referrerpolicy="no-referrer"
+                title="Third Party Widget">
+            </iframe>
+        </div>
+    </div>
+
+    <script>
+        // Optional: Log configuration to console for verification
+        window.addEventListener('DOMContentLoaded', () => {
+            const iframe = document.querySelector('iframe');
+            console.log('Iframe Security Configuration:');
+            console.log('- Sandbox:', iframe.sandbox);
+            console.log('- Referrer Policy:', iframe.referrerPolicy);
+            console.log('- Source:', iframe.src);
+        });
+    </script>
+</body>
+</html>

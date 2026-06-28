@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Search</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; }
+        .search-container { display: flex; gap: 10px; margin-bottom: 20px; }
+        input { flex: 1; padding: 8px; font-size: 16px; }
+        button { padding: 8px 16px; cursor: pointer; }
+        .product-card { border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 4px; }
+        .product-card h3 { margin: 0 0 10px 0; }
+        .price { color: green; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h2>Product Search</h2>
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Search for products...">
+        <button id="searchBtn">Search</button>
+    </div>
+    <div id="results"></div>
+
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const resultsDiv = document.getElementById('results');
+
+        async function performSearch() {
+            const query = searchInput.value;
+            if (!query) return;
+
+            resultsDiv.innerHTML = 'Searching...';
+
+            try {
+                const response = await fetch(`/api/products?q=${encodeURIComponent(query)}`);
+                const products = await response.json();
+
+                resultsDiv.innerHTML = '';
+
+                if (products.length === 0) {
+                    resultsDiv.innerHTML = '<p>No products found.</p>';
+                    return;
+                }
+
+                products.forEach(product => {
+                    const card = document.createElement('div');
+                    card.className = 'product-card';
+                    card.innerHTML = `
+                        <h3>${product.name}</h3>
+                        <p>${product.description}</p>
+                        <p class="price">$${product.price}</p>
+                    `;
+                    resultsDiv.appendChild(card);
+                });
+            } catch (error) {
+                console.error('Error fetching products:', error);
+                resultsDiv.innerHTML = '<p style="color: red;">An error occurred while searching.</p>';
+            }
+        }
+
+        searchBtn.addEventListener('click', performSearch);
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') performSearch();
+        });
+    </script>
+</body>
+</html>

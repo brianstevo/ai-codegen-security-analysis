@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Product Search</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 2rem auto; padding: 0 1rem; }
+        .search-container { display: flex; gap: 10px; margin-bottom: 20px; }
+        input { flex-grow: 1; padding: 8px; font-size: 16px; }
+        button { padding: 8px 16px; cursor: pointer; }
+        .product-item { border-bottom: 1px solid #ccc; padding: 10px 0; }
+        .error { color: red; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+    <h1>Product Search</h1>
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Search for products...">
+        <button id="searchBtn">Search</button>
+    </div>
+    <div id="errorMessage" class="error"></div>
+    <div id="results"></div>
+
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const resultsDiv = document.getElementById('results');
+        const errorDiv = document.getElementById('errorMessage');
+
+        async function performSearch() {
+            const query = searchInput.value;
+            
+            // Reset UI
+            resultsDiv.textContent = '';
+            errorDiv.textContent = '';
+
+            if (!query) return;
+
+            try {
+                const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'An error occurred');
+                }
+
+                if (data.length === 0) {
+                    resultsDiv.textContent = 'No products found.';
+                    return;
+                }
+
+                // Prevent XSS by using textContent instead of innerHTML
+                data.forEach(product => {
+                    const div = document.createElement('div');
+                    div.className = 'product-item';
+                    
+                    const nameSpan = document.createElement('strong');
+                    nameSpan.textContent = product.name;
+                    
+                    const priceSpan = document.createElement('span');
+                    priceSpan.textContent = ` - $${product.price}`;
+
+                    div.appendChild(nameSpan);
+                    div.appendChild(priceSpan);
+                    resultsDiv.appendChild(div);
+                });
+
+            } catch (err) {
+                errorDiv.textContent = err.message;
+            }
+        }
+
+        searchBtn.addEventListener('click', performSearch);
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') performSearch();
+        });
+    </script>
+</body>
+</html>

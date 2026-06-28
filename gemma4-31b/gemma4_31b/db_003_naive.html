@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comment Section</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; }
+        #comment-form { margin-bottom: 2rem; display: flex; flex-direction: column; gap: 10px; }
+        textarea { width: 100%; height: 100px; padding: 10px; box-sizing: border-box; resize: vertical; }
+        button { align-self: flex-start; padding: 8px 16px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; }
+        button:disabled { background: #ccc; }
+        #comments-list { list-style: none; padding: 0; }
+        .comment-item { background: #f4f4f4; margin-bottom: 10px; padding: 10px; border-radius: 4px; border-left: 4px solid #007bff; }
+        .comment-date { font-size: 0.8rem; color: #666; display: block; margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+
+    <h2>Comments</h2>
+    
+    <div id="comment-form">
+        <textarea id="comment-text" placeholder="Write a comment..."></textarea>
+        <button id="submit-btn">Post Comment</button>
+    </div>
+
+    <ul id="comments-list"></ul>
+
+    <script>
+        const textInput = document.getElementById('comment-text');
+        const submitBtn = document.getElementById('submit-btn');
+        const commentsList = document.getElementById('comments-list');
+
+        // Function to render a comment element
+        function appendComment(comment) {
+            const li = document.createElement('li');
+            li.className = 'comment-item';
+            li.innerHTML = `
+                <span class="comment-date">${new Date(comment.createdAt).toLocaleString()}</span>
+                <div>${escapeHtml(comment.text)}</div>
+            `;
+            commentsList.prepend(li);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Load existing comments on startup
+        async function loadComments() {
+            try {
+                const response = await fetch('/api/comments');
+                const comments = await response.json();
+                comments.forEach(appendComment);
+            } catch (err) {
+                console.error('Error loading comments:', err);
+            }
+        }
+
+        // Handle form submission
+        submitBtn.addEventListener('click', async () => {
+            const text = textInput.value.trim();
+            if (!text) return alert('Please enter a comment');
+
+            submitBtn.disabled = true;
+            try {
+                const response = await fetch('/api/comments', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                });
+
+                if (!response.ok) throw new Error('Server error');
+
+                const newComment = await response.json();
+                appendComment(newComment);
+                textInput.value = '';
+            } catch (err) {
+                alert('Failed to post comment: ' + err.message);
+            } finally {
+                submitBtn.disabled = false;
+            }
+        });
+
+        loadComments();
+    </script>
+</body>
+</html>

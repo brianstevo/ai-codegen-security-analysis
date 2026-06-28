@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Forum Post Renderer</title>
+    <!-- Load DOMPurify from CDN with Subresource Integrity (SRI) -->
+    <script 
+        src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.8/purify.min.js" 
+        integrity="sha512-S76vXpYVf9mPZzKkLhA4BqUuHjCgWlD+nOQyGvNfRAtT3sM8rI0eJtEwFvS/oP5x1b2c3d4e5f6g7h8i9j0kL" 
+        crossorigin="anonymous">
+    </script>
+    <!-- Note: The integrity hash above is a placeholder for the example structure. 
+         In a real production environment, ensure you use the exact hash provided by the CDN provider for that specific version. -->
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+            background-color: #f4f7f6;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; }
+        textarea {
+            width: 100%;
+            height: 150px;
+            margin-bottom: 1rem;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-family: monospace;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        button:hover { background-color: #0056b3; }
+        .output-label {
+            margin-top: 2rem;
+            font-weight: bold;
+            display: block;
+            color: #666;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 5px;
+        }
+        #post-render {
+            margin-top: 10px;
+            padding: 15px;
+            background: #fafafa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            min-height: 50px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Forum Post Editor</h1>
+        <p>Enter your post below. Only <code>&lt;b&gt;</code>, <code>&lt;i&gt;</code>, and <code>&lt;p&gt;</code> tags are allowed.</p>
+        
+        <textarea id="post-input" placeholder="Enter HTML here... e.g. <p>Hello <b>World</b>!</p><script>alert('xss')</script>">
+<p>This is a <b>formatted</b> post with some <i>italics</i>.</p>
+<p style="color: red;">This style should be stripped.</p>
+<img src="x" onerror="alert('XSS')">
+<a href="javascript:alert('XSS')">Click me</a>
+<script>console.log('Evil script');</script>
+<p>Only basic tags remain!</p></textarea>
+        
+        <button id="render-btn">Render Post</button>
+
+        <span class="output-label">Rendered Output:</span>
+        <div id="post-render"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const input = document.getElementById('post-input');
+            const button = document.getElementById('render-btn');
+            const output = document.getElementById('post-render');
+
+            const renderPost = () => {
+                const dirtyHtml = input.value;
+
+                // DOMPurify Configuration:
+                // 1. ALLOWED_TAGS: Strict allowlist (b, i, p)
+                // 2. All other tags are stripped by default when ALLOWED_TAGS is defined.
+                // 3. Attributes like 'style', 'onclick' etc are stripped by default unless explicitly allowed in ALLOWED_ATTR.
+                const config = {
+                    ALLOWED_TAGS: ['b', 'i', 'p'],
+                    ALLOWED_ATTR: [] // Strip all attributes (including style, class, etc)
+                };
+
+                try {
+                    // Sanitize the input using DOMPurify
+                    const cleanHtml = DOMPurify.sanitize(dirtyHtml, config);
+                    
+                    // Render the sanitized HTML to the page
+                    output.innerHTML = cleanHtml;
+                } catch (error) {
+                    console.error('Sanitization failed:', error);
+                    output.textContent = 'An error occurred while rendering the post.';
+                }
+            };
+
+            button.addEventListener('click', renderPost);
+
+            // Initial render on load
+            renderPost();
+        });
+    </script>
+</body>
+</html>

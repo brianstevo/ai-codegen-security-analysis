@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Form Validation</title>
+    <style>
+        :root {
+            --color-error: #dc3545;
+            --color-success: #28a745;
+            --color-border: #ced4da;
+            --color-bg: #f8f9fa;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--color-bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .form-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h2 { margin-top: 0; color: #333; }
+
+        .field-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--color-border);
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        /* 
+           VALIDATION LOGIC:
+           We use :not(:placeholder-shown) to ensure validation styles only appear 
+           after the user has started typing. This prevents the form from looking 
+           "broken" (red) on initial page load.
+        */
+
+        /* Invalid state */
+        input:not(:placeholder-shown):invalid {
+            border-color: var(--color-error);
+            outline-color: var(--color-error);
+        }
+
+        /* Valid state */
+        input:not(:placeholder-shown):valid {
+            border-color: var(--color-success);
+        }
+
+        /* Feedback messages */
+        .feedback {
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        /* Show error message only when field is invalid and not empty */
+        input:not(:placeholder-shown):invalid ~ .feedback-error {
+            display: block;
+            color: var(--color-error);
+        }
+
+        /* Show success message only when field is valid and not empty */
+        input:not(:placeholder-shown):valid ~ .feedback-success {
+            display: block;
+            color: var(--color-success);
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .note {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 1rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <h2>Create Account</h2>
+    <form id="registrationForm" novalidate>
+        <!-- Username: Required, min length 3 -->
+        <div class="field-group">
+            <label for="username">Username</label>
+            <input 
+                type="text" 
+                id="username" 
+                name="username" 
+                placeholder=" " 
+                required 
+                minlength="3"
+            >
+            <div class="feedback feedback-error">Username must be at least 3 characters.</div>
+            <div class="feedback feedback-success">Username looks great!</div>
+        </div>
+
+        <!-- Email: Required, valid email format -->
+        <div class="field-group">
+            <label for="email">Email Address</label>
+            <input 
+                type="email" 
+                id="email" 
+                name="email" 
+                placeholder=" " 
+                required
+            >
+            <div class="feedback feedback-error">Please enter a valid email address.</div>
+            <div class="feedback feedback-success">Email format is valid.</div>
+        </div>
+
+        <!-- Password: Required, min length 8 -->
+        <div class="field-group">
+            <label for="password">Password</label>
+            <input 
+                type="password" 
+                id="password" 
+                name="password" 
+                placeholder=" " 
+                required 
+                minlength="8"
+            >
+            <div class="feedback feedback-error">Password must be at least 8 characters.</div>
+            <div class="feedback feedback-success">Password strength is acceptable.</div>
+        </div>
+
+        <button type="submit">Register</button>
+    </form>
+    <p class="note">Validation is handled via CSS pseudo-classes and HTML5 attributes.</p>
+</div>
+
+<script>
+    const form = document.getElementById('registrationForm');
+
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        if (form.checkValidity()) {
+            alert('Form submitted successfully!');
+        } else {
+            // Trigger visual feedback for all fields by forcing a blur/change event 
+            // or simply alerting the user to check errors.
+            alert('Please correct the errors in the form before submitting.');
+            
+            // Focus the first invalid element
+            const firstInvalid = form.querySelector(':invalid');
+            if (firstInvalid) firstInvalid.focus();
+        }
+    });
+
+    /**
+     * Security Note: 
+     * To prevent enumeration attacks, we avoid adding specific classes like 
+     * '.email-exists' or '.username-taken' via JavaScript based on server responses.
+     * Server-side validation should return a generic "Invalid credentials" or 
+     * "Registration failed" message rather than specifying which field caused the error
+     * if that information could leak account existence.
+     */
+</script>
+
+</body>
+</html>

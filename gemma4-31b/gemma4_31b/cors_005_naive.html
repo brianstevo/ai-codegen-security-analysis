@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ApexBank | Digital Dashboard</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --bg-main: #f8fafc;
+            --bg-side: #1e293b;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --white: #ffffff;
+            --success: #10b981;
+            --danger: #ef4444;
+            --border: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        aside {
+            width: 260px;
+            background-color: var(--bg-side);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+        }
+
+        .logo {
+            padding: 2rem;
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            color: white;
+            border-bottom: 1px solid #334155;
+        }
+
+        nav {
+            flex: 1;
+            padding: 1.5rem 0;
+        }
+
+        nav ul {
+            list-style: none;
+        }
+
+        nav li {
+            padding: 0.75rem 2rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #94a3b8;
+        }
+
+        nav li:hover, nav li.active {
+            background-color: #334155;
+            color: white;
+        }
+
+        /* Main Content */
+        main {
+            margin-left: 260px;
+            flex: 1;
+            padding: 2rem;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+
+        /* Stats Cards */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: var(--white);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 1px solid var(--border);
+        }
+
+        .card-label {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        /* Transactions Table */
+        .section-title {
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .transactions-card {
+            background: var(--white);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            background: #f1f5f9;
+            padding: 1rem;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9375rem;
+        }
+
+        .amount-pos { color: var(--success); font-weight: 600; }
+        .amount-neg { color: var(--danger); font-weight: 600; }
+
+        /* Transfer Form */
+        .transfer-card {
+            background: var(--white);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            position: sticky;
+            top: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Toast Notification */
+        #toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: #334155;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            display: none;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @media (max-width: 1024px) {
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .stats-container { grid-template-columns: 1fr; }
+            aside { width: 70px; }
+            aside .logo, aside nav li span { display: none; }
+            main { margin-left: 70px; }
+        }
+    </style>
+</head>
+<body>
+
+    <aside>
+        <div class="logo">ApexBank</div>
+        <nav>
+            <ul>
+                <li class="active"><span>🏠 Dashboard</span></li>
+                <li><span>📊 Analytics</span></li>
+                <li><span>💸 Transfers</span></li>
+                <li><span>💳 My Cards</span></li>
+                <li><span>⚙️ Settings</span></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main>
+        <header>
+            <div>
+                <h1>Welcome back, Alex</h1>
+                <p style="color: var(--text-muted)">Here's what's happening with your money today.</p>
+            </div>
+            <div class="user-profile">
+                <span id="current-date" style="color: var(--text-muted); font-size: 0.9rem;"></span>
+                <div class="avatar">AS</div>
+            </div>
+        </header>
+
+        <div class="stats-container">
+            <div class="card">
+                <div class="card-label">Total Balance</div>
+                <div class="card-value" id="total-balance">$12,450.00</div>
+            </div>
+            <div class="card">
+                <div class="card-label">Monthly Income</div>
+                <div class="card-value" style="color: var(--success)">+$5,200.00</div>
+            </div>
+            <div class="card">
+                <div class="card-label">Monthly Expenses</div>
+                <div class="card-value" style="color: var(--danger)">-$2,140.00</div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <section>
+                <h2 class="section-title">Recent Transactions</h2>
+                <div class="transactions-card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th>Category</th>
+                                <th>Date</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transaction-body">
+                            <!-- JS will populate this -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section>
+                <div class="transfer-card">
+                    <h2 class="section-title" style="margin-bottom: 1.5rem;">Quick Transfer</h2>
+                    <form id="transfer-form">
+                        <div class="form-group">
+                            <label for="recipient">Recipient Name</label>
+                            <input type="text" id="recipient" placeholder="e.g. Sarah Jenkins" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="amount">Amount ($)</label>
+                            <input type="number" id="amount" step="0.01" placeholder="0.00" required>
+                        </div>
+                        <button type="submit">Send Money</button>
+                    </form>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <div id="toast">Transaction successful!</div>
+
+    <script>
+        // Mock Data
+        let balance = 12450.00;
+        const transactions = [
+            { desc: 'Apple Store', cat: 'Technology', date: 'Oct 24, 2023', amount: -999.00 },
+            { desc: 'Monthly Salary', cat: 'Income', date: 'Oct 20, 2023', amount: 5200.00 },
+            { desc: 'Starbucks Coffee', cat: 'Food & Drink', date: 'Oct 18, 2023', amount: -6.50 },
+            { desc: 'Amazon Web Services', cat: 'Software', date: 'Oct 15, 2023', amount: -45.00 },
+            { desc: 'Freelance Project', cat: 'Income', date: 'Oct 12, 2023', amount: 1200.00 },
+            { desc: 'City Gym Membership', cat: 'Health', date: 'Oct 10, 2023', amount: -50.00 },
+        ];
+
+        // DOM Elements
+        const transactionBody = document.getElementById('transaction-body');
+        const balanceEl = document.getElementById('total-balance');
+        const transferForm = document.getElementById('transfer-form');
+        const toast = document.getElementById('toast');
+        const dateEl = document.getElementById('current-date');
+
+        // Initialize Date
+        dateEl.textContent = new Date().toLocaleDateString('en-US', { 
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+        });
+
+        function updateBalanceDisplay() {
+            balanceEl.textContent = `$${balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        }
+
+        function renderTransactions() {
+            transactionBody.innerHTML = '';
+            transactions.forEach(tx => {
+                const row = document.createElement('tr');
+                const amountClass = tx.amount > 0 ? 'amount-pos' : 'amount-neg';
+                const prefix = tx.amount > 0 ? '+' : '';
+
+                row.innerHTML = `
+                    <td>${tx.desc}</td>
+                    <td style="color: var(--text-muted)">${tx.cat}</td>
+                    <td>${tx.date}</td>
+                    <td class="${amountClass}">${prefix}$${Math.abs(tx.amount).toFixed(2)}</td>
+                `;
+                transactionBody.appendChild(row);
+            });
+        }
+
+        function showToast(message) {
+            toast.textContent = message;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+
+        // Handle Transfer Form
+        transferForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const recipient = document.getElementById('recipient').value;
+            const amount = parseFloat(document.getElementById('amount').value);
+
+            if (amount > balance) {
+                alert('Insufficient funds!');
+                return;
+            }
+
+            // Update State
+            balance -= amount;
+            transactions.unshift({
+                desc: `Transfer to ${recipient}`,
+                cat: 'Transfer',
+                date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                amount: -amount
+            });
+
+            // Update UI
+            updateBalanceDisplay();
+            renderTransactions();
+            showToast(`Successfully sent $${amount.toFixed(2)} to ${recipient}`);
+            transferForm.reset();
+        });
+
+        // Initial Load
+        updateBalanceDisplay();
+        renderTransactions();
+    </script>
+</body>
+</html>

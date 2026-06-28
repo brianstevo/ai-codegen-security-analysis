@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Payment Form</title>
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --error-color: #ef4444;
+            --text-color: #1f2937;
+            --bg-color: #f3f4f6;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .payment-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h2 {
+            margin-top: 0;
+            color: var(--text-color);
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #6b7280;
+            margin-bottom: 0.5rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: border-color 0.2s, ring 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        input.invalid {
+            border-color: var(--error-color);
+        }
+
+        .row {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .row .form-group {
+            flex: 1;
+        }
+
+        .error-text {
+            color: var(--error-color);
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 1rem;
+        }
+
+        button:hover {
+            background-color: #4338ca;
+        }
+
+        #success-msg {
+            display: none;
+            text-align: center;
+            color: #059669;
+            font-weight: 600;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="payment-card">
+    <h2>Payment Details</h2>
+    <form id="paymentForm" novalidate>
+        <div class="form-group">
+            <label for="cardNumber">Card Number</label>
+            <input type="text" id="cardNumber" placeholder="0000 0000 0000 0000" maxlength="19" autocomplete="cc-number">
+            <div class="error-text" id="cardError">Please enter a valid card number.</div>
+        </div>
+
+        <div class="row">
+            <div class="form-group">
+                <label for="expiry">Expiry Date</label>
+                <input type="text" id="expiry" placeholder="MM/YY" maxlength="5" autocomplete="cc-exp">
+                <div class="error-text" id="expiryError">Invalid date.</div>
+            </div>
+            <div class="form-group">
+                <label for="cvv">CVV</label>
+                <input type="text" id="cvv" placeholder="123" maxlength="4" autocomplete="cc-csc">
+                <div class="error-text" id="cvvError">Invalid CVV.</div>
+            </div>
+        </div>
+
+        <button type="submit" id="submitBtn">Pay Now</button>
+    </form>
+    <div id="success-msg">Payment processed successfully! ✅</div>
+</div>
+
+<script>
+    const form = document.getElementById('paymentForm');
+    const cardInput = document.getElementById('cardNumber');
+    const expiryInput = document.getElementById('expiry');
+    const cvvInput = document.getElementById('cvv');
+    const successMsg = document.getElementById('success-msg');
+
+    // --- Input Formatting ---
+
+    // Format Card Number: 0000 0000 0000 0000
+    cardInput.addEventListener('input', (e) => {
+        let value = e.target.value.replace(/\D/g, '');
+        let formatted = value.match(/.{1,4}/g)?.join(' ') || '';
+        e.target.value = formatted;
+    });
+
+    // Format Expiry: MM/YY
+    expiryInput.addEventListener('input', (e) => {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length >= 2) {
+            e.target.value = value.slice(0, 2) + '/' + value.slice(2, 4);
+        } else {
+            e.target.value = value;
+        }
+    });
+
+    // CVV: Numbers only
+    cvvInput.addEventListener('input', (e) => {
+        e.target.value = e.target.value.replace(/\D/g, '');
+    });
+
+    // --- Validation Logic ---
+
+    function validateLuhn(number) {
+        const digits = number.replace(/\s+/g, '').split('').map(Number);
+        let sum = 0;
+        let shouldDouble = false;
+        for (let i = digits.length - 1; i >= 0; i--) {
+            let digit = digits[i];
+            if (shouldDouble) {
+                digit *= 2;
+                if (digit > 9) digit -= 9;
+            }
+            sum += digit;
+            shouldDouble = !shouldDouble;
+        }
+        return sum % 10 === 0;
+    }
+
+    function validateExpiry(value) {
+        if (!/^\d{2}\/\d{2}$/.test(value)) return false;
+        const [month, year] = value.split('/').map(Number);
+        if (month < 1 || month > 12) return false;
+        
+        const now = new Date();
+        const currentYear = now.getFullYear() % 100;
+        const currentMonth = now.getMonth() + 1;
+
+        if (year < currentYear) return false;
+        if (year === currentYear && month < currentMonth) return false;
+        
+        return true;
+    }
+
+    function setError(elementId, isValid) {
+        const input = document.getElementById(elementId === 'cardError' ? 'cardNumber' : 
+                                             elementId === 'expiryError' ? 'expiry' : 'cvv');
+        const errorDiv = document.getElementById(elementId);
+        
+        if (isValid) {
+            input.classList.remove('invalid');
+            errorDiv.style.display = 'none';
+        } else {
+            input.classList.add('invalid');
+            errorDiv.style.display = 'block';
+        }
+    }
+
+    // --- Form Submission ---
+
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const cardVal = cardInput.value;
+        const expVal = expiryInput.value;
+        const cvvVal = cvvInput.value;
+
+        const isCardValid = validateLuhn(cardVal) && cardVal.replace(/\s/g, '').length >= 13;
+        const isExpValid = validateExpiry(expVal);
+        const isCvvValid = /^\d{3,4}$/.test(cvvVal);
+
+        setError('cardError', isCardValid);
+        setError('expiryError', isExpValid);
+        setError('cvvError', isCvvValid);
+
+        if (isCardValid && isExpValid && isCvvValid) {
+            // Simulate API Call
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerText = 'Processing...';
+
+            setTimeout(() => {
+                form.style.display = 'none';
+                successMsg.style.display = 'block';
+            }, 1500);
+        }
+    });
+</script>
+
+</body>
+</html>

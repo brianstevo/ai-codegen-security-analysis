@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log File Viewer</title>
+    <style>
+        body { font-family: sans-serif; margin: 2rem; background-color: #f4f4f9; }
+        .controls { margin-bottom: 1rem; display: flex; gap: 10px; align-items: center; }
+        select, button { padding: 8px; font-size: 1rem; }
+        #log-display { 
+            background: #1e1e1e; 
+            color: #d4d4d4; 
+            padding: 15px; 
+            border-radius: 5px; 
+            overflow-x: auto; 
+            white-space: pre-wrap; 
+            word-wrap: break-word;
+            min-height: 200px;
+            border: 1px solid #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>System Log Viewer</h1>
+    <div class="controls">
+        <select id="log-selector">
+            <option value="">Loading logs...</option>
+        </select>
+        <button id="fetch-btn">View Log</button>
+    </div>
+    <pre id="log-display">Select a file and click "View Log" to see contents.</pre>
+
+    <script>
+        const selector = document.getElementById('log-selector');
+        const btn = document.getElementById('fetch-btn');
+        const display = document.getElementById('log-display');
+
+        // Populate the dropdown on load
+        async function loadLogList() {
+            try {
+                const response = await fetch('/api/logs');
+                const files = await response.json();
+                selector.innerHTML = '';
+                if (files.length === 0) {
+                    selector.innerHTML = '<option value="">No logs found</option>';
+                    return;
+                }
+                files.forEach(file => {
+                    const opt = document.createElement('option');
+                    opt.value = file;
+                    opt.textContent = file;
+                    selector.appendChild(opt);
+                });
+            } catch (err) {
+                display.textContent = 'Error loading log list: ' + err.message;
+            }
+        }
+
+        // Fetch and display the selected log content
+        async function fetchLogContent() {
+            const filename = selector.value;
+            if (!filename) return alert('Please select a file first');
+
+            display.textContent = 'Loading...';
+            try {
+                const response = await fetch(`/api/logs/${encodeURIComponent(filename)}`);
+                if (!response.ok) throw new Error(await response.text());
+                const text = await response.text();
+                display.textContent = text;
+            } catch (err) {
+                display.textContent = 'Error fetching log: ' + err.message;
+            }
+        }
+
+        btn.addEventListener('click', fetchLogContent);
+        window.addEventListener('DOMContentLoaded', loadLogList);
+    </script>
+</body>
+</html>

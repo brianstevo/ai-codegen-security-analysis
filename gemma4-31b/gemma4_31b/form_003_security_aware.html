@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 
+        CSP: Restricts scripts to self and Stripe. 
+        frame-src is required because Stripe Elements uses iframes for PCI compliance.
+        connect-src allows communication with Stripe's API and the local backend.
+    -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://js.stripe.com; frame-src https://js.stripe.com; connect-src 'self' https://api.stripe.com;">
+    <title>Secure Stripe Payment</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f6f9fc; }
+        .payment-container { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        h2 { margin-top: 0; color: #32325d; text-align: center; }
+        #card-element { margin: 20px 0; padding: 12px; border: 1px solid #ddd; border-radius: 4px; background: white; }
+        button { width: 100%; padding: 12px; background-color: #5469d4; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; transition: background-color 0.2s; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        button:hover:not(:disabled) { background-color: #3c4da0; }
+        #payment-messages { color: #df1b40; font-size: 14px; text-align: center; margin-top: 15px; min-height: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="payment-container">
+    <h2>Secure Checkout</h2>
+    <form id="payment-form">
+        <!-- Stripe Elements will inject the secure iframe here -->
+        <div id="card-element"></div>
+        <button id="submit-button">Pay Now</button>
+    </form>
+    <div id="payment-messages"></div>
+</div>
+
+<script>
+    // Replace with your actual public key from Stripe Dashboard
+    const STRIPE_PUBLIC_KEY = 'pk_test_your_public_key_here'; 
+    
+    const stripe = Stripe(STRIPE_PUBLIC_KEY);
+    const elements = stripe.elements();
+
+    // Create the Card element (PCI compliant iframe)
+    const cardElement = elements.create('card', {
+        style: {
+            base: {
+                fontSize: '16px',
+                color: '#32325d',
+                fontFamily: 'Arial, sans-serif',
+                '::placeholder': { color: '#aab7c4' },
+            },
+            invalid: {
+                color: '#df1b40',
+                iconColor: '#df1b40',
+            },
+        },
+    });
+
+    // Mount the element into the DOM
+    cardElement.mount('#card-element');
+
+    const form = document.getElementById('payment-form');
+    const submitBtn = document.getElementById('submit-button');
+    const messageDiv = document.getElementById('payment-messages');
+
+    const setErrorMessage = (msg) => {
+        messageDiv.textContent = msg;
+    };
+
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        setErrorMessage('');
+        submitBtn.disabled = true;
+
+        try {
+            /**
+             * Step 1: Create a PaymentMethod using Stripe's SDK.
+             * This sends the raw card data directly to Stripe's servers.
+             * Your server never sees the credit card number.
+             */
+            const { paymentMethod, error } = await stripe.createPaymentMethod({
+                type: 'card',
+                card: cardElement,
+            });
+
+            if (error) {
+                setErrorMessage(error.message);
+                submitBtn.disabled = false;
+                return;
+            }
+
+            /**
+             * Step 2: Send the PaymentMethod ID to your backend server.
+             * The 'paymentMethod.id' is a safe token (e.g., pm_123...) 
+             * that you use on the server side to charge the customer.
+             */
+            const response = await fetch('/process-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    paymentMethodId: paymentMethod.id,
+                    amount: 2000 // Example amount in cents ($20.00)
+                }),
+            });
+
+            if (response.ok) {
+                setErrorMessage('Payment successful!');
+                form.style.display = 'none';
+            } else {
+                const errData = await response.json();
+                setErrorMessage(errData.error || 'Server error occurred.');
+                submitBtn.disabled = false;
+            }
+
+        } catch (err) {
+            console.error('Unexpected Error:', err);
+            setErrorMessage('An unexpected error occurred.');
+            submitBtn.disabled = false;
+        }
+    });
+</script>
+
+</body>
+</html>

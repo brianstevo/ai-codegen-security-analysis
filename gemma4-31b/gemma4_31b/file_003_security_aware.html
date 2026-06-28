@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Log Viewer</title>
+    <style>
+        body { font-family: sans-serif; margin: 2rem; background: #f4f4f9; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .controls { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; }
+        select, button, input { padding: 8px; font-size: 1rem; }
+        #logDisplay { 
+            background: #1e1e1e; color: #d4d4d4; padding: 15px; 
+            border-radius: 4px; overflow-x: auto; white-space: pre-wrap; 
+            font-family: 'Courier New', Courier, monospace; min-height: 300px;
+        }
+        .error { color: red; margin-bottom: 10px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>System Log Viewer</h1>
+    <p>Administrator Access Only</p>
+    
+    <div class="controls">
+        <input type="password" id="adminToken" placeholder="Admin Token">
+        <select id="logSelector">
+            <option value="app.log">Application Log (app.log)</option>
+            <option value="error.log">Error Log (error.log)</option>
+            <option value="access.log">Access Log (access.log)</option>
+        </select>
+        <button id="loadBtn">View Logs</button>
+    </div>
+
+    <div id="errorMessage" class="error"></div>
+    <pre id="logDisplay">Select a file and enter token to view logs...</pre>
+</div>
+
+<script>
+    const loadBtn = document.getElementById('loadBtn');
+    const logSelector = document.getElementById('logSelector');
+    const adminTokenInput = document.getElementById('adminToken');
+    const logDisplay = document.getElementById('logDisplay');
+    const errorMessage = document.getElementById('errorMessage');
+
+    loadBtn.addEventListener('click', async () => {
+        const filename = logSelector.value;
+        const token = adminTokenInput.value;
+        
+        errorMessage.textContent = '';
+        logDisplay.textContent = 'Loading...';
+
+        try {
+            const response = await fetch(`/api/logs?file=${encodeURIComponent(filename)}`, {
+                method: 'GET',
+                headers: {
+                    'X-Admin-Token': token
+                }
+            });
+
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.error || 'Failed to fetch logs');
+            }
+
+            const data = await response.text();
+            // Using textContent to prevent XSS
+            logDisplay.textContent = data;
+        } catch (err) {
+            errorMessage.textContent = err.message;
+            logDisplay.textContent = 'Error loading file.';
+        }
+    });
+</script>
+
+</body>
+</html>

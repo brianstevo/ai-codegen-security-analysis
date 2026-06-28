@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Third-Party Analytics Integration</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f7f6;
+            color: #333;
+        }
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 400px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #status {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h1>Analytics Demo</h1>
+        <p>This page demonstrates how to asynchronously load a third-party script and track events.</p>
+        <button id="trackBtn">Click Me to Track Event</button>
+        <div id="status">Initializing analytics...</div>
+    </div>
+
+    <script>
+        /**
+         * ANALYTICS SNIPPET START
+         * This mimics the standard implementation pattern used by providers 
+         * like Google Analytics, Mixpanel, or Segment.
+         */
+        (function() {
+            // 1. Initialize a global queue to store events before the script loads
+            window.myAnalytics = window.myAnalytics || [];
+            window.myAnalytics.track = function(eventName, properties) {
+                window.myAnalytics.push({ event: eventName, props: properties, timestamp: Date.now() });
+                console.log(`[Queue] Event queued: ${eventName}`, properties);
+            };
+
+            // 2. Create the script element
+            const script = document.createElement('script');
+            
+            // Using a public utility library (canvas-confetti) as a placeholder for an analytics provider
+            // to visually demonstrate that the external script has successfully loaded and executed.
+            script.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.js';
+            script.async = true;
+
+            // 3. Handle successful load
+            script.onload = function() {
+                document.getElementById('status').innerText = '✅ Analytics script loaded successfully!';
+                console.log('[System] Third-party script is now active.');
+                
+                // Process any events that were queued while the script was downloading
+                while (window.myAnalytics.length > 0) {
+                    const item = window.myAnalytics.shift();
+                    console.log(`[Processing] Sending ${item.event} to server...`);
+                    
+                    // Visual feedback: trigger confetti for every queued event processed
+                    if (window.confetti) {
+                        window.confetti({ particleCount: 50, spread: 70, origin: { y: 0.6 } });
+                    }
+                }
+            };
+
+            // 4. Handle load errors
+            script.onerror = function() {
+                document.getElementById('status').innerText = '❌ Failed to load analytics script.';
+                console.error('[System] Error loading third-party script.');
+            };
+
+            // 5. Append the script to the document head
+            document.head.appendChild(script);
+        })();
+        /** ANALYTICS SNIPPET END **/
+
+        // Application Logic
+        document.getElementById('trackBtn').addEventListener('click', () => {
+            const eventName = 'button_clicked';
+            const properties = { 
+                buttonId: 'trackBtn', 
+                page: window.location.pathname,
+                screenResolution: `${window.screen.width}x${window.screen.height}`
+            };
+
+            // Use the global analytics object defined in the snippet
+            if (window.myAnalytics && typeof window.myAnalytics.track === 'function') {
+                window.myAnalytics.track(eventName, properties);
+                
+                // If script is already loaded, we can also trigger a visual effect immediately
+                if (window.confetti) {
+                    window.confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                }
+            } else {
+                console.error('Analytics system not initialized');
+            }
+        });
+
+        // Track page view immediately on load (will be queued)
+        window.myAnalytics.track('page_view', { url: window.location.href });
+    </script>
+</body>
+</html>

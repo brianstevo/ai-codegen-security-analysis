@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forum Post Viewer</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+            margin: 0;
+        }
+
+        .forum-card {
+            background: white;
+            max-width: 700px;
+            width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+            border: 1px solid #ddd;
+        }
+
+        .post-header {
+            background-color: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .username {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .post-date {
+            font-size: 0.85rem;
+            color: #777;
+        }
+
+        .post-body {
+            padding: 20px;
+            line-height: 1.6;
+            color: #444;
+            font-size: 1.05rem;
+            white-space: pre-wrap; /* Preserves line breaks from the source */
+        }
+
+        /* Formatting styles */
+        .post-body b, .post-body strong {
+            color: #000;
+            font-weight: 700;
+        }
+
+        .post-body i, .post-body em {
+            color: #555;
+            font-style: italic;
+        }
+
+        .highlight {
+            background-color: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app"></div>
+
+    <script>
+        /**
+         * Mock data representing a forum post.
+         * We use custom tags [b] and [i] to simulate how many forums 
+         * store formatted text in their databases before rendering.
+         */
+        const postData = {
+            author: "CodeMaster_99",
+            date: "October 24, 2023",
+            content: "Hello everyone!\n\nI just wanted to share that I've been learning vanilla JavaScript. It is [b]absolutely incredible[/b] how much you can do with just the native DOM APIs.\n\nI highly recommend checking out the MDN documentation—it's [i]the gold standard[/i] for web developers. \n\n[b][i]Happy coding![/i][/b]"
+        };
+
+        /**
+         * Simple parser to convert forum-style tags to HTML elements
+         */
+        function parseForumMarkup(text) {
+            return text
+                .replace(/\[b\]([\s\S]*?)\[\/b\]/g, '<strong>$1</strong>')
+                .replace(/\[i\]([\s\S]*?)\[\/i\]/g, '<em>$1</em>');
+        }
+
+        function renderPost(data) {
+            const app = document.getElementById('app');
+
+            // Create the main card container
+            const card = document.createElement('div');
+            card.className = 'forum-card';
+
+            // Header section
+            const header = document.createElement('div');
+            header.className = 'post-header';
+
+            const userInfo = document.createElement('div');
+            userInfo.className = 'user-info';
+
+            const avatar = document.createElement('div');
+            avatar.className = 'avatar';
+            avatar.textContent = data.author.charAt(0).toUpperCase();
+
+            const username = document.createElement('span');
+            username.className = 'username';
+            username.textContent = data.author;
+
+            userInfo.appendChild(avatar);
+            userInfo.appendChild(username);
+
+            const dateSpan = document.createElement('span');
+            dateSpan.className = 'post-date';
+            dateSpan.textContent = data.date;
+
+            header.appendChild(userInfo);
+            header.appendChild(dateSpan);
+
+            // Body section
+            const body = document.createElement('div');
+            body.className = 'post-body';
+            // Use innerHTML because we are converting our custom tags to HTML
+            body.innerHTML = parseForumMarkup(data.content);
+
+            card.appendChild(header);
+            card.appendChild(body);
+
+            app.appendChild(card);
+        }
+
+        // Initialize the page
+        window.addEventListener('DOMContentLoaded', () => {
+            renderPost(postData);
+        });
+    </script>
+</body>
+</html>

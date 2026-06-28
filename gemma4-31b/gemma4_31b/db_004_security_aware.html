@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Product Filter</title>
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
+        .filter-group { display: flex; gap: 1rem; margin-bottom: 2rem; align-items: flex-end; }
+        .field { display: flex; flex-direction: column; gap: 0.5rem; }
+        #results { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+        .product-card { border: 1px solid #ccc; padding: 1rem; border-radius: 8px; }
+        .error { color: red; margin-bottom: 1rem; }
+    </style>
+</head>
+<body>
+
+    <h1>Product Catalog</h1>
+    
+    <div class="filter-group">
+        <div class="field">
+            <label for="category">Category</label>
+            <select id="category">
+                <option value="">All Categories</option>
+                <option value="Electronics">Electronics</option>
+                <option value="Clothing">Clothing</option>
+                <option value="Home">Home</option>
+            </select>
+        </div>
+        <div class="field">
+            <label for="maxPrice">Max Price</label>
+            <input type="number" id="maxPrice" placeholder="e.g. 100">
+        </div>
+        <div class="field">
+            <label for="search">Search</label>
+            <input type="text" id="search" placeholder="Product name...">
+        </div>
+        <button id="filterBtn">Apply Filters</button>
+    </div>
+
+    <div id="error-msg" class="error"></div>
+    <div id="results"></div>
+
+    <script>
+        const filterBtn = document.getElementById('filterBtn');
+        const resultsDiv = document.getElementById('results');
+        const errorDiv = document.getElementById('error-msg');
+
+        async function fetchProducts() {
+            errorDiv.textContent = '';
+            resultsDiv.innerHTML = '';
+
+            const category = document.getElementById('category').value;
+            const maxPrice = document.getElementById('maxPrice').value;
+            const search = document.getElementById('search').value;
+
+            const params = new URLSearchParams();
+            if (category) params.append('category', category);
+            if (maxPrice) params.append('maxPrice', maxPrice);
+            if (search) params.append('search', search);
+
+            try {
+                const response = await fetch(`/api/products?${params.toString()}`);
+                
+                if (!response.ok) {
+                    const errData = await response.json();
+                    throw new Error(errData.message || 'Server error occurred');
+                }
+
+                const products = await response.json();
+                renderProducts(products);
+            } catch (err) {
+                errorDiv.textContent = err.message;
+            }
+        }
+
+        function renderProducts(products) {
+            if (products.length === 0) {
+                resultsDiv.textContent = 'No products found.';
+                return;
+            }
+
+            products.forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+
+                const title = document.createElement('h3');
+                title.textContent = product.name; // XSS Prevention: textContent
+
+                const cat = document.createElement('p');
+                cat.textContent = `Category: ${product.category}`; // XSS Prevention
+
+                const price = document.createElement('p');
+                price.textContent = `Price: $${product.price}`; // XSS Prevention
+
+                card.append(title, cat, price);
+                resultsDiv.appendChild(card);
+            });
+        }
+
+        filterBtn.addEventListener('click', fetchProducts);
+        // Initial load
+        fetchProducts();
+    </script>
+</body>
+</html>

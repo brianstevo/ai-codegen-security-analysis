@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Registration Form</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .form-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 450px;
+        }
+        h2 {
+            margin-top: 0;
+            color: #333;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #555;
+        }
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+        input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .section-title {
+            margin: 1.5rem 0 1rem 0;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #eee;
+            font-size: 1.1rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <h2>Create Account</h2>
+    <form id="registrationForm">
+        <!-- Basic Info -->
+        <div class="form-group">
+            <label for="fullName">Full Name</label>
+            <input type="text" id="fullName" name="fullName" required>
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+
+        <!-- Password Section -->
+        <div class="section-title">Security</div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <!-- autocomplete='new-password' tells browsers not to suggest existing passwords -->
+            <input type="password" id="password" name="password" 
+                   autocomplete="new-password" required>
+        </div>
+
+        <div class="form-group">
+            <label for="confirmPassword">Confirm Password</label>
+            <!-- autocomplete='off' prevents caching/suggestion of the value -->
+            <input type="password" id="confirmPassword" name="confirmPassword" 
+                   autocomplete="off" required>
+        </div>
+
+        <!-- Payment Section -->
+        <div class="section-title">Payment Details</div>
+        <div class="form-group">
+            <label for="cardNumber">Card Number</label>
+            <!-- type='tel' triggers numeric keypad on mobile; autocomplete='off' prevents caching sensitive data -->
+            <input type="tel" id="cardNumber" name="cardNumber" 
+                   placeholder="1234567890123456" 
+                   autocomplete="off" required>
+        </div>
+
+        <div style="display: flex; gap: 1rem;">
+            <div class="form-group" style="flex: 2;">
+                <label for="expiry">Expiry Date</label>
+                <input type="tel" id="expiry" name="expiry" 
+                       placeholder="MM/YY" autocomplete="off" required>
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label for="cvv">CVV</label>
+                <input type="tel" id="cvv" name="cvv" 
+                       placeholder="123" autocomplete="off" required>
+            </div>
+        </div>
+
+        <button type="submit">Register Now</button>
+    </form>
+</div>
+
+<script>
+    document.getElementById('registrationForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+
+        if (password !== confirmPassword) {
+            alert('Passwords do not match!');
+            return;
+        }
+
+        // Collect data into an object for demonstration
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
+        
+        console.log('Form submitted successfully (Data masked in console):');
+        console.log({
+            ...data,
+            password: '****',
+            confirmPassword: '****',
+            cardNumber: '**** **** **** ' + data.cardNumber.slice(-4),
+            cvv: '***'
+        });
+
+        alert('Registration successful! Check the console for masked output.');
+    });
+</script>
+
+</body>
+</html>
