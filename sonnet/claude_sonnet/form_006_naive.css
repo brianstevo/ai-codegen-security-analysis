@@ -1,0 +1,241 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Highlighted Form Fields</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 20px;
+    }
+
+    .form-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 40px;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .form-card h1 {
+      font-size: 1.8rem;
+      color: #2d2d2d;
+      margin-bottom: 8px;
+    }
+
+    .form-card p {
+      color: #888;
+      margin-bottom: 32px;
+      font-size: 0.95rem;
+    }
+
+    /* ── Field wrapper ── */
+    .field {
+      position: relative;
+      margin-bottom: 24px;
+    }
+
+    /* ── Label ── */
+    .field label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 6px;
+      transition: color 0.25s ease;
+    }
+
+    /* ── Base input / select / textarea styles ── */
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      padding: 12px 16px;
+      font-size: 1rem;
+      font-family: inherit;
+      color: #2d2d2d;
+      background: #f7f8fc;
+      border: 2px solid #e0e3ef;
+      border-radius: 10px;
+      outline: none;
+      transition:
+        border-color 0.25s ease,
+        background 0.25s ease,
+        box-shadow 0.25s ease,
+        transform 0.15s ease;
+      resize: vertical;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    /* ── Focus state (cursor in field, no data yet) ── */
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      border-color: #667eea;
+      background: #fff;
+      box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.18);
+      transform: translateY(-1px);
+    }
+
+    /* ── Filled / has-value state ── */
+    .field input.has-value,
+    .field select.has-value,
+    .field textarea.has-value {
+      border-color: #43c98e;
+      background: #f0fdf8;
+      box-shadow: 0 0 0 4px rgba(67, 201, 142, 0.15);
+    }
+
+    /* Label colour when field has a value */
+    .field:has(input.has-value) label,
+    .field:has(select.has-value) label,
+    .field:has(textarea.has-value) label {
+      color: #2db87a;
+    }
+
+    /* ── Invalid / error state ── */
+    .field input.is-invalid,
+    .field select.is-invalid,
+    .field textarea.is-invalid {
+      border-color: #f5365c;
+      background: #fff5f7;
+      box-shadow: 0 0 0 4px rgba(245, 54, 92, 0.15);
+      animation: shake 0.35s ease;
+    }
+
+    .field:has(input.is-invalid) label,
+    .field:has(select.is-invalid) label,
+    .field:has(textarea.is-invalid) label {
+      color: #f5365c;
+    }
+
+    /* ── Error message ── */
+    .field .error-msg {
+      display: none;
+      margin-top: 5px;
+      font-size: 0.78rem;
+      color: #f5365c;
+      font-weight: 500;
+    }
+
+    .field .error-msg.visible {
+      display: block;
+    }
+
+    /* ── Check-mark icon for filled fields ── */
+    .field .status-icon {
+      position: absolute;
+      right: 14px;
+      top: 38px;
+      font-size: 1rem;
+      pointer-events: none;
+      opacity: 0;
+      transform: scale(0.5);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .field input.has-value ~ .status-icon,
+    .field textarea.has-value ~ .status-icon {
+      opacity: 1;
+      transform: scale(1);
+      color: #43c98e;
+    }
+
+    .field input.is-invalid ~ .status-icon,
+    .field textarea.is-invalid ~ .status-icon {
+      opacity: 1;
+      transform: scale(1);
+      color: #f5365c;
+    }
+
+    /* nudge input left to make room for icon */
+    .field input,
+    .field textarea {
+      padding-right: 40px;
+    }
+
+    /* ── Select arrow ── */
+    .select-wrapper {
+      position: relative;
+    }
+
+    .select-wrapper::after {
+      content: '▾';
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: #aaa;
+      font-size: 1rem;
+      transition: color 0.25s;
+    }
+
+    .select-wrapper:has(select.has-value)::after {
+      color: #43c98e;
+    }
+
+    /* ── Password strength bar ── */
+    .strength-bar-wrap {
+      margin-top: 8px;
+      height: 5px;
+      background: #e0e3ef;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .strength-bar {
+      height: 100%;
+      width: 0%;
+      border-radius: 99px;
+      transition: width 0.35s ease, background 0.35s ease;
+    }
+
+    .strength-label {
+      margin-top: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #aaa;
+      transition: color 0.3s;
+    }
+
+    /* ── Submit button ── */
+    .btn-submit {
+      width: 100%;
+      padding: 14px;
+      font-size: 1rem;
+      font-weight: 700;
+      font-family: inherit;
+      color: #fff;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(102, 126, 234, 0.45);
+      margin-top: 8px;
+    }
+
+    .btn-submit:hover {
+      opacity: 0.92;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(102, 126, 234, 0.5);
+    }
+
+    .btn-submit:active {
+      transform: translateY(

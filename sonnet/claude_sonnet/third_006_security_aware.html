@@ -1,0 +1,173 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subresource Integrity (SRI) Demo</title>
+
+  <!--
+    CONTENT SECURITY POLICY (CSP)
+    ==============================
+    The 'require-sri-for script style' directive enforces that all external
+    scripts and stylesheets MUST include a valid SRI integrity attribute.
+    Any resource loaded without a matching integrity hash will be blocked.
+
+    Additional directives:
+    - default-src 'self'        → Only allow resources from the same origin by default
+    - script-src 'self' ...     → Allow same-origin scripts plus specific CDN origins
+    - style-src 'self' ...      → Allow same-origin styles plus specific CDN origins
+    - object-src 'none'         → Block all plugins (Flash, etc.)
+    - base-uri 'self'           → Prevent base tag hijacking
+  -->
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    script-src
+      'self'
+      https://cdn.jsdelivr.net
+      https://cdnjs.cloudflare.com
+      'require-sri-for';
+    style-src
+      'self'
+      https://cdn.jsdelivr.net
+      https://cdnjs.cloudflare.com
+      'require-sri-for';
+    object-src 'none';
+    base-uri 'self';
+  ">
+
+  <!--
+    ╔══════════════════════════════════════════════════════════════════════╗
+    ║           HOW TO REGENERATE THE SRI HASH                           ║
+    ╠══════════════════════════════════════════════════════════════════════╣
+    ║                                                                      ║
+    ║  When you update to a new version of a third-party library, you     ║
+    ║  MUST regenerate the integrity hash. Using the old hash with a      ║
+    ║  new file will cause the browser to block the script entirely.      ║
+    ║                                                                      ║
+    ║  METHOD 1 — Using the SRI Hash Generator website:                  ║
+    ║    1. Visit https://www.srihash.org/                                ║
+    ║    2. Paste the URL of the new script version                       ║
+    ║    3. Copy the generated <script> tag with the new integrity value  ║
+    ║                                                                      ║
+    ║  METHOD 2 — Using curl + openssl (Linux/macOS terminal):            ║
+    ║    curl -sL https://example.com/library.min.js \                    ║
+    ║      | openssl dgst -sha384 -binary \                               ║
+    ║      | openssl base64 -A                                            ║
+    ║    Then prefix the result with "sha384-"                            ║
+    ║                                                                      ║
+    ║  METHOD 3 — Using shasum (Linux/macOS terminal):                    ║
+    ║    curl -sL https://example.com/library.min.js -o lib.js           ║
+    ║    cat lib.js | openssl dgst -sha384 -binary | base64 | tr -d '\n' ║
+    ║                                                                      ║
+    ║  METHOD 4 — Using PowerShell (Windows):                             ║
+    ║    $bytes = (Invoke-WebRequest -Uri "URL").Content                  ║
+    ║    $hash  = [System.Security.Cryptography.SHA384]::Create()         ║
+    ║              .ComputeHash([System.Text.Encoding]::UTF8              ║
+    ║              .GetBytes($bytes))                                      ║
+    ║    [Convert]::ToBase64String($hash)                                 ║
+    ║                                                                      ║
+    ║  METHOD 5 — Using Node.js (one-liner):                              ║
+    ║    node -e "                                                         ║
+    ║      const c=require('crypto'),fs=require('fs');                    ║
+    ║      const h=c.createHash('sha384').update(fs.readFileSync('f.js')) ║
+    ║       .digest('base64');console.log('sha384-'+h)"                   ║
+    ║                                                                      ║
+    ║  BEST PRACTICE: Pin libraries using a specific version number in    ║
+    ║  the URL (e.g., lodash@4.17.21) rather than a "latest" alias,      ║
+    ║  so the file content (and therefore the hash) stays stable.         ║
+    ╚══════════════════════════════════════════════════════════════════════╝
+  -->
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      line-height: 1.6;
+    }
+
+    .card {
+      background: #1e2130;
+      border: 1px solid #2d3148;
+      border-radius: 12px;
+      padding: 2.5rem;
+      max-width: 760px;
+      width: 100%;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.4);
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #a78bfa;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .subtitle {
+      color: #94a3b8;
+      margin-bottom: 2rem;
+      font-size: 0.95rem;
+    }
+
+    .sri-block {
+      background: #0d0f1a;
+      border: 1px solid #2d3148;
+      border-left: 4px solid #a78bfa;
+      border-radius: 8px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .sri-block h2 {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #a78bfa;
+      margin-bottom: 0.75rem;
+    }
+
+    .sri-block code {
+      font-family: 'Cascadia Code', 'Fira Code', 'Courier New', monospace;
+      font-size: 0.78rem;
+      color: #7dd3fc;
+      word-break: break-all;
+      display: block;
+      white-space: pre-wrap;
+    }
+
+    .attr { color: #f9a8d4; }
+    .val  { color: #86efac; }
+    .tag  { color: #fbbf24; }
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .status-item {
+      background: #0d0f1a;
+      border: 1px solid #2d3148;
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .status-item .label {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter

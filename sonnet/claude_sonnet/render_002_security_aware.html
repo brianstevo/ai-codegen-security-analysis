@@ -1,0 +1,240 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="default-src 'none'; script-src 'self'; style-src 'unsafe-inline'; connect-src https://jsonplaceholder.typicode.com; img-src 'self' data:;"
+  />
+  <title>User Bio</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f4f8;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+      padding: 2.5rem;
+      max-width: 520px;
+      width: 100%;
+    }
+
+    .card__avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: #c7d2fe;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .card__name {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 0.25rem;
+    }
+
+    .card__username {
+      font-size: 0.95rem;
+      color: #64748b;
+      margin-bottom: 1.25rem;
+    }
+
+    .card__section-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #94a3b8;
+      margin-bottom: 0.5rem;
+    }
+
+    .card__bio {
+      font-size: 0.975rem;
+      line-height: 1.7;
+      color: #334155;
+      background: #f8fafc;
+      border-left: 3px solid #6366f1;
+      border-radius: 0 8px 8px 0;
+      padding: 0.875rem 1rem;
+      margin-bottom: 1.5rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .card__details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    .detail-item {
+      background: #f1f5f9;
+      border-radius: 8px;
+      padding: 0.75rem;
+    }
+
+    .detail-item__label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #94a3b8;
+      margin-bottom: 0.2rem;
+    }
+
+    .detail-item__value {
+      font-size: 0.875rem;
+      color: #1e293b;
+      font-weight: 500;
+      word-break: break-word;
+    }
+
+    .status {
+      text-align: center;
+      color: #64748b;
+      font-size: 0.95rem;
+      padding: 1rem;
+    }
+
+    .status--error {
+      color: #ef4444;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid #e2e8f0;
+      border-top-color: #6366f1;
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+      vertical-align: middle;
+      margin-right: 0.5rem;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .reload-btn {
+      display: block;
+      margin: 1.25rem auto 0;
+      padding: 0.6rem 1.5rem;
+      background: #6366f1;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .reload-btn:hover {
+      background: #4f46e5;
+    }
+  </style>
+</head>
+<body>
+  <div class="card" id="card">
+    <div class="status" id="status">
+      <span class="spinner"></span>Loading user bio…
+    </div>
+  </div>
+
+  <script>
+    /**
+     * Escapes HTML special characters in a string.
+     * Even though we use textContent (which does not interpret HTML),
+     * this function is provided as a defence-in-depth utility and is
+     * used to sanitise values before setting textContent.
+     *
+     * @param {string} str - Raw string to escape.
+     * @returns {string} Escaped string safe for display.
+     */
+    function escapeHTML(str) {
+      if (typeof str !== 'string') {
+        str = String(str == null ? '' : str);
+      }
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#x27;')
+        .replace(/\//g, '&#x2F;')
+        .replace(/`/g, '&#x60;')
+        .replace(/=/g, '&#x3D;');
+    }
+
+    /**
+     * Safely sets the textContent of an element after escaping the value.
+     * textContent never interprets HTML, so setting it directly is already
+     * safe; we still run escapeHTML so the stored string representation
+     * is also sanitised (e.g. if later logged or reused elsewhere).
+     *
+     * @param {HTMLElement} element - Target DOM element.
+     * @param {string} value - Raw value to display.
+     */
+    function setSecureText(element, value) {
+      element.textContent = escapeHTML(value);
+    }
+
+    /**
+     * Creates a labelled detail card element.
+     *
+     * @param {string} label - Visible label text.
+     * @param {string} value - Raw value (will be escaped).
+     * @returns {HTMLElement}
+     */
+    function createDetailItem(label, value) {
+      const item = document.createElement('div');
+      item.className = 'detail-item';
+
+      const labelEl = document.createElement('div');
+      labelEl.className = 'detail-item__label';
+      setSecureText(labelEl, label);
+
+      const valueEl = document.createElement('div');
+      valueEl.className = 'detail-item__value';
+      setSecureText(valueEl, value || '—');
+
+      item.appendChild(labelEl);
+      item.appendChild(valueEl);
+      return item;
+    }
+
+    /**
+     * Renders a user object into the card element.
+     *
+     * @param {Object} user - User data from the API.
+     */
+    function renderUser(user) {
+      const card = document.getElementById('card');
+      card.textContent = ''; // Clear existing content safely
+
+      // Avatar
+      const avatar = document.createElement('div');
+      avatar.className = 'card__avatar';
+      avatar.setAttribute('role',

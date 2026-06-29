@@ -1,0 +1,243 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payment Form</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .card-wrapper {
+      width: 100%;
+      max-width: 440px;
+      padding: 16px;
+    }
+
+    /* Credit Card Preview */
+    .card-preview {
+      width: 100%;
+      aspect-ratio: 1.586;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #434343 0%, #000000 100%);
+      padding: 28px;
+      margin-bottom: 32px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      color: #fff;
+    }
+
+    .card-preview.visa    { background: linear-gradient(135deg, #1a1a2e 0%, #e94560 100%); }
+    .card-preview.mastercard { background: linear-gradient(135deg, #373b44 0%, #4286f4 100%); }
+    .card-preview.amex    { background: linear-gradient(135deg, #134e5e 0%, #71b280 100%); }
+    .card-preview.discover { background: linear-gradient(135deg, #f46b45 0%, #eea849 100%); }
+
+    .card-preview::before {
+      content: '';
+      position: absolute;
+      top: -60px;
+      right: -60px;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+    }
+
+    .card-preview::after {
+      content: '';
+      position: absolute;
+      bottom: -80px;
+      left: -40px;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.04);
+    }
+
+    .card-chip {
+      width: 44px;
+      height: 34px;
+      background: linear-gradient(135deg, #d4af37, #f5d97f);
+      border-radius: 6px;
+      margin-bottom: 24px;
+      position: relative;
+    }
+
+    .card-chip::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 26px;
+      height: 20px;
+      border: 1.5px solid rgba(0,0,0,0.25);
+      border-radius: 3px;
+    }
+
+    .card-number-preview {
+      font-size: 1.35rem;
+      letter-spacing: 0.22em;
+      font-family: 'Courier New', monospace;
+      margin-bottom: 24px;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    }
+
+    .card-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .card-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      opacity: 0.7;
+      margin-bottom: 4px;
+    }
+
+    .card-value {
+      font-size: 0.95rem;
+      letter-spacing: 0.08em;
+    }
+
+    .card-brand-logo {
+      font-size: 1.4rem;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      text-align: right;
+    }
+
+    /* Form */
+    .form-container {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 36px 32px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .form-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 6px;
+    }
+
+    .form-subtitle {
+      font-size: 0.85rem;
+      color: #8a8a9a;
+      margin-bottom: 28px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #555566;
+      margin-bottom: 8px;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px 48px 14px 16px;
+      border: 2px solid #e0e0ef;
+      border-radius: 10px;
+      font-size: 1rem;
+      color: #1a1a2e;
+      background: #f9f9fc;
+      outline: none;
+      transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+      font-family: inherit;
+    }
+
+    input::placeholder {
+      color: #b0b0c4;
+      letter-spacing: 0.05em;
+    }
+
+    input:focus {
+      border-color: #5c6bc0;
+      background: #fff;
+      box-shadow: 0 0 0 4px rgba(92, 107, 192, 0.12);
+    }
+
+    input.error {
+      border-color: #e53935;
+      box-shadow: 0 0 0 4px rgba(229, 57, 53, 0.1);
+    }
+
+    input.valid {
+      border-color: #43a047;
+      box-shadow: 0 0 0 4px rgba(67, 160, 71, 0.1);
+    }
+
+    .input-icon {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.1rem;
+      pointer-events: none;
+    }
+
+    .error-message {
+      font-size: 0.75rem;
+      color: #e53935;
+      margin-top: 6px;
+      display: none;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .error-message.visible {
+      display: flex;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .cardholder-row {
+      margin-bottom: 20px;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #5c6bc0, #3949ab);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition:

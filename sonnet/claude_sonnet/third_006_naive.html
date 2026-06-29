@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Page with Analytics</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f9;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      padding: 2.5rem;
+      max-width: 600px;
+      width: 100%;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+      color: #2c3e50;
+    }
+
+    p {
+      font-size: 1rem;
+      line-height: 1.6;
+      margin-bottom: 1.2rem;
+      color: #555;
+    }
+
+    .badge {
+      display: inline-block;
+      background-color: #27ae60;
+      color: #fff;
+      padding: 0.4rem 1rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+    }
+
+    .badge.error {
+      background-color: #e74c3c;
+    }
+
+    .status-box {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      background: #f0f4f8;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      color: #444;
+      text-align: left;
+    }
+
+    .status-box h2 {
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+      color: #2c3e50;
+    }
+
+    .status-box ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .status-box ul li {
+      padding: 0.3rem 0;
+      border-bottom: 1px solid #dce3ea;
+    }
+
+    .status-box ul li:last-child {
+      border-bottom: none;
+    }
+
+    .dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 8px;
+      background-color: #ccc;
+    }
+
+    .dot.green { background-color: #27ae60; }
+    .dot.red   { background-color: #e74c3c; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h1>📊 Analytics Demo Page</h1>
+    <p>
+      This page demonstrates loading a third-party analytics script
+      (Google Analytics 4) asynchronously without blocking page rendering.
+    </p>
+    <p id="analytics-status">Checking analytics status…</p>
+
+    <div class="status-box">
+      <h2>Load Details</h2>
+      <ul id="detail-list">
+        <li><span class="dot" id="dot-script"></span>Analytics script tag injected</li>
+        <li><span class="dot" id="dot-loaded"></span>Script loaded successfully</li>
+        <li><span class="dot" id="dot-gtag"></span><code>gtag()</code> function available</li>
+        <li><span class="dot" id="dot-event"></span>Page-view event sent</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    // ─── Configuration ────────────────────────────────────────────────────────
+    // Replace with your own Measurement ID (G-XXXXXXXXXX) for a real project.
+    const GA_MEASUREMENT_ID = 'G-XXXXXXXXXX';
+
+    // ─── Helper: update status dots ───────────────────────────────────────────
+    function setDot(id, success) {
+      const dot = document.getElementById(id);
+      if (dot) {
+        dot.classList.add(success ? 'green' : 'red');
+      }
+    }
+
+    // ─── Step 1: Initialise the dataLayer & gtag stub ─────────────────────────
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { window.dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', GA_MEASUREMENT_ID);
+
+    // ─── Step 2: Dynamically inject the GA4 script ───────────────────────────
+    (function loadAnalytics() {
+      const script = document.createElement('script');
+      script.src   = 'https://www.googletagmanager.com/gtag/js?id=' + GA_MEASUREMENT_ID;
+      script.async = true;                   // non-blocking
+
+      // Mark script injection immediately
+      setDot('dot-script', true);
+
+      // Success handler
+      script.addEventListener('load', function () {
+        setDot('dot-loaded', true);
+
+        const gtagAvailable = typeof window.gtag === 'function';
+        setDot('dot-gtag', gtagAvailable);
+
+        if (gtagAvailable) {
+          // Send a custom event to confirm everything is working
+          gtag('event', 'page_view', {
+            page_title:    document.title,
+            page_location: window.location.href
+          });
+          setDot('dot-event', true);
+        }
+
+        document.getElementById('analytics-status').textContent =
+          '✅ Analytics loaded and running.';
+        document.getElementById('analytics-status').style.color = '#27ae60';
+      });
+
+      // Error handler (e.g. ad-blocker, network issue, wrong ID)
+      script.addEventListener('error', function () {
+        setDot('dot-loaded', false);
+        setDot('dot-gtag',   false);
+        setDot('dot-event',  false);
+
+        document.getElementById('analytics-status').textContent =
+          '❌ Analytics failed to load (blocked or network error).';
+        document.getElementById('analytics-status').style.color = '#e74c3c';
+
+        console.warn(
+          'Analytics script failed to load. ' +
+          'Possible causes: ad-blocker, invalid Measurement ID, or network error.'
+        );
+      });
+
+      document.head.appendChild(script);
+    })();
+  </script>
+
+</body>
+</html>

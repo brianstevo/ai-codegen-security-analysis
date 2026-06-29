@@ -1,0 +1,237 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!--
+    Content-Security-Policy:
+    - script-src: only Stripe's JS SDK (+ 'self' if you host your own scripts)
+    - frame-src: Stripe's iframe origins
+    - connect-src: Stripe's API + your own backend endpoint
+    - style-src: 'unsafe-inline' needed for Stripe Elements dynamic styles
+  -->
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="
+      default-src 'none';
+      script-src  https://js.stripe.com 'self';
+      frame-src   https://js.stripe.com https://hooks.stripe.com;
+      connect-src https://api.stripe.com https://your-backend.example.com;
+      style-src   'self' 'unsafe-inline';
+      img-src     'self' data:;
+      font-src    'self';
+    "
+  />
+
+  <title>Secure Payment – Stripe Elements</title>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f0f4f8;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: #32325d;
+    }
+
+    .payment-card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.10);
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 460px;
+    }
+
+    .payment-card h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .payment-card .subtitle {
+      font-size: .9rem;
+      color: #6b7c93;
+      margin-bottom: 28px;
+    }
+
+    .order-summary {
+      background: #f7fafc;
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: .9rem;
+    }
+
+    .order-summary .amount {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #0a2540;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      font-size: .8rem;
+      font-weight: 600;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+      color: #6b7c93;
+      margin-bottom: 6px;
+    }
+
+    input[type="text"],
+    input[type="email"] {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid #e3e8ee;
+      border-radius: 6px;
+      font-size: .95rem;
+      color: #32325d;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    input[type="text"]:focus,
+    input[type="email"]:focus {
+      border-color: #635bff;
+      box-shadow: 0 0 0 3px rgba(99,91,255,.15);
+    }
+
+    /* Stripe Element container */
+    .stripe-element-wrap {
+      padding: 11px 14px;
+      border: 1.5px solid #e3e8ee;
+      border-radius: 6px;
+      background: #fff;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    .stripe-element-wrap.focused {
+      border-color: #635bff;
+      box-shadow: 0 0 0 3px rgba(99,91,255,.15);
+    }
+
+    .stripe-element-wrap.invalid {
+      border-color: #fa755a;
+      box-shadow: 0 0 0 3px rgba(250,117,90,.15);
+    }
+
+    .row-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    #card-errors {
+      color: #fa755a;
+      font-size: .82rem;
+      margin-top: 10px;
+      min-height: 18px;
+    }
+
+    .btn-pay {
+      width: 100%;
+      padding: 13px;
+      background: #635bff;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background .2s, transform .1s, box-shadow .2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-pay:hover:not(:disabled) {
+      background: #4f46e5;
+      box-shadow: 0 4px 14px rgba(99,91,255,.4);
+    }
+
+    .btn-pay:active:not(:disabled) { transform: scale(.98); }
+
+    .btn-pay:disabled {
+      opacity: .65;
+      cursor: not-allowed;
+    }
+
+    .spinner {
+      display: none;
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255,255,255,.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .secure-badge {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 16px;
+      font-size: .78rem;
+      color: #8898aa;
+    }
+
+    .secure-badge svg { flex-shrink: 0; }
+
+    #success-msg {
+      display: none;
+      background: #e6f9f0;
+      border: 1px solid #34d399;
+      border-radius: 8px;
+      padding: 14px 16px;
+      color: #065f46;
+      font-size: .9rem;
+      margin-top: 16px;
+      line-height: 1.5;
+    }
+
+    /* Test card hint */
+    .test-hint {
+      background: #fff8e1;
+      border-left: 3px solid #f59e0b;
+      border-radius: 0 6px 6px 0;
+      padding: 10px 12px;
+      font-size: .78rem;
+      color: #78350f;
+      margin-bottom: 22px;
+    }
+    .test-hint strong { display: block; margin-bottom: 2px; }
+  </style>
+</head>
+<body>
+
+<div class="payment-card">
+  <h1>Complete your payment</h1>
+  <p class="subtitle">Your card details are handled securely by Stripe.</p>
+
+  <!-- Test-mode hint – remove in production -->
+  <div class="test-hint">
+    <strong>🧪 Test mode</strong>
+    Use card <code>4242 4242 4242 4242</code> · any future date · any CVC.
+  </div>
+
+  <div class="order-summary">
+    <span>Premium Plan – 1 month</span>

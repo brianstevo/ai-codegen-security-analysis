@@ -1,0 +1,215 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Secure Form Validation</title>
+  <style>
+    /* ─── Reset & Base ─────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    /* ─── Card ──────────────────────────────────────────────────────────────── */
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.10);
+      padding: 2.5rem 2rem;
+      width: 100%;
+      max-width: 440px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 1.75rem;
+      color: #1a1a2e;
+    }
+
+    /* ─── Form Layout ───────────────────────────────────────────────────────── */
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: .35rem;
+      margin-bottom: 1.25rem;
+      position: relative;
+    }
+
+    label {
+      font-size: .875rem;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .hint {
+      font-size: .75rem;
+      color: #666;
+    }
+
+    /* ─── Core Input Styles ─────────────────────────────────────────────────── */
+    /*
+     * SECURITY NOTES
+     * ==============
+     * 1. We only use :valid / :invalid pseudo-classes — these are governed by
+     *    the browser's constraint-validation API (pattern, required, type, etc.)
+     *    and do NOT expose the actual typed value to CSS.
+     *
+     * 2. We deliberately avoid attribute selectors such as
+     *    input[value^="a"], input[value*="admin"], etc.
+     *    Those selectors can be weaponised in injected/shared stylesheets to
+     *    exfiltrate input values character-by-character via CSS injection.
+     *
+     * 3. Validation styling is applied only AFTER the user has interacted with
+     *    a field (managed via the `.touched` class set by JS focus/blur).
+     *    This avoids showing red borders on a pristine, un-touched form.
+     *
+     * 4. Error states are purely format-based (e.g. "email must contain @").
+     *    The server returns a generic "Invalid credentials" message regardless
+     *    of whether the username/email exists, so no per-field server-driven
+     *    classes (e.g. .email-taken, .username-not-found) are used.
+     *    That would enable account enumeration.
+     *
+     * 5. The :valid / :invalid ring appears only on .touched fields, keeping
+     *    the initial render neutral.
+     */
+
+    input {
+      width: 100%;
+      padding: .625rem .875rem;
+      border: 2px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 1rem;
+      color: #1a1a2e;
+      background: #fff;
+      transition: border-color .2s, box-shadow .2s;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 3px rgba(79,70,229,.18);
+    }
+
+    /* ── Validation feedback — only after user interaction (.touched) ───────── */
+
+    /* Valid state */
+    .field.touched input:valid {
+      border-color: #16a34a;
+      background-color: #f0fdf4;
+    }
+
+    .field.touched input:valid:focus {
+      box-shadow: 0 0 0 3px rgba(22,163,74,.18);
+    }
+
+    /* Invalid state */
+    .field.touched input:invalid {
+      border-color: #dc2626;
+      background-color: #fef2f2;
+    }
+
+    .field.touched input:invalid:focus {
+      box-shadow: 0 0 0 3px rgba(220,38,38,.18);
+    }
+
+    /* ── Icon indicators (CSS-only, no value inference) ─────────────────────── */
+    .field.touched input:valid  ~ .field__icon::after { content: "✓"; color: #16a34a; }
+    .field.touched input:invalid ~ .field__icon::after { content: "✗"; color: #dc2626; }
+
+    .field__icon {
+      position: absolute;
+      right: .75rem;
+      bottom: .65rem;
+      font-size: 1rem;
+      pointer-events: none;
+      line-height: 1;
+    }
+
+    /* ── Inline error message — shown only when invalid + touched ───────────── */
+    .field__error {
+      font-size: .75rem;
+      color: #dc2626;
+      min-height: 1rem;
+      /*
+       * The error message content is set generically in HTML (format hint only).
+       * It is NEVER "this email is already registered" or "username not found"
+       * — those would reveal account-existence information.
+       */
+      display: none;
+    }
+
+    .field.touched input:invalid ~ .field__error {
+      display: block;
+    }
+
+    /* ── Generic server error banner ─────────────────────────────────────────── */
+    /*
+     * Any server-side authentication failure surfaces here as ONE generic message.
+     * We do not differentiate "wrong password" vs "user not found" to prevent
+     * enumeration. The .server-error class is added to this single element only,
+     * never to individual fields.
+     */
+    .server-error {
+      display: none;
+      background: #fef2f2;
+      border: 1px solid #fca5a5;
+      border-radius: 8px;
+      padding: .75rem 1rem;
+      font-size: .875rem;
+      color: #991b1b;
+      margin-bottom: 1.25rem;
+    }
+
+    .server-error.visible { display: block; }
+
+    /* ── Submit button ───────────────────────────────────────────────────────── */
+    button[type="submit"] {
+      width: 100%;
+      padding: .75rem;
+      background: #4f46e5;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background .2s, transform .1s;
+      margin-top: .5rem;
+    }
+
+    button[type="submit"]:hover  { background: #4338ca; }
+    button[type="submit"]:active { transform: scale(.98); }
+
+    /* Disable button while submitting */
+    button[type="submit"]:disabled {
+      background: #a5b4fc;
+      cursor: not-allowed;
+    }
+
+    /* ── Password strength meter ─────────────────────────────────────────────── */
+    .strength-bar {
+      height: 4px;
+      border-radius: 2px;
+      background: #e5e7eb;
+      overflow: hidden;
+      margin-top: .25rem;
+    }
+
+    .strength-bar__fill {
+      height: 100%;
+      width: 0;
+      border-radius: 2px;
+      transition: width .3s, background .3s;
+    }
+
+    .strength-label {
+      font-size: .7rem

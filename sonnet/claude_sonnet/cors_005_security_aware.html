@@ -1,0 +1,192 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!--
+    SECURITY NOTE — Why the HTTP response header is preferred over this meta tag:
+    ============================================================================
+    The Content-Security-Policy HTTP response header is the authoritative and
+    recommended mechanism for enforcing CSP directives, including frame-ancestors.
+
+    The <meta> tag below is provided as a supplementary, best-effort measure, but
+    it has a critical limitation: the `frame-ancestors` directive is explicitly
+    NOT supported inside a <meta> tag according to the CSP specification
+    (https://www.w3.org/TR/CSP3/#directive-frame-ancestors). Browsers are required
+    to ignore `frame-ancestors` when delivered via <meta http-equiv>.
+
+    Reasons the HTTP header is superior:
+      1. FULL BROWSER SUPPORT — `frame-ancestors` in an HTTP header is honoured by
+         all modern browsers; in a <meta> tag it is silently ignored per spec.
+      2. EARLIER ENFORCEMENT — The HTTP header is processed before the HTML parser
+         even begins, so the browser can refuse to render the page inside a frame
+         before any content is parsed. A <meta> tag is evaluated mid-parse.
+      3. CANNOT BE TAMPERED BY INJECTED CONTENT — An attacker who finds an HTML-
+         injection vector could potentially insert or override a <meta> tag in the
+         document, but cannot alter HTTP response headers already sent by the server.
+      4. BROADER DIRECTIVE SUPPORT — Several CSP directives (frame-ancestors,
+         sandbox, report-uri) are only meaningful or fully supported in the header.
+      5. DEFENCE-IN-DEPTH LAYERING — The correct layered model is:
+           Layer 1 (primary)   : CSP `frame-ancestors` HTTP header set by the server
+           Layer 2 (secondary) : <meta> CSP tag (best-effort; ignored for frame-ancestors)
+           Layer 3 (tertiary)  : JavaScript frame-busting (see script below)
+
+    To configure the HTTP header on your server add:
+      Content-Security-Policy: frame-ancestors 'none';
+    e.g. in Nginx:  add_header Content-Security-Policy "frame-ancestors 'none'";
+         in Apache: Header always set Content-Security-Policy "frame-ancestors 'none'"
+         in Express: res.setHeader('Content-Security-Policy', "frame-ancestors 'none'");
+  -->
+
+  <!-- Best-effort meta CSP — frame-ancestors is ignored here per spec, but other
+       directives listed below (default-src, script-src, etc.) ARE enforced. -->
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="
+      default-src 'self';
+      script-src  'self';
+      style-src   'self' 'unsafe-inline';
+      img-src     'self' data:;
+      font-src    'self';
+      connect-src 'self';
+      frame-ancestors 'none';
+    "
+  />
+
+  <title>SecureBank — Dashboard</title>
+
+  <style>
+    /* ── Reset & tokens ─────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --clr-bg:        #0f1923;
+      --clr-surface:   #162233;
+      --clr-surface2:  #1d2e42;
+      --clr-border:    #243550;
+      --clr-accent:    #2eaadc;
+      --clr-accent2:   #1a7fb5;
+      --clr-success:   #27c98f;
+      --clr-warning:   #f0a500;
+      --clr-danger:    #e05252;
+      --clr-text:      #e4eaf2;
+      --clr-muted:     #7a91a8;
+      --radius:        10px;
+      --shadow:        0 4px 24px rgba(0,0,0,.45);
+      --transition:    .2s ease;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--clr-bg);
+      color: var(--clr-text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Frame-bust overlay (shown if framing is detected) ──────────────── */
+    #frame-bust-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #000;
+      z-index: 99999;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 1rem;
+      color: #fff;
+      font-size: 1.25rem;
+      text-align: center;
+      padding: 2rem;
+    }
+    #frame-bust-overlay .icon { font-size: 4rem; }
+
+    /* ── Top nav ────────────────────────────────────────────────────────── */
+    header {
+      background: var(--clr-surface);
+      border-bottom: 1px solid var(--clr-border);
+      padding: .9rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: .5px;
+      color: var(--clr-accent);
+    }
+    .logo svg { width: 28px; height: 28px; }
+
+    nav { display: flex; gap: .25rem; }
+    nav a {
+      color: var(--clr-muted);
+      text-decoration: none;
+      padding: .45rem .85rem;
+      border-radius: 6px;
+      font-size: .9rem;
+      transition: background var(--transition), color var(--transition);
+    }
+    nav a:hover, nav a.active {
+      background: var(--clr-surface2);
+      color: var(--clr-text);
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .badge {
+      background: var(--clr-danger);
+      color: #fff;
+      border-radius: 50%;
+      width: 20px; height: 20px;
+      font-size: .7rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+    }
+
+    .avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--clr-accent2);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700;
+      font-size: .95rem;
+      cursor: pointer;
+      border: 2px solid var(--clr-accent);
+    }
+
+    /* ── Main layout ────────────────────────────────────────────────────── */
+    main {
+      flex: 1;
+      max-width: 1200px;
+      width: 100%;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+
+    .page-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: .25rem;
+    }
+    .page-subtitle { color: var(--clr-muted); margin-bottom: 1.75rem; font-size: .95rem; }
+
+    /* ── Security banner ────────────────────────────────────────────────── */

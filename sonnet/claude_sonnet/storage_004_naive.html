@@ -1,0 +1,277 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Registration</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      padding: 40px;
+      width: 100%;
+      max-width: 460px;
+    }
+
+    .card-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .card-header h1 {
+      font-size: 1.8rem;
+      color: #2d2d2d;
+      margin-bottom: 6px;
+    }
+
+    .card-header p {
+      color: #777;
+      font-size: 0.95rem;
+    }
+
+    .form-group {
+      margin-bottom: 22px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #444;
+      margin-bottom: 7px;
+    }
+
+    label .required {
+      color: #e53e3e;
+      margin-left: 2px;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 12px;
+      width: 18px;
+      height: 18px;
+      color: #999;
+      pointer-events: none;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      padding: 11px 12px 11px 40px;
+      border: 1.5px solid #ddd;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      color: #2d2d2d;
+      background: #fafafa;
+      transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+      outline: none;
+    }
+
+    input[type="text"]:focus,
+    input[type="password"]:focus {
+      border-color: #667eea;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+    }
+
+    input.error {
+      border-color: #e53e3e;
+      background: #fff5f5;
+    }
+
+    input.error:focus {
+      box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.2);
+    }
+
+    input.valid {
+      border-color: #38a169;
+    }
+
+    .toggle-btn {
+      position: absolute;
+      right: 10px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #999;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      transition: color 0.2s;
+    }
+
+    .toggle-btn:hover {
+      color: #555;
+    }
+
+    .error-msg {
+      font-size: 0.78rem;
+      color: #e53e3e;
+      margin-top: 5px;
+      min-height: 16px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .hint {
+      font-size: 0.78rem;
+      color: #888;
+      margin-top: 5px;
+    }
+
+    /* Password strength */
+    .strength-bar {
+      display: flex;
+      gap: 4px;
+      margin-top: 8px;
+    }
+
+    .strength-bar span {
+      flex: 1;
+      height: 4px;
+      border-radius: 2px;
+      background: #e2e8f0;
+      transition: background 0.3s;
+    }
+
+    .strength-label {
+      font-size: 0.75rem;
+      margin-top: 4px;
+      color: #888;
+    }
+
+    /* Card number formatting */
+    .cc-brands {
+      position: absolute;
+      right: 12px;
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .cc-brand-icon {
+      width: 32px;
+      height: 22px;
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0;
+      opacity: 0.3;
+      transition: opacity 0.3s;
+    }
+
+    .cc-brand-icon.active {
+      opacity: 1;
+    }
+
+    .visa-icon { background: #1a1f71; color: #fff; }
+    .mc-icon   { background: #eb001b; color: #fff; }
+    .amex-icon { background: #007bc1; color: #fff; }
+
+    /* Divider */
+    .divider {
+      border: none;
+      border-top: 1px solid #eee;
+      margin: 28px 0;
+    }
+
+    /* Submit */
+    .submit-btn {
+      width: 100%;
+      padding: 13px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      letter-spacing: 0.3px;
+      transition: opacity 0.25s, transform 0.1s;
+    }
+
+    .submit-btn:hover {
+      opacity: 0.92;
+    }
+
+    .submit-btn:active {
+      transform: scale(0.98);
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    /* Success banner */
+    .success-banner {
+      display: none;
+      background: #f0fff4;
+      border: 1.5px solid #38a169;
+      border-radius: 8px;
+      padding: 14px 16px;
+      color: #276749;
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-align: center;
+      margin-top: 20px;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .success-banner.show {
+      display: flex;
+    }
+
+    /* Security notice */
+    .security-notice {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      color: #999;
+      margin-top: 18px;
+      text-align: center;
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .card { padding: 28px 22px; }
+      .card-header h1 { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
