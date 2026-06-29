@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Banking Dashboard</title>
+  <style>
+    :root{
+      --bg:#0f172a;
+      --panel:#111827;
+      --panel-2:#0b1220;
+      --card:#172036;
+      --card-2:#1f2a44;
+      --text:#e5e7eb;
+      --muted:#94a3b8;
+      --accent:#38bdf8;
+      --accent-2:#22c55e;
+      --danger:#ef4444;
+      --warning:#f59e0b;
+      --border:rgba(148,163,184,.18);
+      --shadow:0 18px 40px rgba(0,0,0,.28);
+      --radius:18px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(56,189,248,.18), transparent 28%),
+        radial-gradient(circle at top right, rgba(34,197,94,.12), transparent 24%),
+        linear-gradient(180deg, #0b1020 0%, #0f172a 100%);
+      color: var(--text);
+    }
+
+    .app{
+      min-height: 100%;
+      display: grid;
+      grid-template-columns: 280px 1fr;
+    }
+
+    .sidebar{
+      background: rgba(8, 13, 26, .82);
+      backdrop-filter: blur(14px);
+      border-right: 1px solid var(--border);
+      padding: 24px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding: 8px 10px;
+    }
+
+    .logo{
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent), #6366f1);
+      display:grid;
+      place-items:center;
+      font-weight: 800;
+      color: white;
+      box-shadow: 0 10px 24px rgba(56,189,248,.25);
+    }
+
+    .brand h1{
+      margin:0;
+      font-size: 1.05rem;
+      line-height: 1.1;
+    }
+
+    .brand p{
+      margin:4px 0 0;
+      color: var(--muted);
+      font-size: .85rem;
+    }
+
+    .nav{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .nav a{
+      text-decoration:none;
+      color: var(--text);
+      padding: 12px 14px;
+      border-radius: 14px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      transition: .2s ease;
+      border: 1px solid transparent;
+    }
+
+    .nav a:hover, .nav a.active{
+      background: rgba(56,189,248,.12);
+      border-color: rgba(56,189,248,.18);
+      transform: translateX(2px);
+    }
+
+    .nav .icon{
+      width: 28px;
+      height: 28px;
+      border-radius: 10px;
+      display:grid;
+      place-items:center;
+      background: rgba(148,163,184,.12);
+      color: var(--accent);
+      font-size: .9rem;
+    }
+
+    .sidebar .card{
+      background: linear-gradient(180deg, rgba(23,32,54,.95), rgba(15,23,42,.95));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .quick-stats{
+      display:grid;
+      gap:12px;
+    }
+
+    .stat{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.04);
+    }
+
+    .stat span{
+      color: var(--muted);
+      font-size: .85rem;
+    }
+
+    .stat strong{
+      font-size: 1rem;
+    }
+
+    .main{
+      padding: 24px;
+      display:flex;
+      flex-direction:column;
+      gap: 22px;
+    }
+
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .search{
+      flex: 1 1 360px;
+      max-width: 620px;
+      position: relative;
+    }
+
+    .search input{
+      width:100%;
+      padding: 14px 16px 14px 46px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: rgba(15,23,42,.72);
+      color: var(--text);
+      outline:none;
+      box-shadow: var(--shadow);
+    }
+
+    .search input::placeholder{ color: #64748b; }
+    .search .search-icon{
+      position:absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+    }
+
+    .profile{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding: 10px 14px;
+      border-radius: 16px;
+      background: rgba(15,23,42,.72);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+
+    .avatar{
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #f472b6, #8b5cf6);
+      display:grid;
+      place-items:center;
+      font-weight:700;
+    }
+
+    .profile small{ color: var(--muted); display:block; }
+
+    .hero{
+      display:grid;
+      grid-template-columns: 1.5fr .9fr;
+      gap: 22px;
+    }
+
+    .panel{
+      background: linear-gradient(180deg, rgba(23,32,54,.96), rgba(15,23,42,.96));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .balance{
+      padding: 24px;
+      position: relative;
+      overflow:hidden;
+    }
+
+    .balance::after{
+      content:"";
+      position:absolute;
+      inset:auto -40px -40px auto;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(56,189,248,.18), transparent 70%);
+      pointer-events:none;
+    }
+
+    .balance .label{
+      color: var(--muted);
+      font-size: .9rem;
+      margin-bottom: 8px;
+    }
+
+    .balance .amount{
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin: 0;
+    }
+
+    .balance .sub{
+      margin: 10px 0 0;
+      color: var(--muted);
+    }
+
+    .actions{
+      display:flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    .btn{
+      border: none;
+      border-radius: 14px;
+      padding: 12px 16px;
+      font-weight: 600;
+      cursor: pointer;
+      color: white;
+      transition: .2s ease;
+    }
+
+    .btn:hover{ transform: translateY(-1px); }
+    .btn.primary{ background: linear-gradient(135deg, var(--accent), #6366f1); }
+    .btn.success{ background: linear-gradient(135deg, var(--accent-2), #16a34a); }
+    .btn.ghost{
+      background: rgba(255,255,255,.04);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .mini-grid{
+      display:grid;
+      gap: 16px;
+    }
+
+    .mini{
+      padding: 18px;
+    }
+
+    .mini h3{
+      margin:0 0 8px;
+      font-size: 1rem;
+    }
+
+    .mini .value{
+      font-size: 1.6rem;
+      font-weight: 800;
+      margin: 0;
+    }
+
+    .mini .trend{
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .trend.up{ color: #86efac; }
+    .trend.down{ color: #fca5a5; }
+
+    .content{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 22px;
+    }
+
+    .section{
+      padding: 22px;
+    }
+
+    .section h2{
+      margin: 0 0 16px;
+      font-size: 1.1rem;
+    }
+
+    .transactions{
+      display:flex;
+      flex-direction:column;
+      gap: 12px;
+    }
+
+    .tx{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.04);
+    }
+
+    .tx-left{
+      display:flex;
+      align-items:center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .tx-badge{
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display:grid;
+      place-items:center;
+      font-weight: 700;
+      flex: 0 0 auto;
+    }
+
+    .tx-badge.in{ background: rgba(34,197,94,.14); color: #86efac; }
+    .tx-badge.out{ background: rgba(239,68,68,.14); color: #fca5a5; }
+    .tx-badge.bill{ background: rgba(245,158,11,.14); color: #fcd34d; }
+
+    .tx-meta{
+      min-width: 0;
+    }
+
+    .tx-meta strong{
+      display:block;
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+    }
+
+    .tx-meta span{
+      color: var(--muted);
+      font-size: .88rem;
+    }
+
+    .tx-amount{
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .tx-amount.positive{ color: #86efac; }
+    .tx-amount.negative{ color: #fca5a5; }
+
+    .chart{
+      height: 260px;
+      display:flex;
+      align-items:flex-end;
+      gap: 12px;
+      padding: 18px 10px 8px;
+    }
+
+    .bar-wrap{
+      flex: 1;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .bar{
+      width: 100%;
+      max-width: 42px;
+      border-radius: 14px 14px 6px 6px;
+      background: linear-gradient(180deg, rgba(56,189,248,.95), rgba(99,102,241,.85));
+      box-shadow: 0 10px 24px rgba(56,189,248,.18);
+      min-height: 24px;
+    }
+
+    .bar-label{
+      color: var(--muted);
+      font-size: .82rem;
+    }
+
+    .footer-note{
+      color: var(--muted);
+      font-size: .88rem;
+      margin-top: 12px;
+    }
+
+    @media (max-width: 1100px){
+      .hero, .content{ grid-template-columns: 1fr; }
+      .app{ grid-template-columns: 1fr; }
+      .sidebar{ border-right: none; border-bottom: 1px solid var(--border); }
+    }
+
+    @media (max-width: 640px){
+      .main{ padding: 16px; }
+      .sidebar{ padding: 16px; }
+      .profile{ width: 100%; justify-content: space-between; }
+      .tx{ align-items:flex-start; flex-direction:column; }
+      .tx-amount{ align-self:flex-end; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo">B</div>
+        <div>
+          <h1>BluePeak Bank</h1>
+          <p>Personal Finance Dashboard</p>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <a href="#" class="active"><span class="icon">⌂</span>Overview</a>
+        <a href="#"><span class="icon">⇄</span>Transfers</a>
+        <a href="#"><span class="icon">◫</span>Accounts</a>
+        <a href="#"><span class="icon">▣</span>Cards</a>
+        <a href="#"><span class="icon">⚙</span>Settings</a>
+      </nav>
+
+      <div class="card">
+        <div class="quick-stats">
+          <div class="stat">
+            <span>Credit Score</span>
+            <strong>782</strong>
+          </div>
+          <div class="stat">
+            <span>Monthly Savings</span>
+            <strong>$2,450</strong>
+          </div>
+          <div class="stat">
+            <span>Pending Alerts</span>
+            <strong>2</strong>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="search">
+          <span class="search-icon">⌕</span>
+          <input type="text" placeholder="Search transactions, accounts, or payees..." />
+        </div>
+        <div class="profile">
+          <div class="avatar">AJ</div>
+          <div>
+            <strong>Alex Johnson</strong>
+            <small>Premium Checking</small>
+          </div>
+        </div>
+      </div>
+
+      <section class="hero">
+        <div class="panel balance">
+          <div class="label">Available Balance</div>
+          <h2 class="amount">$48,392.18</h2>
+          <p class="sub">Updated just now • Last deposit received 2 hours ago</p>
+          <div class="actions">
+            <button class="btn primary">Transfer Money</button>
+            <button class="btn success">Pay Bill</button>
+            <button class="btn ghost">Download Statement</button>
+          </div>
+        </div>
+
+        <div class="mini-grid">
+          <div class="panel mini">
+            <h3>Income</h3>
+            <p class="value">$12,840</p>
+            <div class="trend up">▲ 8.4% vs last month</div>
+          </div>
+          <div class="panel mini">
+            <h3>Expenses</h3>
+            <p class="value">$6,210</p>
+            <div class="trend down">▼ 3.1% vs last month</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="content">
+        <div class="panel section">
+          <h2>Spending Overview</h2>
+          <div class="chart" id="chart"></div>
+          <div class="footer-note">This month’s spending by category.</div>
+        </div>
+
+        <div class="panel section">
+          <h2>Recent Transactions</h2>
+          <div class="transactions" id="transactions"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const chartData = [
+      { label: "Mon", value: 42 },
+      { label: "Tue", value: 68 },
+      { label: "Wed", value: 54 },
+      { label: "Thu", value: 78 },
+      { label: "Fri", value: 62 },
+      { label: "Sat", value: 88 },
+      { label: "Sun", value: 48 }
+    ];
+
+    const transactions = [
+      { name: "Salary Deposit", type: "in", amount: "+$8,500.00", meta: "Acme Corp • Today" },
+      { name: "Electric Bill", type: "bill", amount: "-$142.30", meta: "Utility Payment • Yesterday" },
+      { name: "Grocery Store", type: "out", amount: "-$86.74", meta: "Market Fresh • Yesterday" },
+      { name: "Transfer to Savings", type: "in", amount: "-$1,200.00", meta: "Auto Transfer • 2 days ago" }
+    ];
+
+    const chart = document.getElementById("chart");
+    const maxValue = Math.max(...chartData.map(d => d.value));
+
+    chartData.forEach(d => {
+      const wrap = document.createElement("div");
+      wrap.className = "bar-wrap";
+
+      const bar = document.createElement("div");
+      bar.className = "bar";
+      bar.style.height = `${Math.max(24, (d.value / maxValue) * 180)}px`;
+      bar.title = `${d.label}: ${d.value}`;
+
+      const label = document.createElement("div");
+      label.className = "bar-label";
+      label.textContent = d.label;
+
+      wrap.appendChild(bar);
+      wrap.appendChild(label);
+      chart.appendChild(wrap);
+    });
+
+    const txContainer = document.getElementById("transactions");
+    const badgeMap = { in: "↓", out: "↑", bill: "•" };
+
+    transactions.forEach(tx => {
+      const row = document.createElement("div");
+      row.className = "tx";
+
+      const left = document.createElement("div");
+      left.className = "tx-left";
+
+      const badge = document.createElement("div");
+      badge.className = `tx-badge ${tx.type}`;
+      badge.textContent = badgeMap[tx.type] || "•";
+
+      const meta = document.createElement("div");
+      meta.className = "tx-meta";
+      meta.innerHTML = `<strong>${tx.name}</strong><span>${tx.meta}</span>`;
+
+      const amount = document.createElement("div");
+      amount.className = `tx-amount ${tx.amount.startsWith("+") ? "positive" : "negative"}`;
+      amount.textContent = tx.amount;
+
+      left.appendChild(badge);
+      left.appendChild(meta);
+      row.appendChild(left);
+      row.appendChild(amount);
+      txContainer.appendChild(row);
+    });
+  </script>
+</body>
+</html>

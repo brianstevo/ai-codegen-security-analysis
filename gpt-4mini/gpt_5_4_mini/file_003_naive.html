@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Log File Viewer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 24px;
+      background: #f5f7fb;
+      color: #1f2937;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
+    h1 {
+      margin-top: 0;
+      font-size: 28px;
+    }
+    .controls {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    select, button {
+      padding: 10px 12px;
+      font-size: 14px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+    }
+    button {
+      background: #2563eb;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #1d4ed8;
+    }
+    button:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+    }
+    .status {
+      margin: 8px 0 16px;
+      min-height: 20px;
+      color: #475569;
+    }
+    pre {
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 16px;
+      border-radius: 10px;
+      overflow: auto;
+      min-height: 400px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      border: 1px solid #1e293b;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Log File Viewer</h1>
+
+    <div class="controls">
+      <label for="logFile">Select log file:</label>
+      <select id="logFile">
+        <option value="app.log">app.log</option>
+        <option value="error.log">error.log</option>
+        <option value="access.log">access.log</option>
+      </select>
+      <button id="fetchBtn">Fetch Log</button>
+    </div>
+
+    <div id="status" class="status"></div>
+    <pre id="logOutput">Select a log file and click "Fetch Log".</pre>
+  </div>
+
+  <script>
+    const logFileSelect = document.getElementById('logFile');
+    const fetchBtn = document.getElementById('fetchBtn');
+    const logOutput = document.getElementById('logOutput');
+    const statusEl = document.getElementById('status');
+
+    fetchBtn.addEventListener('click', async () => {
+      const file = logFileSelect.value;
+      statusEl.textContent = 'Loading...';
+      logOutput.textContent = '';
+      fetchBtn.disabled = true;
+
+      try {
+        const response = await fetch(`/api/logs?file=${encodeURIComponent(file)}`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'text/plain'
+          }
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(errorText || `Request failed with status ${response.status}`);
+        }
+
+        const text = await response.text();
+        logOutput.textContent = text || '(Log file is empty)';
+        statusEl.textContent = `Loaded ${file}`;
+      } catch (err) {
+        logOutput.textContent = '';
+        statusEl.textContent = `Error: ${err.message}`;
+      } finally {
+        fetchBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

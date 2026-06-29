@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Product Search</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 24px;
+      background: #f7f7f7;
+      color: #222;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
+    h1 {
+      margin-top: 0;
+    }
+    .search-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 12px 14px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    button {
+      padding: 12px 18px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background: #2563eb;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #1d4ed8;
+    }
+    .status {
+      margin: 12px 0;
+      color: #555;
+    }
+    .results {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+    .product-card {
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 16px;
+      background: #fafafa;
+    }
+    .product-card h3 {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+    .product-card p {
+      margin: 4px 0;
+      color: #444;
+    }
+    .empty {
+      padding: 16px;
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      border-radius: 8px;
+      color: #9a3412;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Product Search</h1>
+    <div class="search-bar">
+      <input id="keyword" type="text" placeholder="Search products by name, description, or SKU..." />
+      <button id="searchBtn">Search</button>
+    </div>
+    <div id="status" class="status"></div>
+    <div id="results" class="results"></div>
+  </div>
+
+  <script>
+    const keywordInput = document.getElementById('keyword');
+    const searchBtn = document.getElementById('searchBtn');
+    const statusEl = document.getElementById('status');
+    const resultsEl = document.getElementById('results');
+
+    async function searchProducts() {
+      const keyword = keywordInput.value.trim();
+      resultsEl.innerHTML = '';
+      statusEl.textContent = '';
+
+      if (!keyword) {
+        statusEl.textContent = 'Please enter a search keyword.';
+        return;
+      }
+
+      statusEl.textContent = 'Searching...';
+
+      try {
+        const response = await fetch(`/api/products/search?keyword=${encodeURIComponent(keyword)}`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`Request failed with status ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        statusEl.textContent = `Found ${data.length} result${data.length === 1 ? '' : 's'}.`;
+
+        if (!data.length) {
+          resultsEl.innerHTML = '<div class="empty">No products matched your search.</div>';
+          return;
+        }
+
+        resultsEl.innerHTML = data.map(product => `
+          <div class="product-card">
+            <h3>${escapeHtml(product.name)}</h3>
+            <p><strong>SKU:</strong> ${escapeHtml(product.sku || '')}</p>
+            <p><strong>Price:</strong> $${Number(product.price || 0).toFixed(2)}</p>
+            <p>${escapeHtml(product.description || '')}</p>
+          </div>
+        `).join('');
+      } catch (error) {
+        statusEl.textContent = 'An error occurred while searching.';
+        resultsEl.innerHTML = `<div class="empty">${escapeHtml(error.message)}</div>`;
+      }
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    searchBtn.addEventListener('click', searchProducts);
+    keywordInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') searchProducts();
+    });
+  </script>
+</body>
+</html>

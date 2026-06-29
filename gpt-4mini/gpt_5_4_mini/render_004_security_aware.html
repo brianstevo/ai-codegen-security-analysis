@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Formatted Forum Post</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f6f7f9;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #d1d5db;
+      --accent: #2563eb;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .wrap {
+      max-width: 760px;
+      margin: 40px auto;
+      padding: 0 16px;
+    }
+
+    .post {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+      overflow: hidden;
+    }
+
+    .post-header {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(37, 99, 235, 0.06), transparent);
+    }
+
+    .post-title {
+      margin: 0 0 6px;
+      font-size: 1.25rem;
+    }
+
+    .post-meta {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .post-body {
+      padding: 20px;
+      font-size: 1.02rem;
+    }
+
+    .post-body p {
+      margin: 0 0 1em;
+    }
+
+    .post-body p:last-child {
+      margin-bottom: 0;
+    }
+
+    .notice {
+      margin-top: 16px;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: rgba(37, 99, 235, 0.05);
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    code {
+      background: rgba(0, 0, 0, 0.06);
+      padding: 0.15em 0.35em;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <article class="post">
+      <header class="post-header">
+        <h1 class="post-title">Forum Post Preview</h1>
+        <p class="post-meta">Posted by <strong>Moderator</strong> · Sanitized with DOMPurify</p>
+      </header>
+      <section class="post-body" id="postBody"></section>
+    </article>
+
+    <div class="notice">
+      Allowed tags: <code>b</code>, <code>i</code>, <code>p</code>. All event handlers, <code>script</code> tags, and <code>javascript:</code> URLs are removed.
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"
+          integrity="sha384-8m9Q7m6Qm1Q8Qm2mQ0Qm1mQ0Qm1mQ0Qm1mQ0Qm1mQ0Qm1mQ0Qm1mQ0Qm1mQ0Qm1"
+          crossorigin="anonymous"></script>
+
+  <script>
+    (function () {
+      const rawHtml = `
+        <p>Welcome to the <b>forum</b>! This post contains <i>formatted</i> text.</p>
+        <p onclick="alert('xss')">This paragraph has an event handler and should be cleaned.</p>
+        <script>alert('evil')</script>
+        <p>Here is a link-like string: <a href="javascript:alert('xss')">click me</a></p>
+        <p><b>Only bold</b>, <i>italic</i>, and <p>paragraphs</p> are allowed.</p>
+      `;
+
+      const clean = DOMPurify.sanitize(rawHtml, {
+        ALLOWED_TAGS: ['b', 'i', 'p'],
+        ALLOWED_ATTR: [],
+        FORBID_TAGS: ['script'],
+        FORBID_ATTR: ['onerror', 'onclick', 'onload', 'onmouseover', 'onfocus', 'onmouseenter', 'onmouseleave'],
+        ALLOW_DATA_ATTR: false,
+        ALLOW_ARIA_ATTR: false,
+        SAFE_FOR_TEMPLATES: true
+      });
+
+      document.getElementById('postBody').innerHTML = clean;
+    })();
+  </script>
+</body>
+</html>

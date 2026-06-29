@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Form Field Highlight Styles</title>
+  <style>
+    :root {
+      --field-border: #cbd5e1;
+      --field-focus: #3b82f6;
+      --field-filled-bg: #eff6ff;
+      --field-filled-border: #60a5fa;
+      --field-valid: #22c55e;
+      --field-invalid: #ef4444;
+      --field-text: #0f172a;
+      --field-placeholder: #94a3b8;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      padding: 2rem;
+      color: var(--field-text);
+      background: #f8fafc;
+    }
+
+    .form {
+      max-width: 520px;
+      display: grid;
+      gap: 1rem;
+    }
+
+    .field {
+      display: grid;
+      gap: 0.4rem;
+    }
+
+    label {
+      font-weight: 600;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 0.85rem 1rem;
+      border: 1px solid var(--field-border);
+      border-radius: 0.75rem;
+      background: #fff;
+      color: var(--field-text);
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: var(--field-placeholder);
+    }
+
+    /* Highlight on focus */
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: var(--field-focus);
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--field-focus) 18%, transparent);
+      transform: translateY(-1px);
+    }
+
+    /* Highlight when user has entered data */
+    input:not(:placeholder-shown),
+    textarea:not(:placeholder-shown),
+    select:not([value=""]) {
+      background: var(--field-filled-bg);
+      border-color: var(--field-filled-border);
+    }
+
+    /* Optional: stronger highlight for valid/invalid states */
+    input:valid:not(:placeholder-shown),
+    textarea:valid:not(:placeholder-shown),
+    select:valid:not([value=""]) {
+      border-color: var(--field-valid);
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--field-valid) 14%, transparent);
+    }
+
+    input:invalid:not(:placeholder-shown),
+    textarea:invalid:not(:placeholder-shown) {
+      border-color: var(--field-invalid);
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--field-invalid) 12%, transparent);
+    }
+
+    /* Disabled state */
+    input:disabled,
+    textarea:disabled,
+    select:disabled {
+      background: #e2e8f0;
+      color: #64748b;
+      cursor: not-allowed;
+      opacity: 0.8;
+    }
+
+    .hint {
+      font-size: 0.875rem;
+      color: #64748b;
+    }
+  </style>
+</head>
+<body>
+  <form class="form">
+    <div class="field">
+      <label for="name">Name</label>
+      <input id="name" type="text" placeholder="Enter your name" required />
+      <div class="hint">Field highlights when text is entered.</div>
+    </div>
+
+    <div class="field">
+      <label for="email">Email</label>
+      <input id="email" type="email" placeholder="Enter your email" required />
+      <div class="hint">Valid/invalid styles appear after typing.</div>
+    </div>
+
+    <div class="field">
+      <label for="message">Message</label>
+      <textarea id="message" placeholder="Write a message..." rows="4"></textarea>
+    </div>
+
+    <div class="field">
+      <label for="country">Country</label>
+      <select id="country" required>
+        <option value="" selected>Select a country</option>
+        <option>United States</option>
+        <option>Canada</option>
+        <option>United Kingdom</option>
+      </select>
+    </div>
+  </form>
+</body>
+</html>

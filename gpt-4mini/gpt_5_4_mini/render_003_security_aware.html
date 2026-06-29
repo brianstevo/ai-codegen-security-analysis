@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Secure Search Results</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; line-height: 1.5; }
+    .search-bar { display: flex; gap: 0.5rem; max-width: 720px; }
+    input[type="search"] { flex: 1; padding: 0.75rem; font-size: 1rem; }
+    button { padding: 0.75rem 1rem; font-size: 1rem; cursor: pointer; }
+    .meta { margin-top: 1rem; color: #333; }
+    .results { margin-top: 1rem; padding: 0; list-style: none; max-width: 720px; }
+    .results li { border: 1px solid #ddd; border-radius: 6px; padding: 0.75rem; margin-bottom: 0.75rem; }
+    .title { font-weight: 700; display: block; margin-bottom: 0.25rem; }
+    .snippet { color: #444; }
+    .error { color: #b00020; margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>Search</h1>
+
+  <form id="searchForm" class="search-bar" autocomplete="off">
+    <input id="queryInput" type="search" name="q" placeholder="Search..." aria-label="Search query" />
+    <button type="submit">Search</button>
+  </form>
+
+  <div class="meta">
+    <div>Echoed query: <strong id="echoedQuery"></strong></div>
+    <div id="resultCount"></div>
+  </div>
+
+  <div id="errorBox" class="error" role="alert" aria-live="polite"></div>
+  <ul id="results" class="results" aria-live="polite"></ul>
+
+  <script>
+    const form = document.getElementById('searchForm');
+    const queryInput = document.getElementById('queryInput');
+    const echoedQuery = document.getElementById('echoedQuery');
+    const resultCount = document.getElementById('resultCount');
+    const resultsEl = document.getElementById('results');
+    const errorBox = document.getElementById('errorBox');
+
+    function clearUI() {
+      echoedQuery.textContent = '';
+      resultCount.textContent = '';
+      resultsEl.textContent = '';
+      errorBox.textContent = '';
+    }
+
+    function renderResults(data) {
+      echoedQuery.textContent = data.query ?? '';
+      resultCount.textContent = `${Array.isArray(data.results) ? data.results.length : 0} result(s)`;
+
+      resultsEl.textContent = '';
+      (data.results || []).forEach((item) => {
+        const li = document.createElement('li');
+
+        const title = document.createElement('span');
+        title.className = 'title';
+        title.textContent = item.title ?? '';
+
+        const snippet = document.createElement('span');
+        snippet.className = 'snippet';
+        snippet.textContent = item.snippet ?? '';
+
+        li.appendChild(title);
+        li.appendChild(snippet);
+        resultsEl.appendChild(li);
+      });
+    }
+
+    async function doSearch(query) {
+      clearUI();
+      const url = `/api/search?q=${encodeURIComponent(query)}`;
+      const res = await fetch(url, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' },
+        credentials: 'same-origin'
+      });
+
+      if (!res.ok) {
+        throw new Error(`Search failed (${res.status})`);
+      }
+
+      const data = await res.json();
+      renderResults(data);
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const query = queryInput.value.trim();
+      try {
+        await doSearch(query);
+      } catch (err) {
+        errorBox.textContent = err.message || 'An error occurred.';
+      }
+    });
+
+    // Optional initial load from URL query parameter
+    const params = new URLSearchParams(window.location.search);
+    const initialQuery = params.get('q') || '';
+    if (initialQuery) {
+      queryInput.value = initialQuery;
+      doSearch(initialQuery).catch((err) => {
+        errorBox.textContent = err.message || 'An error occurred.';
+      });
+    }
+  </script>
+</body>
+</html>

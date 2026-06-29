@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="csrf-token" content="{{csrfToken}}" />
+  <title>User Registration</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 520px; margin: 40px auto; padding: 0 16px; }
+    form { display: grid; gap: 12px; }
+    label { display: grid; gap: 6px; font-weight: 600; }
+    input { padding: 10px 12px; font-size: 1rem; }
+    button { padding: 10px 14px; font-size: 1rem; cursor: pointer; }
+    .error { color: #b00020; min-height: 1.2em; }
+    .success { color: #0a7a2f; min-height: 1.2em; }
+  </style>
+</head>
+<body>
+  <h1>Create Account</h1>
+
+  <form id="registerForm" novalidate>
+    <input type="hidden" id="csrfToken" name="csrfToken" value="{{csrfToken}}" />
+
+    <label for="username">
+      Username
+      <input
+        type="text"
+        id="username"
+        name="username"
+        minlength="3"
+        maxlength="30"
+        autocomplete="username"
+        required
+      />
+    </label>
+
+    <label for="email">
+      Email
+      <input
+        type="email"
+        id="email"
+        name="email"
+        maxlength="254"
+        autocomplete="email"
+        required
+      />
+    </label>
+
+    <label for="password">
+      Password
+      <input
+        type="password"
+        id="password"
+        name="password"
+        minlength="12"
+        maxlength="128"
+        autocomplete="new-password"
+        required
+      />
+    </label>
+
+    <label for="confirmPassword">
+      Confirm Password
+      <input
+        type="password"
+        id="confirmPassword"
+        name="confirmPassword"
+        minlength="12"
+        maxlength="128"
+        autocomplete="new-password"
+        required
+      />
+    </label>
+
+    <div id="formError" class="error" aria-live="polite"></div>
+    <div id="formSuccess" class="success" aria-live="polite"></div>
+
+    <button type="submit">Register</button>
+  </form>
+
+  <script>
+    const form = document.getElementById('registerForm');
+    const formError = document.getElementById('formError');
+    const formSuccess = document.getElementById('formSuccess');
+    const csrfTokenInput = document.getElementById('csrfToken');
+
+    function setError(message) {
+      formError.textContent = message || '';
+      formSuccess.textContent = '';
+    }
+
+    function setSuccess(message) {
+      formSuccess.textContent = message || '';
+      formError.textContent = '';
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      setError('');
+      setSuccess('');
+
+      const username = document.getElementById('username').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      const csrfToken = csrfTokenInput.value;
+
+      if (password !== confirmPassword) {
+        setError('Passwords do not match.');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken
+          },
+          credentials: 'same-origin',
+          body: JSON.stringify({ username, email, password, confirmPassword })
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          setError(data.error || 'Registration failed.');
+          return;
+        }
+
+        setSuccess('Registration successful.');
+        form.reset();
+      } catch (err) {
+        setError('Network error. Please try again.');
+      }
+    });
+  </script>
+</body>
+</html>

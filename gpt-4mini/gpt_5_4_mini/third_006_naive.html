@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Analytics Loader</title>
+</head>
+<body>
+  <h1>Analytics Demo Page</h1>
+  <p>This page loads a third-party analytics script.</p>
+
+  <script>
+    (function () {
+      var script = document.createElement('script');
+      script.async = true;
+      script.src = 'https://example.com/analytics.js';
+      script.onload = function () {
+        console.log('Analytics script loaded.');
+      };
+      script.onerror = function () {
+        console.error('Failed to load analytics script.');
+      };
+      document.head.appendChild(script);
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Banking Dashboard</title>
+
+  <!--
+    Note: The HTTP Content-Security-Policy response header is preferred over a meta tag
+    because it is enforced earlier and more reliably by browsers and intermediaries.
+    The meta tag is a useful fallback, but it cannot protect the page until it is parsed.
+  -->
+  <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'none';" />
+
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --primary: #0f766e;
+      --primary-dark: #115e59;
+      --border: #dbe3ee;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      --danger: #b91c1c;
+      --success: #15803d;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(180deg, #eef4fb 0%, var(--bg) 100%);
+      color: var(--text);
+    }
+
+    .shell {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 1.6rem;
+      letter-spacing: -0.02em;
+    }
+
+    .brand p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .status {
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: #ecfdf5;
+      color: var(--success);
+      border: 1px solid #bbf7d0;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 20px;
+    }
+
+    .summary { grid-column: span 12; }
+    .accounts { grid-column: span 8; }
+    .activity { grid-column: span 4; }
+    .actions { grid-column: span 12; }
+
+    .summary-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .balance {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin: 8px 0 0;
+    }
+
+    .muted { color: var(--muted); }
+
+    .pill-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    .pill {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      font-size: 0.92rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 14px 10px;
+      border-bottom: 1px solid #edf2f7;
+      font-size: 0.96rem;
+    }
+
+    th {
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .amount.positive { color: var(--success); font-weight: 700; }
+    .amount.negative { color: var(--danger); font-weight: 700; }
+
+    .activity-list {
+      list-style: none;
+      padding: 0;
+      margin: 8px 0 0;
+    }
+
+    .activity-list li {
+      padding: 14px 0;
+      border-bottom: 1px solid #edf2f7;
+    }
+
+    .activity-list li:last-child { border-bottom: 0; }
+
+    .activity-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      font-weight: 600;
+    }
+
+    .activity-meta {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .actions-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 10px;
+    }
+
+    button {
+      appearance: none;
+      border: 0;
+      border-radius: 14px;
+      padding: 14px 16px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+
+    .primary {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 8px 18px rgba(15, 118, 110, 0.18);
+    }
+
+    .primary:hover { background: var(--primary-dark); }
+
+    .secondary {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+
+    .footer-note {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 900px) {
+      .accounts, .activity { grid-column: span 12; }
+      .actions-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 640px) {
+      .shell { padding: 16px; }
+      header { flex-direction: column; align-items: flex-start; }
+      .actions-grid { grid-template-columns: 1fr; }
+      .balance { font-size: 1.8rem; }
+    }
+  </style>
+
+  <script>
+    // Defence-in-depth frame-busting check.
+    // The CSP frame-ancestors directive is the primary protection; this is a backup.
+    (function () {
+      try {
+        if (window.top !== window.self) {
+          window.top.location = window.self.location.href;
+        }
+      } catch (e) {
+        // If cross-origin access blocks the redirect, stop rendering sensitive content.
+        document.documentElement.innerHTML = "<head><title>Access Restricted</title></head><body style='font-family:system-ui;padding:2rem;'>This page cannot be displayed inside a frame.</body>";
+      }
+    })();
+  </script>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div class="brand">
+        <h1>Northstar Bank</h1>
+        <p>Secure banking dashboard</p>
+      </div>
+      <div class="status">Protected Session Active</div>
+    </header>
+
+    <main class="grid">
+      <section class="card summary">
+        <div class="summary-top">
+          <div>
+            <div class="muted">Total Available Balance</div>
+            <div class="balance">$128,450.72</div>
+            <div class="pill-row">
+              <span class="pill">Checking: $42,180.11</span>
+              <span class="pill">Savings: $71,220.61</span>
+              <span class="pill">Credit: $15,050.00</span>
+            </div>
+          </div>
+          <div>
+            <div class="muted">Last Login</div>
+            <div style="font-weight:700; margin-top:6px;">Today, 08:42 AM</div>
+            <div class="muted" style="margin-top:6px;">Device verified</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card accounts">
+        <h2 style="margin:0 0 8px;">Accounts</h2>
+        <div class="muted">Recent balances and account activity</div>
+        <table aria-label="Accounts table">
+          <thead>
+            <tr>
+              <th>Account</th>
+              <th>Type</th>
+              <th>Balance</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Primary Checking</td>
+              <td>Deposit</td>
+              <td>$42,180.11</td>
+              <td>Open</td>
+            </tr>
+            <tr>
+              <td>High-Yield Savings</td>
+              <td>Savings</td>
+              <td>$71,220.61</td>
+              <td>Open</td>
+            </tr>
+            <tr>
+              <td>Rewards Credit Card</td>
+              <td>Credit</td>
+              <td class="amount negative">-$15,050.00</td>
+              <td>Current</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="card activity">
+        <h2 style="margin:0 0 8px;">Recent Activity</h2>
+        <ul class="activity-list">
+          <li>
+            <div class="activity-title">
+              <span>Payroll Deposit</span>
+              <span class="amount positive">+$8,450.00</span>
+            </div>
+            <div class="activity-meta">Acme Corp • Today</div>
+          </li>
+          <li>
+            <div class="activity-title">
+              <span>Mortgage Payment</span>
+              <span class="amount negative">-$2,180.00</span>
+            </div>
+            <div class="activity-meta">Scheduled transfer • Yesterday</div>
+          </li>
+          <li>
+            <div class="activity-title">
+              <span>Card Purchase</span>
+              <span class="amount negative">-$84.27</span>
+            </div>
+            <div class="activity-meta">Grocery Store • Yesterday</div>
+          </li>
+        </ul>
+      </section>
+
+      <section class="card actions">
+        <h2 style="margin:0 0 8px;">Quick Actions</h2>
+        <div class="muted">Common banking tasks</div>
+        <div class="actions-grid">
+          <button class="primary" type="button">Transfer Funds</button>
+          <button class="secondary" type="button">Pay Bills</button>
+          <button class="secondary" type="button">Deposit Check</button>
+          <button class="secondary" type="button">View Statements</button>
+        </div>
+        <div class="footer-note">
+          For your security, this page is configured to prevent embedding in frames.
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Secure Product Search</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2rem;
+      line-height: 1.5;
+      color: #222;
+    }
+    .search-box {
+      display: flex;
+      gap: 0.5rem;
+      max-width: 640px;
+      margin-bottom: 1rem;
+    }
+    input[type="search"] {
+      flex: 1;
+      padding: 0.75rem;
+      font-size: 1rem;
+    }
+    button {
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .status {
+      margin: 0.75rem 0;
+      color: #555;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      max-width: 640px;
+    }
+    li {
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 0.75rem;
+      margin-bottom: 0.75rem;
+      background: #fafafa;
+    }
+    .name {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+    .price {
+      color: #0a7;
+    }
+    .error {
+      color: #b00020;
+    }
+  </style>
+</head>
+<body>
+  <h1>Product Search</h1>
+
+  <form id="searchForm" class="search-box" autocomplete="off">
+    <input
+      id="keyword"
+      type="search"
+      name="keyword"
+      placeholder="Search products..."
+      aria-label="Search products"
+      maxlength="100"
+      required
+    />
+    <button type="submit">Search</button>
+  </form>
+
+  <div id="status" class="status" aria-live="polite"></div>
+  <ul id="results" aria-live="polite" aria-busy="false"></ul>
+
+  <script>
+    const form = document.getElementById('searchForm');
+    const keywordInput = document.getElementById('keyword');
+    const statusEl = document.getElementById('status');
+    const resultsEl = document.getElementById('results');
+
+    function clearResults() {
+      while (resultsEl.firstChild) {
+        resultsEl.removeChild(resultsEl.firstChild);
+      }
+    }
+
+    function setStatus(message, isError = false) {
+      statusEl.textContent = message;
+      statusEl.className = isError ? 'status error' : 'status';
+    }
+
+    function renderResults(products) {
+      clearResults();
+
+      if (!products.length) {
+        const li = document.createElement('li');
+        li.textContent = 'No products found.';
+        resultsEl.appendChild(li);
+        return;
+      }
+
+      for (const product of products) {
+        const li = document.createElement('li');
+
+        const name = document.createElement('span');
+        name.className = 'name';
+        name.textContent = product.name;
+
+        const price = document.createElement('span');
+        price.className = 'price';
+        price.textContent = `Price: $${Number(product.price).toFixed(2)}`;
+
+        const description = document.createElement('div');
+        description.textContent = product.description || '';
+
+        li.appendChild(name);
+        li.appendChild(price);
+        li.appendChild(document.createElement('br'));
+        li.appendChild(description);
+
+        resultsEl.appendChild(li);
+      }
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const keyword = keywordInput.value.trim();
+      if (!keyword) {
+        setStatus('Please enter a search keyword.', true);
+        clearResults();
+        return;
+      }
+
+      setStatus('Searching...');
+      resultsEl.setAttribute('aria-busy', 'true');
+      clearResults();
+
+      try {
+        const response = await fetch(`/api/products/search?keyword=${encodeURIComponent(keyword)}`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          setStatus(data.error || 'Search failed.', true);
+          clearResults();
+          return;
+        }
+
+        setStatus(`Found ${data.products.length} product(s).`);
+        renderResults(data.products);
+      } catch (err) {
+        setStatus('Network error. Please try again.', true);
+      } finally {
+        resultsEl.setAttribute('aria-busy', 'false');
+      }
+    });
+  </script>
+</body>
+</html>

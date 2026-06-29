@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Secure Product Filter</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+    body {
+      margin: 0;
+      padding: 24px;
+      background: #f6f7fb;
+      color: #111827;
+    }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      padding: 24px;
+    }
+    h1 {
+      margin-top: 0;
+      font-size: 1.6rem;
+    }
+    form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      align-items: end;
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    input, select, button {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      font: inherit;
+      background: #fff;
+      color: inherit;
+    }
+    button {
+      cursor: pointer;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      font-weight: 700;
+    }
+    button:hover {
+      background: #1d4ed8;
+    }
+    .meta {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 12px 0 18px;
+      color: #4b5563;
+      font-size: 0.95rem;
+    }
+    .error {
+      color: #b91c1c;
+      margin: 10px 0 0;
+      min-height: 1.2em;
+    }
+    .results {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+    .card {
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 16px;
+      background: #fafafa;
+    }
+    .card h2 {
+      margin: 0 0 8px;
+      font-size: 1.05rem;
+    }
+    .card p {
+      margin: 6px 0;
+      color: #374151;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #e0e7ff;
+      color: #3730a3;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .empty {
+      padding: 18px;
+      border: 1px dashed #cbd5e1;
+      border-radius: 12px;
+      color: #6b7280;
+      background: #f8fafc;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Secure Product Filter</h1>
+
+    <form id="filterForm" autocomplete="off">
+      <div>
+        <label for="search">Search</label>
+        <input id="search" name="search" type="text" maxlength="100" placeholder="Product name..." />
+      </div>
+
+      <div>
+        <label for="category">Category</label>
+        <select id="category" name="category">
+          <option value="">All categories</option>
+          <option value="electronics">Electronics</option>
+          <option value="books">Books</option>
+          <option value="home">Home</option>
+          <option value="fashion">Fashion</option>
+          <option value="sports">Sports</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="minPrice">Min Price</label>
+        <input id="minPrice" name="minPrice" type="number" min="0" step="0.01" placeholder="0.00" />
+      </div>
+
+      <div>
+        <label for="maxPrice">Max Price</label>
+        <input id="maxPrice" name="maxPrice" type="number" min="0" step="0.01" placeholder="9999.99" />
+      </div>
+
+      <div>
+        <label for="inStock">Stock</label>
+        <select id="inStock" name="inStock">
+          <option value="">Any</option>
+          <option value="true">In stock</option>
+          <option value="false">Out of stock</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="limit">Limit</label>
+        <input id="limit" name="limit" type="number" min="1" max="100" step="1" value="20" />
+      </div>
+
+      <div>
+        <label for="page">Page</label>
+        <input id="page" name="page" type="number" min="1" step="1" value="1" />
+      </div>
+
+      <div>
+        <button type="submit">Apply Filters</button>
+      </div>
+    </form>
+
+    <div class="meta">
+      <div id="status">Ready.</div>
+      <div id="count"></div>
+    </div>
+    <div id="error" class="error" aria-live="polite"></div>
+
+    <div id="results" class="results" aria-live="polite"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById('filterForm');
+    const resultsEl = document.getElementById('results');
+    const errorEl = document.getElementById('error');
+    const statusEl = document.getElementById('status');
+    const countEl = document.getElementById('count');
+
+    function clearResults() {
+      resultsEl.textContent = '';
+      countEl.textContent = '';
+    }
+
+    function renderProducts(products) {
+      resultsEl.textContent = '';
+      if (!Array.isArray(products) || products.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'empty';
+        empty.textContent = 'No products found.';
+        resultsEl.appendChild(empty);
+        return;
+      }
+
+      for (const product of products) {
+        const card = document.createElement('article');
+        card.className = 'card';
+
+        const title = document.createElement('h2');
+        title.textContent = product.name ?? 'Unnamed product';
+
+        const category = document.createElement('span');
+        category.className = 'badge';
+        category.textContent = product.category ?? 'uncategorized';
+
+        const price = document.createElement('p');
+        price.textContent = `Price: $${Number(product.price).toFixed(2)}`;
+
+        const stock = document.createElement('p');
+        stock.textContent = product.inStock ? 'In stock' : 'Out of stock';
+
+        const desc = document.createElement('p');
+        desc.textContent = product.description ?? '';
+
+        card.appendChild(title);
+        card.appendChild(category);
+        card.appendChild(price);
+        card.appendChild(stock);
+        if (desc.textContent) card.appendChild(desc);
+
+        resultsEl.appendChild(card);
+      }
+    }
+
+    async function fetchProducts(params) {
+      const qs = new URLSearchParams();
+      for (const [key, value] of Object.entries(params)) {
+        if (value !== '' && value !== null && value !== undefined) {
+          qs.set(key, String(value));
+        }
+      }
+
+      const response = await fetch(`/api/products?${qs.toString()}`, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' }
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to load products.');
+      }
+      return data;
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorEl.textContent = '';
+      statusEl.textContent = 'Loading...';
+      clearResults();
+
+      const params = {
+        search: document.getElementById('search').value.trim(),
+        category: document.getElementById('category').value,
+        minPrice: document.getElementById('minPrice').value,
+        maxPrice: document.getElementById('maxPrice').value,
+        inStock: document.getElementById('inStock').value,
+        limit: document.getElementById('limit').value,
+        page: document.getElementById('page').value
+      };
+
+      try {
+        const data = await fetchProducts(params);
+        renderProducts(data.products);
+        countEl.textContent = `Showing ${data.products.length} of ${data.total} products.`;
+        statusEl.textContent = 'Loaded.';
+      } catch (err) {
+        errorEl.textContent = err.message;
+        statusEl.textContent = 'Error.';
+      }
+    });
+
+    form.dispatchEvent(new Event('submit'));
+  </script>
+</body>
+</html>

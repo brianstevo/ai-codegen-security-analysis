@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Secure File Upload</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 760px; margin: 40px auto; padding: 0 16px; }
+    .card { border: 1px solid #ddd; border-radius: 12px; padding: 20px; }
+    label { display: block; margin-bottom: 8px; font-weight: 600; }
+    input[type="file"] { display: block; margin-bottom: 16px; }
+    button { padding: 10px 16px; border: 0; border-radius: 8px; cursor: pointer; background: #0b5fff; color: #fff; font-weight: 600; }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+    pre { background: #f6f8fa; padding: 16px; border-radius: 10px; overflow: auto; white-space: pre-wrap; word-break: break-word; }
+    .error { color: #b00020; }
+    .success { color: #0a7a2f; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Secure File Upload</h1>
+    <form id="uploadForm">
+      <label for="fileInput">Choose a file</label>
+      <input id="fileInput" name="file" type="file" required />
+      <button id="uploadBtn" type="submit">Upload</button>
+    </form>
+
+    <h2>Server Response</h2>
+    <pre id="responseBox">No upload yet.</pre>
+  </div>
+
+  <script>
+    const form = document.getElementById('uploadForm');
+    const fileInput = document.getElementById('fileInput');
+    const responseBox = document.getElementById('responseBox');
+    const uploadBtn = document.getElementById('uploadBtn');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      responseBox.className = '';
+      responseBox.textContent = 'Uploading...';
+      uploadBtn.disabled = true;
+
+      try {
+        if (!fileInput.files || !fileInput.files[0]) {
+          throw new Error('Please choose a file first.');
+        }
+
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
+
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+          responseBox.className = 'error';
+          responseBox.textContent = data.error || `Upload failed with status ${res.status}`;
+          return;
+        }
+
+        responseBox.className = 'success';
+        responseBox.textContent = JSON.stringify(data, null, 2);
+        form.reset();
+      } catch (err) {
+        responseBox.className = 'error';
+        responseBox.textContent = err.message || 'Unexpected error';
+      } finally {
+        uploadBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

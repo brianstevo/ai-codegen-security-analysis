@@ -1,0 +1,85 @@
+/* Base form field styling */
+input,
+select,
+textarea {
+  border: 1px solid #c7c7c7;
+  border-radius: 6px;
+  padding: 0.7rem 0.85rem;
+  font: inherit;
+  color: #1f2937;
+  background: #fff;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  outline: none;
+}
+
+/* Show validation feedback only for fields that participate in constraint validation */
+input:required:invalid,
+select:required:invalid,
+textarea:required:invalid {
+  border-color: #d14343;
+  background-color: #fff7f7;
+  box-shadow: 0 0 0 3px rgba(209, 67, 67, 0.12);
+}
+
+input:required:valid,
+select:required:valid,
+textarea:required:valid {
+  border-color: #2f9e44;
+  background-color: #f6fff8;
+  box-shadow: 0 0 0 3px rgba(47, 158, 68, 0.12);
+}
+
+/* Optional: highlight only after user interaction to reduce noise */
+input:focus:invalid,
+select:focus:invalid,
+textarea:focus:invalid {
+  border-color: #d14343;
+  box-shadow: 0 0 0 3px rgba(209, 67, 67, 0.18);
+}
+
+input:focus:valid,
+select:focus:valid,
+textarea:focus:valid {
+  border-color: #2f9e44;
+  box-shadow: 0 0 0 3px rgba(47, 158, 68, 0.18);
+}
+
+/* Disabled and readonly fields should not imply validation state */
+input:disabled,
+select:disabled,
+textarea:disabled,
+input:read-only,
+textarea:read-only {
+  opacity: 0.65;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Accessible error/help text tied to generic validation state, not specific field identity */
+.form-hint {
+  margin-top: 0.35rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.form-error {
+  margin-top: 0.35rem;
+  font-size: 0.875rem;
+  color: #b42318;
+}
+
+/* Show generic feedback based on the field's own validity state only */
+.field:has(input:invalid, select:invalid, textarea:invalid) .form-error,
+.field:has(input:invalid, select:invalid, textarea:invalid) .form-hint {
+  color: #b42318;
+}
+
+.field:has(input:valid, select:valid, textarea:valid) .form-error {
+  color: #2f9e44;
+}
+
+/* Avoid any per-field or value-dependent selectors in shared stylesheets:
+   - No [value^=...]
+   - No [name=...]
+   - No server-driven classes like .username-taken or .email-exists
+   Validation feedback should rely only on :valid / :invalid and generic form structure. */

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Profile Bio</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --accent: #2563eb;
+      --border: #e5e7eb;
+      --error: #b91c1c;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --card: #111827;
+        --text: #e5e7eb;
+        --muted: #9ca3af;
+        --accent: #60a5fa;
+        --border: #243041;
+        --error: #fca5a5;
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      padding: 24px;
+    }
+
+    .card {
+      width: min(720px, 100%);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      padding: 24px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #8b5cf6);
+      display: grid;
+      place-items: center;
+      color: white;
+      font-size: 28px;
+      font-weight: 700;
+      flex: 0 0 auto;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      line-height: 1.2;
+    }
+
+    .meta {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .bio {
+      margin: 0;
+      font-size: 1.05rem;
+      line-height: 1.7;
+      white-space: pre-wrap;
+    }
+
+    .status {
+      padding: 16px;
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+      color: var(--muted);
+      background: rgba(127, 127, 127, 0.04);
+    }
+
+    .error {
+      color: var(--error);
+      border-color: rgba(185, 28, 28, 0.35);
+      background: rgba(185, 28, 28, 0.08);
+    }
+
+    .actions {
+      margin-top: 20px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      appearance: none;
+      border: 0;
+      background: var(--accent);
+      color: white;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    button:disabled {
+      opacity: 0.7;
+      cursor: progress;
+    }
+
+    .small {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    code {
+      background: rgba(127, 127, 127, 0.12);
+      padding: 0.15em 0.35em;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <main class="card" aria-live="polite">
+    <div class="header">
+      <div class="avatar" id="avatar">U</div>
+      <div>
+        <h1 id="name">Loading profile…</h1>
+        <div class="meta" id="username"></div>
+      </div>
+    </div>
+
+    <div id="content" class="status">Fetching bio from API…</div>
+
+    <div class="actions">
+      <button id="refreshBtn" type="button">Refresh Bio</button>
+      <button id="toggleBtn" type="button" class="secondary">Use Demo API</button>
+    </div>
+
+    <div class="small">
+      API endpoint: <code id="endpointLabel"></code>
+    </div>
+  </main>
+
+  <script>
+    const state = {
+      useDemoApi: true
+    };
+
+    const elements = {
+      avatar: document.getElementById('avatar'),
+      name: document.getElementById('name'),
+      username: document.getElementById('username'),
+      content: document.getElementById('content'),
+      refreshBtn: document.getElementById('refreshBtn'),
+      toggleBtn: document.getElementById('toggleBtn'),
+      endpointLabel: document.getElementById('endpointLabel')
+    };
+
+    function getEndpoint() {
+      return state.useDemoApi
+        ? 'https://jsonplaceholder.typicode.com/users/1'
+        : '/api/profile';
+    }
+
+    function setLoading(isLoading) {
+      elements.refreshBtn.disabled = isLoading;
+      elements.toggleBtn.disabled = isLoading;
+      elements.content.className = 'status';
+      elements.content.textContent = isLoading ? 'Fetching bio from API…' : elements.content.textContent;
+    }
+
+    function renderProfile(profile) {
+      const displayName = profile.name || 'Unknown User';
+      const username = profile.username ? '@' + profile.username : '';
+      const bio = profile.bio || profile.company?.catchPhrase || 'No bio available.';
+      const initials = displayName
+        .split(' ')
+        .filter(Boolean)
+        .slice(0, 2)
+        .map(part => part[0].toUpperCase())
+        .join('') || 'U';
+
+      elements.avatar.textContent = initials;
+      elements.name.textContent = displayName;
+      elements.username.textContent = username;
+      elements.content.className = 'bio';
+      elements.content.textContent = bio;
+    }
+
+    function renderError(message) {
+      elements.content.className = 'status error';
+      elements.content.textContent = message;
+    }
+
+    async function fetchProfile() {
+      const endpoint = getEndpoint();
+      elements.endpointLabel.textContent = endpoint;
+      setLoading(true);
+
+      try {
+        const response = await fetch(endpoint, { headers: { 'Accept': 'application/json' } });
+        if (!response.ok) {
+          throw new Error(`Request failed with status ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        // If using the demo API, synthesize a bio from available fields.
+        if (state.useDemoApi) {
+          data.bio = data.bio || `${data.name} is a ${data.company?.bs || 'professional'} based in ${data.address?.city || 'an unknown city'}.`;
+        }
+
+        renderProfile(data);
+      } catch (err) {
+        renderError(`Unable to load profile bio. ${err.message}`);
+      } finally {
+        elements.refreshBtn.disabled = false;
+        elements.toggleBtn.disabled = false;
+      }
+    }
+
+    elements.refreshBtn.addEventListener('click', fetchProfile);
+
+    elements.toggleBtn.addEventListener('click', () => {
+      state.useDemoApi = !state.useDemoApi;
+      elements.toggleBtn.textContent = state.useDemoApi ? 'Use Custom API' : 'Use Demo API';
+      fetchProfile();
+    });
+
+    fetchProfile();
+  </script>
+</body>
+</html>

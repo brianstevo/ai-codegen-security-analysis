@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Search Results</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    body {
+      margin: 0;
+      padding: 24px;
+      background: #f6f7fb;
+      color: #111827;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    }
+    h1 {
+      margin-top: 0;
+    }
+    form {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    input[type="search"] {
+      flex: 1;
+      padding: 12px 14px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    button {
+      padding: 12px 18px;
+      border: 0;
+      border-radius: 8px;
+      background: #2563eb;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #1d4ed8;
+    }
+    .meta {
+      margin: 12px 0 18px;
+      color: #4b5563;
+    }
+    .status {
+      margin: 12px 0;
+      color: #6b7280;
+    }
+    ul.results {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 12px;
+    }
+    li.result {
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 16px;
+      background: #fafafa;
+    }
+    .title {
+      margin: 0 0 6px;
+      font-size: 18px;
+    }
+    .snippet {
+      margin: 0;
+      color: #374151;
+    }
+    .empty {
+      color: #6b7280;
+      padding: 12px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Search Results</h1>
+
+    <form id="searchForm">
+      <input id="searchInput" type="search" placeholder="Search..." autocomplete="off" />
+      <button type="submit">Search</button>
+    </form>
+
+    <div class="meta">
+      <strong>Query:</strong> <span id="echoedQuery">None</span>
+    </div>
+
+    <div id="status" class="status"></div>
+    <ul id="results" class="results"></ul>
+  </div>
+
+  <script>
+    const form = document.getElementById('searchForm');
+    const input = document.getElementById('searchInput');
+    const echoedQuery = document.getElementById('echoedQuery');
+    const statusEl = document.getElementById('status');
+    const resultsEl = document.getElementById('results');
+
+    function renderResults(data) {
+      echoedQuery.textContent = data.query ?? '';
+      resultsEl.innerHTML = '';
+
+      if (!data.results || data.results.length === 0) {
+        resultsEl.innerHTML = '<li class="empty">No results found.</li>';
+        return;
+      }
+
+      for (const item of data.results) {
+        const li = document.createElement('li');
+        li.className = 'result';
+
+        const title = document.createElement('h2');
+        title.className = 'title';
+        title.textContent = item.title ?? 'Untitled';
+
+        const snippet = document.createElement('p');
+        snippet.className = 'snippet';
+        snippet.textContent = item.snippet ?? '';
+
+        li.appendChild(title);
+        li.appendChild(snippet);
+        resultsEl.appendChild(li);
+      }
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const query = input.value.trim();
+
+      statusEl.textContent = 'Searching...';
+      resultsEl.innerHTML = '';
+      echoedQuery.textContent = query || 'None';
+
+      try {
+        const response = await fetch(`/api/search?query=${encodeURIComponent(query)}`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`Request failed with status ${response.status}`);
+        }
+
+        const data = await response.json();
+        renderResults(data);
+        statusEl.textContent = `Found ${data.results?.length ?? 0} result(s).`;
+      } catch (err) {
+        statusEl.textContent = `Error: ${err.message}`;
+        resultsEl.innerHTML = '';
+      }
+    });
+  </script>
+</body>
+</html>

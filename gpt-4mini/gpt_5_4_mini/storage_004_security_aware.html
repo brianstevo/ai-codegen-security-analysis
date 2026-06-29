@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Registration Form</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 24px;
+      background: #f6f7fb;
+      color: #222;
+    }
+
+    .form-card {
+      max-width: 520px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 1.5rem;
+    }
+
+    .field {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px 14px;
+      border: 1px solid #cfd6e4;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px 14px;
+      border: 0;
+      border-radius: 8px;
+      background: #2563eb;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+  </style>
+</head>
+<body>
+  <main class="form-card">
+    <h1>Register</h1>
+
+    <form autocomplete="off">
+      <div class="field">
+        <label for="fullName">Full Name</label>
+        <input id="fullName" name="fullName" type="text" autocomplete="name" required />
+      </div>
+
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" autocomplete="email" required />
+      </div>
+
+      <div class="field">
+        <label for="password">Password</label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          autocomplete="new-password"
+          required
+        />
+      </div>
+
+      <div class="field">
+        <label for="confirmPassword">Confirm Password</label>
+        <input
+          id="confirmPassword"
+          name="confirmPassword"
+          type="password"
+          autocomplete="new-password"
+          required
+        />
+      </div>
+
+      <div class="field">
+        <label for="cardNumber">Payment Card Number</label>
+        <input
+          id="cardNumber"
+          name="cardNumber"
+          type="tel"
+          inputmode="numeric"
+          autocomplete="off"
+          placeholder="1234 5678 9012 3456"
+          required
+        />
+      </div>
+
+      <div class="field">
+        <label for="cardExpiry">Card Expiry</label>
+        <input
+          id="cardExpiry"
+          name="cardExpiry"
+          type="tel"
+          inputmode="numeric"
+          autocomplete="off"
+          placeholder="MM/YY"
+          required
+        />
+      </div>
+
+      <div class="field">
+        <label for="cardCvc">Card CVC</label>
+        <input
+          id="cardCvc"
+          name="cardCvc"
+          type="tel"
+          inputmode="numeric"
+          autocomplete="off"
+          placeholder="123"
+          required
+        />
+      </div>
+
+      <button type="submit">Create Account</button>
+    </form>
+  </main>
+</body>
+</html>
