@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forum Post</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        
+        .post-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            color: white;
+        }
+        
+        .post-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .post-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .author {
+            font-weight: 600;
+        }
+        
+        .timestamp {
+            font-size: 12px;
+        }
+        
+        .post-content {
+            padding: 30px;
+            line-height: 1.8;
+            font-size: 16px;
+            color: #333;
+        }
+        
+        .post-content strong {
+            color: #667eea;
+            font-weight: 700;
+        }
+        
+        .post-content em {
+            color: #764ba2;
+            font-style: italic;
+        }
+        
+        .post-content code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        
+        .post-content blockquote {
+            border-left: 4px solid #667eea;
+            padding-left: 15px;
+            margin: 15px 0;
+            color: #666;
+            font-style: italic;
+        }
+        
+        .post-footer {
+            background: #f9f9f9;
+            padding: 20px 30px;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 20px;
+            justify-content: flex-end;
+        }
+        
+        .post-footer button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-like {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .btn-like:hover {
+            background: #e0e0e0;
+        }
+        
+        .btn-reply {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-reply:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .paragraph {
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="post-header">
+            <div class="post-title">Getting Started with Web Development</div>
+            <div class="post-meta">
+                <span class="author">Posted by: Sarah Johnson</span>
+                <span class="timestamp">2024-01-15 at 2:30 PM</span>
+            </div>
+        </div>
+        
+        <div class="post-content">
+            <div class="paragraph">
+                I wanted to share some <strong>essential tips for beginners</strong> who are just starting their web development journey. Whether you're learning <em>HTML, CSS, or JavaScript</em>, these fundamentals will help you build a <strong>solid foundation</strong>.
+            </div>
+            
+            <div class="paragraph">
+                First, make sure you understand <em>semantic HTML</em>. This means using the right HTML elements for their intended purpose. For example, use <code>&lt;header&gt;</code>, <code>&lt;nav&gt;</code>, and <code>&lt;footer&gt;</code> appropriately rather than just using <code>&lt;div&gt;</code> elements everywhere.
+            </div>
+            
+            <blockquote>
+                "Code is read much more often than it is written, so prioritize readability and maintainability from the start."
+            </blockquote>
+            
+            <div class="paragraph">
+                When styling, <strong>learn CSS properly</strong> before jumping to frameworks. Understanding <em>flexbox</em> and <em>CSS Grid</em> will make you a much better developer. Don't just rely on Bootstrap or Tailwind from day one – <strong>master the fundamentals first</strong>.
+            </div>
+            
+            <div class="paragraph">
+                Finally, practice <strong>consistent coding practices</strong>:
+            </div>
+            
+            <div class="paragraph">
+                • Keep your code organized and <em>well-commented</em><br>
+                • Use meaningful variable and function names<br>
+                • Follow <strong>DRY principles</strong> (Don't Repeat Yourself)<br>
+                • Test your code regularly<br>
+                • Version control with <em>Git</em> from the beginning
+            </div>
+            
+            <div class="paragraph">
+                Remember, <strong>consistency and practice</strong> are more important than speed. Build small projects, contribute to open source, and don't be afraid to <em>ask questions</em>. The web development community is incredibly supportive!
+            </div>
+        </div>
+        
+        <div class="post-footer">
+            <button class="btn-like">👍 Like</button>
+            <button class="btn-reply">Reply</button>
+        </div>
+    </div>
+    
+    <script>
+        document.querySelector('.btn-like').addEventListener('click', function() {
+            this.style.background = '#667eea';
+            this.style.color = 'white';
+            this.textContent = '👍 Liked!';
+        });
+        
+        document.querySelector('.btn-reply').addEventListener('click', function() {
+            alert('Reply feature would open a text editor here!');
+        });
+    </script>
+</body>
+</html>

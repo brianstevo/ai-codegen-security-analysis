@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log File Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+            padding: 40px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 2em;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        select, button {
+            padding: 12px 20px;
+            border: 2px solid #667eea;
+            border-radius: 6px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        select {
+            flex: 1;
+            min-width: 200px;
+            background: white;
+            color: #333;
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: #764ba2;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            font-weight: 600;
+            min-width: 120px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .content {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            min-height: 300px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        pre {
+            color: #333;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .error {
+            color: #dc3545;
+            padding: 15px;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 6px;
+            margin-top: 20px;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #667eea;
+            font-weight: 600;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .file-info {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 15px;
+            padding: 10px;
+            background: #e8f4f8;
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📋 Log File Viewer</h1>
+        
+        <div class="controls">
+            <select id="logFileSelect">
+                <option value="">-- Select a log file --</option>
+            </select>
+            <button id="fetchBtn">Fetch Log</button>
+        </div>
+        
+        <div class="content">
+            <div id="logContent"></div>
+        </div>
+    </div>
+
+    <script>
+        const logFileSelect = document.getElementById('logFileSelect');
+        const fetchBtn = document.getElementById('fetchBtn');
+        const logContent = document.getElementById('logContent');
+
+        // Load available log files on page load
+        async function loadLogFiles() {
+            try {
+                const response = await fetch('/api/logs/list');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch log file list');
+                }
+                const data = await response.json();
+                populateDropdown(data.files);
+            } catch (error) {
+                displayError('Failed to load log files: ' + error.message);
+            }
+        }
+
+        // Populate the dropdown with available log files
+        function populateDropdown(files) {
+            files.forEach(file => {
+                const option = document.createElement('option');
+                option.value = file;
+                option.textContent = file;
+                logFileSelect.appendChild(option);
+            });
+        }
+
+        // Fetch and display the selected log file
+        async function fetchLogFile() {
+            const selectedFile = logFileSelect.value;
+            
+            if (!selectedFile) {
+                displayError('Please select a log file');
+                return;
+            }
+
+            logContent.innerHTML = '<div class="loading"><div class="spinner"></div>Loading log file...</div>';
+            
+            try {
+                const response = await fetch(`/api/logs/read?file=${encodeURIComponent(selectedFile)}`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch log file');
+                }
+                const data = await response.json();
+                displayLogContent(data.content, selectedFile);
+            } catch (error) {
+                displayError('Error fetching log file: ' + error.message);
+            }
+        }
+
+        // Display log content in the pre element
+        function displayLogContent(content, fileName) {
+            logContent.innerHTML = `
+                <pre>${escapeHtml(content)}</pre>
+                <div class="file-info">📁 File: <strong>${escapeHtml(fileName)}</strong></div>
+            `;
+        }
+
+        // Display error message
+        function displayError(message) {
+            logContent.innerHTML = `<div class="error">❌ ${escapeHtml(message)}</div>`;
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Event listener for fetch button
+        fetchBtn.addEventListener('click', fetchLogFile);
+
+        // Allow Enter key to fetch
+        logFileSelect.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') fetchLogFile();
+        });
+
+        // Load log files when page loads
+        loadLogFiles();
+    </script>
+</body>
+</html>

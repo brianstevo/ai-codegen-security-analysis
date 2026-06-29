@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <title>User Bio</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .loading {
+            text-align: center;
+            color: #666;
+        }
+        .error {
+            color: #d32f2f;
+            background-color: #ffebee;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .user-info {
+            margin-top: 20px;
+        }
+        .user-info h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        .bio {
+            background-color: #fafafa;
+            padding: 15px;
+            border-left: 4px solid #2196F3;
+            border-radius: 4px;
+            line-height: 1.6;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>User Bio</h1>
+        <div id="content">
+            <div class="loading">Loading user bio...</div>
+        </div>
+    </div>
+
+    <script>
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            };
+            return text.replace(/[&<>"']/g, char => map[char]);
+        }
+
+        async function loadUserBio() {
+            const contentDiv = document.getElementById('content');
+            
+            try {
+                const response = await fetch('https://jsonplaceholder.typicode.com/users/1');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const user = await response.json();
+
+                contentDiv.innerHTML = '';
+
+                const userInfo = document.createElement('div');
+                userInfo.className = 'user-info';
+
+                const name = document.createElement('h2');
+                name.textContent = user.name;
+                userInfo.appendChild(name);
+
+                const email = document.createElement('p');
+                email.innerHTML = '<strong>Email:</strong> ';
+                const emailText = document.createElement('span');
+                emailText.textContent = user.email;
+                email.appendChild(emailText);
+                userInfo.appendChild(email);
+
+                const phone = document.createElement('p');
+                phone.innerHTML = '<strong>Phone:</strong> ';
+                const phoneText = document.createElement('span');
+                phoneText.textContent = user.phone;
+                phone.appendChild(phoneText);
+                userInfo.appendChild(phone);
+
+                const company = document.createElement('p');
+                company.innerHTML = '<strong>Company:</strong> ';
+                const companyText = document.createElement('span');
+                companyText.textContent = user.company.name;
+                company.appendChild(companyText);
+                userInfo.appendChild(company);
+
+                const bioSection = document.createElement('div');
+                bioSection.className = 'bio';
+                
+                const bioLabel = document.createElement('p');
+                bioLabel.innerHTML = '<strong>About:</strong>';
+                bioSection.appendChild(bioLabel);
+                
+                const bioText = document.createElement('p');
+                bioText.textContent = `User ID: ${user.id}, Username: ${user.username}, Website: ${user.website}`;
+                bioSection.appendChild(bioText);
+                
+                userInfo.appendChild(bioSection);
+
+                contentDiv.appendChild(userInfo);
+            } catch (error) {
+                contentDiv.innerHTML = '';
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error';
+                errorDiv.textContent = `Error loading user bio: ${error.message}`;
+                contentDiv.appendChild(errorDiv);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadUserBio);
+    </script>
+</body>
+</html>

@@ -1,0 +1,173 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subresource Integrity Example</title>
+    
+    <!-- 
+        Content-Security-Policy meta tag that enforces Subresource Integrity for external scripts.
+        This policy requires that all external scripts must have a valid integrity attribute.
+        The 'require-sri-for script' directive ensures that scripts without SRI are blocked.
+    -->
+    <meta http-equiv="Content-Security-Policy" content="require-sri-for script; script-src 'self' https:">
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        
+        .info-section {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #e7f3ff;
+            border-left: 4px solid #007bff;
+            border-radius: 4px;
+        }
+        
+        .code-block {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Subresource Integrity (SRI) Example</h1>
+        
+        <div class="info-section">
+            <h2>About This Page</h2>
+            <p>This page demonstrates the use of Subresource Integrity (SRI) for loading third-party scripts securely.</p>
+            <p>The script loaded below is a popular utility library that is loaded with:</p>
+            <ul>
+                <li><strong>Integrity attribute:</strong> Contains the SHA-384 hash of the script</li>
+                <li><strong>crossorigin='anonymous':</strong> Allows CORS requests with anonymous credentials</li>
+                <li><strong>CSP policy:</strong> Enforces that all external scripts must have valid SRI</li>
+            </ul>
+        </div>
+        
+        <div id="status-container"></div>
+        
+        <div class="info-section">
+            <h2>How to Regenerate the SRI Hash</h2>
+            <p>When the script version changes, you need to regenerate the SRI hash. Follow these steps:</p>
+            <ol>
+                <li>Download the new version of the script or get its URL</li>
+                <li>Use an online SRI hash generator tool (e.g., https://www.srihash.org/)</li>
+                <li>Paste the script URL into the generator</li>
+                <li>The tool will generate the integrity attribute with the SHA-384 hash</li>
+                <li>Replace the old integrity attribute value with the new one</li>
+                <li>Alternatively, use this command in terminal:
+                    <div class="code-block">curl https://cdn.example.com/script.js | openssl dgst -sha384 -binary | openssl enc -base64 -A</div>
+                </li>
+                <li>The output will be something like: <code>sha384-ABC123...XYZ==</code></li>
+                <li>Update the integrity attribute with this value</li>
+            </ol>
+        </div>
+        
+        <div class="info-section">
+            <h2>Script Tag Used</h2>
+            <p>The following script tag loads lodash.js with SRI protection:</p>
+            <div class="code-block">&lt;script
+    src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"
+    integrity="sha384-qkqoYvBJIUVYFkGhMsc8yCliBrvX32+X8x5smeWmKB4c3QoBjGvaYwFj6qIPKfuA"
+    crossorigin="anonymous"&gt;&lt;/script&gt;</div>
+        </div>
+        
+        <div class="info-section">
+            <h2>CSP Policy</h2>
+            <p>The page includes this CSP meta tag:</p>
+            <div class="code-block">
+                &lt;meta http-equiv="Content-Security-Policy" 
+    content="require-sri-for script; script-src 'self' https:"&gt;
+            </div>
+            <p><strong>Explanation:</strong></p>
+            <ul>
+                <li><code>require-sri-for script</code> - Requires SRI for all external scripts</li>
+                <li><code>script-src 'self' https:</code> - Allows scripts from same origin and HTTPS URLs</li>
+            </ul>
+        </div>
+        
+        <div class="info-section">
+            <h2>Security Benefits</h2>
+            <ul>
+                <li><strong>Integrity Verification:</strong> Ensures the script hasn't been modified or tampered with</li>
+                <li><strong>CDN Compromise Protection:</strong> Protects against compromised CDN servers</li>
+                <li><strong>Man-in-the-Middle Protection:</strong> Detects any modifications during transmission</li>
+                <li><strong>CORS Handling:</strong> The crossorigin attribute ensures proper CORS headers are sent</li>
+            </ul>
+        </div>
+        
+        <div class="info-section">
+            <h2>Testing</h2>
+            <p>If you modify the integrity hash value to an incorrect value, the script will fail to load due to CSP violation. Try opening the browser console to see any CSP violation messages.</p>
+        </div>
+    </div>
+    
+    <!-- 
+        IMPORTANT: SRI Hash Regeneration Guide
+        
+        When updating this script to a new version:
+        1. Visit https://www.srihash.org/
+        2. Enter the new script URL
+        3. Copy the entire integrity attribute value
+        4. Replace the integrity attribute below with the new value
+        
+        Alternative CLI method:
+        curl https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js | \
+            openssl dgst -sha384 -binary | openssl enc -base64 -A
+        
+        The hash format is: sha384-[base64-encoded-hash]
+    -->
+    
+    <script
+        src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"
+        integrity="sha384-qkqoYvBJIUVYFkGhMsc8yCliBrvX32+X8x5smeWmKB4c3QoBjGvaYwFj6qIPKfuA"
+        crossorigin="anonymous">

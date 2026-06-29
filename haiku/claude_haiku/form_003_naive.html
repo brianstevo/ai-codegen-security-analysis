@@ -1,0 +1,260 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Form</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .payment-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            max-width: 450px;
+            width: 100%;
+        }
+
+        .payment-container h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 28px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            color: #555;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            font-family: 'Courier New', monospace;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        input.error {
+            border-color: #e74c3c;
+            background-color: rgba(231, 76, 60, 0.05);
+        }
+
+        .input-group-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .card-preview {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 24px;
+            color: white;
+            margin-bottom: 30px;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            font-family: 'Courier New', monospace;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-logo {
+            text-align: right;
+            font-weight: bold;
+            font-size: 20px;
+            height: 30px;
+        }
+
+        .card-number-display {
+            font-size: 24px;
+            letter-spacing: 2px;
+            margin: 20px 0;
+            word-break: break-all;
+        }
+
+        .card-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 20px;
+        }
+
+        .card-holder {
+            flex: 1;
+        }
+
+        .card-holder-name {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-bottom: 4px;
+        }
+
+        .card-holder-text {
+            font-size: 18px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .card-expiry {
+            text-align: right;
+        }
+
+        .card-expiry-label {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-bottom: 4px;
+        }
+
+        .card-expiry-text {
+            font-size: 18px;
+            letter-spacing: 1px;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 12px;
+            margin-top: 6px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .success-message {
+            color: #27ae60;
+            text-align: center;
+            margin-top: 20px;
+            padding: 12px;
+            background-color: rgba(39, 174, 96, 0.1);
+            border-radius: 8px;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .field-label-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .field-label-row label {
+            margin-bottom: 0;
+        }
+
+        .optional-text {
+            color: #999;
+            font-size: 12px;
+            font-weight: 400;
+        }
+
+        .holder-name-group {
+            grid-column: 1 / -1;
+        }
+    </style>
+</head>
+<body>
+    <div class="payment-container">
+        <h1>Payment Details</h1>
+
+        <div class="card-preview">
+            <div class="card-logo" id="cardLogo">VISA</div>
+            <div class="card-number-display" id="cardNumberDisplay">•••• •••• •••• ••••</div>
+            <div class="card-details">
+                <div class="card-holder">
+                    <div class="card-holder-name">Card Holder</div>
+                    <div class="card-holder-text" id="cardHolderDisplay">Your Name</div>
+                </div>
+                <div class="card-expiry">
+                    <div class="card-expiry-label">Expires</div>
+                    <div class="card-expiry-text" id="cardExpiryDisplay">MM/YY</div>
+                </div>
+            </div>
+        </div>
+
+        <form id="paymentForm">
+            <div class="form-group">
+                <label for="cardholderName">Cardholder Name</label>
+                <input 
+                    type="text" 
+                    id="cardholderName" 
+                    name="cardholderName"
+                    placeholder="John Doe"
+                    required
+                >
+                <div class="error-message" id="cardholderNameError"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="cardNumber">Card Number</label>
+                <input 
+                    type="text" 
+                    id="cardNumber" 
+                    name="cardNumber"
+                    placeholder="1234 5678 9012 3456"
+                    max

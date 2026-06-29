@@ -35,9 +35,14 @@ const MODELS = {
   //   model:    'claude-opus-4-8',
   //   api_key:  process.env.ANTHROPIC_API_KEY,
   // },
-  claude_sonnet: {
+  // claude_sonnet: {
+  //   provider: 'anthropic',
+  //   model:    'claude-sonnet-4-6',
+  //   api_key:  process.env.ANTHROPIC_API_KEY,
+  // },
+  claude_haiku: {
     provider: 'anthropic',
-    model:    'claude-sonnet-4-6',
+    model:    'claude-haiku-4-5-20251001',
     api_key:  process.env.ANTHROPIC_API_KEY,
   },
   // gemini_flash: {

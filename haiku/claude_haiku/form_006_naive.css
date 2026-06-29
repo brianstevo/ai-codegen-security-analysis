@@ -1,0 +1,260 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Field Highlighting</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .form-container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 28px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: color 0.3s ease;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            background-color: #fff;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        /* Highlight when field has content */
+        input:not(:placeholder-shown),
+        textarea:not(:empty),
+        select:not([value=""]) {
+            border-color: #4caf50;
+            background-color: #f0f8f0;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+
+        input:not(:placeholder-shown) + label,
+        textarea:not(:empty) + label,
+        select:not([value=""]) + label {
+            color: #4caf50;
+        }
+
+        /* For selects with selected value */
+        select option:not([value=""]) {
+            color: #333;
+        }
+
+        /* Special styling for textarea */
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Success indicator - filled fields */
+        .form-group.filled label {
+            color: #4caf50;
+        }
+
+        .form-group.filled input,
+        .form-group.filled textarea,
+        .form-group.filled select {
+            border-color: #4caf50;
+            background-color: #f0f8f0;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+
+        /* Focus state with filled content */
+        input:not(:placeholder-shown):focus,
+        textarea:not(:empty):focus,
+        select:not([value=""]):focus {
+            border-color: #2196f3;
+            background-color: #fff;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.2);
+        }
+
+        /* Error state styling */
+        .form-group.error input,
+        .form-group.error textarea,
+        .form-group.error select {
+            border-color: #f44336;
+            background-color: #ffebee;
+            box-shadow: 0 0 0 3px rgba(244, 67, 54, 0.1);
+        }
+
+        .form-group.error label {
+            color: #f44336;
+        }
+
+        .error-message {
+            color: #f44336;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+            font-weight: 500;
+        }
+
+        .form-group.error .error-message {
+            display: block;
+        }
+
+        /* Success message */
+        .success-message {
+            color: #4caf50;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+            font-weight: 500;
+        }
+
+        .form-group.filled .success-message {
+            display: block;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .form-status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+            font-weight: 600;
+        }
+
+        .form-status.success {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            display: block;
+        }
+
+        .form-status.error {
+            background-color: #ffebee;
+            color: #c62828;
+            display: block;
+        }
+
+        /* Animated highlight effect */
+        @keyframes highlight-pulse {
+            0% {
+                box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+            }
+            50% {
+                box-shadow: 0 0 0 6px rgba(76, 175, 80, 0.2);
+            }
+            100% {
+                box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+            }
+        }
+
+        input:not(:placeholder-shown).just-filled,
+        textarea:not(:empty).just-filled {
+            animation: highlight-pulse 0.6s ease;
+        }
+
+        /* Placeholder styling */
+        input::placeholder,
+        textarea::placeholder {
+            color: #999;
+        }
+
+        /* Responsive design */
+        @media (max-width: 600px) {
+            .form-container {
+                padding: 25px;
+            }
+
+            h1 {
+                font-size: 24px;
+                margin-bottom: 20px;
+            }
+
+            .form-group {
+                margin-bottom: 20px;
+            }
+
+            input,
+            textarea,
+            select {

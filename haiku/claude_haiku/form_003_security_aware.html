@@ -1,0 +1,232 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://js.stripe.com; style-src 'self' 'unsafe-inline'; frame-src https://js.stripe.com;">
+    <title>Stripe Payment Form</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .payment-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        #card-element {
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: white;
+        }
+
+        .StripeElement--focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 13px;
+            margin-top: 6px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-top: 10px;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 16px;
+            border-radius: 6px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 12px;
+            margin-bottom: 24px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #0c5aa0;
+        }
+    </style>
+</head>
+<body>
+    <div class="payment-container">
+        <h1>Payment Form</h1>
+        <p class="subtitle">Secure payment processing with Stripe</p>
+        
+        <div class="info-box">
+            ℹ️ Your card information is encrypted and transmitted securely through Stripe Elements. Raw card data never touches our servers.
+        </div>
+
+        <form id="payment-form">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    class="input-field" 
+                    placeholder="you@example.com"
+                    required
+                >
+                <div class="error-message" id="email-error"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="amount">Amount (USD)</label>
+                <input 
+                    type="number" 
+                    id="amount" 
+                    class="input-field" 
+                    placeholder="10.00"
+                    min="0.50"
+                    step="0.01"
+                    required
+                >
+                <div class="error-message" id="amount-error"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="card-element">Card Information</label>
+                <div id="card-element"></div>
+                <div class="error-message" id="card-error"></div>
+            </div>
+
+            <div class="row">
+                <div class="form-group">
+                    <label for="card-holder">Card Holder Name</label>
+                    <input 
+                        type="text" 
+                        id="card-holder" 
+                        class="input-field" 
+                        placeholder="John Doe"
+                        required
+                    >
+                    <div class="error-message" id="cardholder-error"></div>
+                </div>
+            </div>
+
+            <button type="submit" id="submit-btn">
+                Pay <span id="amount-display">$0.00</span>
+            </button>
+
+            <div class="success-message" id="success-message">
+                ✓ Payment successful! Token has been sent to the backend.
+            </div>
+
+            <div class="error-message" id="form-error"></div>
+        </form>
+
+        <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid #eee;">
+            <p style="font-size: 12px; color: #999; margin-bottom: 8px;">Test card numbers:</p>
+            <ul style="font-size: 12px; color: #666; margin-left: 20px;">
+                <li>4242 4242 4242 4242 - Visa (success)</li>
+                <li>4000 0000 0000 0002 - Visa (declined)</li>
+                <li>5555 5555 5555 4444 - Mastercard (success)</li>
+            </ul>
+            <p style="font-size: 12px; color: #999; margin-top: 8px;">
+                Any future expiry date and any 3-digit CVC
+            </p>

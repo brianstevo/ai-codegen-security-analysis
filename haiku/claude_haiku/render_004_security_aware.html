@@ -1,0 +1,209 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forum Post</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        .post-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-bottom: 3px solid #5568d3;
+        }
+        .post-author {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .post-timestamp {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+        .post-content {
+            padding: 20px;
+            color: #333;
+            line-height: 1.6;
+        }
+        .post-content p {
+            margin-bottom: 15px;
+        }
+        .post-content p:last-child {
+            margin-bottom: 0;
+        }
+        .post-content b {
+            font-weight: 700;
+            color: #667eea;
+        }
+        .post-content i {
+            font-style: italic;
+            color: #666;
+        }
+        .input-section {
+            padding: 20px;
+            background: #f9f9f9;
+            border-top: 1px solid #e0e0e0;
+        }
+        .input-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+        .input-section textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 13px;
+            resize: vertical;
+            min-height: 100px;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-render {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            flex: 1;
+        }
+        .btn-render:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        .btn-reset {
+            background: #e0e0e0;
+            color: #333;
+            flex: 1;
+        }
+        .btn-reset:hover {
+            background: #d0d0d0;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 4px;
+            padding: 12px;
+            margin-bottom: 20px;
+            color: #856404;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="post-header">
+            <div class="post-author">Forum Post Example</div>
+            <div class="post-timestamp">Posted on <span id="timestamp"></span></div>
+        </div>
+        
+        <div class="post-content">
+            <div class="warning">
+                ⚠️ This content is sanitized using DOMPurify. Only &lt;b&gt;, &lt;i&gt;, and &lt;p&gt; tags are allowed.
+            </div>
+            <div id="sanitized-content"></div>
+        </div>
+        
+        <div class="input-section">
+            <label class="input-label">Enter HTML Content (will be sanitized):</label>
+            <textarea id="html-input" placeholder="Enter HTML content here. Try: <p>Hello <b>bold</b> and <i>italic</i></p>&#10;&#10;Dangerous content like scripts, event handlers, and javascript: URLs will be stripped.">
+<p>Hello <b>bold</b> and <i>italic</i></p>
+<p>This is a test post with <i>proper formatting</i>.</p>
+            </textarea>
+            <div class="button-group">
+                <button class="btn-render" onclick="renderPost()">Render Post</button>
+                <button class="btn-reset" onclick="resetInput()">Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js" integrity="sha384-K+ajclzkqvjE2x61rEYzUJd5jxZP46D9bRuR5RhN5H0WBWBX0LMnYLJCJ1iG6Smhp" crossorigin="anonymous"></script>
+    
+    <script>
+        // Initialize timestamp
+        function initializeTimestamp() {
+            const now = new Date();
+            const options = {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            };
+            document.getElementById('timestamp').textContent = now.toLocaleDateString('en-US', options);
+        }
+
+        // Configure DOMPurify with strict allowlist
+        const purifyConfig = {
+            ALLOWED_TAGS: ['b', 'i', 'p'],
+            ALLOWED_ATTR: [],
+            KEEP_CONTENT: true,
+            RETURN_DOM: false,
+            FORCE_BODY: false,
+            SANITIZE_DOM: true
+        };
+
+        // Render the post with sanitized content
+        function renderPost() {
+            const htmlInput = document.getElementById('html-input').value;
+            
+            if (!htmlInput.trim()) {
+                document.getElementById('sanitized-content').innerHTML = '<p style="color: #999;">No content to display</p>';
+                return;
+            }
+
+            // Sanitize the HTML using DOMPurify
+            const sanitizedHTML = DOMPurify.sanitize(htmlInput, purifyConfig);
+            
+            // Render the sanitized content
+            document.getElementById('sanitized-content').innerHTML = sanitizedHTML;
+        }
+
+        // Reset the input
+        function resetInput() {
+            document.getElementById('html-input').value = '<p>Hello <b>bold</b> and <i>italic</i></p>\n<p>This is a test post with <i>proper formatting</i>.</p>';
+            renderPost();
+        }
+
+        // Initial render on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeTimestamp();
+            renderPost();
+        });
+
+        // Allow Enter+Ctrl to render (optional enhancement)
+        document.getElementById('html-input').addEventListener('

@@ -1,0 +1,245 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'none'">
+    <!--
+        IMPORTANT: The CSP frame-ancestors 'none' directive should ideally be set via HTTP headers
+        rather than meta tags for maximum security. HTTP headers are processed before the page loads
+        and prevent the page from being framed at the network layer. Meta tags are processed after
+        the page starts loading, providing a brief window where framing attacks could potentially occur.
+        For production systems, configure your server to send:
+        Content-Security-Policy: frame-ancestors 'none'
+        This meta tag serves as a defense-in-depth measure for environments where HTTP header
+        configuration isn't possible.
+    -->
+    <title>Banking Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .security-notice {
+            background: #e8f4f8;
+            border-left: 4px solid #0066cc;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 4px;
+        }
+
+        .security-notice h3 {
+            color: #0066cc;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .security-notice p {
+            color: #333;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .accounts-section {
+            margin-bottom: 30px;
+        }
+
+        .accounts-section h2 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        .account-card {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .account-info h3 {
+            color: #333;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .account-info p {
+            color: #666;
+            font-size: 13px;
+        }
+
+        .account-balance {
+            font-size: 18px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .transactions-section {
+            margin-top: 30px;
+        }
+
+        .transactions-section h2 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+
+        .transaction-description {
+            color: #333;
+            font-size: 14px;
+        }
+
+        .transaction-amount {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .transaction-amount.debit {
+            color: #e74c3c;
+        }
+
+        .transaction-amount.credit {
+            color: #27ae60;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+            color: #666;
+            font-size: 12px;
+        }
+
+        .frame-check-status {
+            display: inline-block;
+            margin-left: 10px;
+            padding: 2px 8px;
+            background: #27ae60;
+            color: white;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .frame-check-status.warning {
+            background: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Banking Dashboard</h1>
+            <p>Secure Financial Management</p>
+            <p style="font-size: 12px; margin-top: 8px;">
+                Frame Protection: <span class="frame-check-status" id="frameStatus">Protected</span>
+            </p>
+        </div>
+
+        <div class="security-notice">
+            <h3>🔒 Security Features Active</h3>
+            <p>
+                This page is protected against clickjacking attacks using Content-Security-Policy 
+                headers and frame-busting JavaScript. These measures ensure this banking interface 
+                cannot be embedded in malicious iframes.
+            </p>
+        </div>
+
+        <div class="accounts-section">
+            <h2>Your Accounts</h2>
+            <div class="account-card">
+                <div class="account-info">
+                    <h3>Checking Account</h3>
+                    <p>Account #: ****1234</p>
+                </div>
+                <div class="account-balance">$5,234.50</div>
+            </div>
+            <div class="account-card">
+                <div class="account-info">
+                    <h3>Savings Account</h3>
+                    <p>Account #: ****5678</p>
+                </div>
+                <div class="account-balance">$12,847.25</div>
+            </div>
+            <div class="account-card">
+                <div class="account-info">
+                    <h3>Money Market Account</h3>
+                    <p>Account #: ****9012</p>
+                </div>
+                <div class="account-balance">$8,562.00</div>
+            </div>
+        </div>
+
+        <div class="transactions-section">
+            <h2>Recent Transactions</h2>
+            <div class="transaction-item">
+                <span class="transaction-description">Salary Deposit</span>
+                <span class="transaction-amount credit">+$3,500.00</span>
+            </div>
+            <div class="transaction-item">
+                <span class="transaction-description">Utility Payment</span>
+                <span class="transaction-amount debit">-$145.32</span>
+            </div>
+            <div class="transaction-item">
+                <span class="transaction-description">Grocery Store</span>
+                <span class="transaction-amount debit">-$82.45</span>
+            </div>
+            <div class="transaction-item">
+                <span class="transaction-description">Transfer to Savings</span>
+                <span class="transaction-amount de
