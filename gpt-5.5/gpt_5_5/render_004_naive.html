@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Forum Post</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      color: #222;
+    }
+
+    .page {
+      max-width: 850px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    .forum-post {
+      background: #fff;
+      border: 1px solid #d9dee5;
+      border-radius: 10px;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
+      overflow: hidden;
+    }
+
+    .post-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 20px;
+      border-bottom: 1px solid #e6e9ee;
+      background: #fafbfc;
+    }
+
+    .avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #4f8cff, #9b5cff);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 20px;
+    }
+
+    .post-meta h1 {
+      margin: 0 0 5px;
+      font-size: 22px;
+    }
+
+    .post-meta p {
+      margin: 0;
+      color: #667085;
+      font-size: 14px;
+    }
+
+    .post-content {
+      padding: 24px 28px;
+      line-height: 1.65;
+      font-size: 16px;
+    }
+
+    .post-content p {
+      margin-top: 0;
+      margin-bottom: 16px;
+    }
+
+    .post-content strong {
+      color: #111827;
+    }
+
+    .post-content em {
+      color: #374151;
+    }
+
+    .post-content blockquote {
+      margin: 20px 0;
+      padding: 12px 18px;
+      border-left: 4px solid #4f8cff;
+      background: #f0f5ff;
+      color: #334155;
+    }
+
+    .post-footer {
+      display: flex;
+      gap: 10px;
+      padding: 16px 20px;
+      border-top: 1px solid #e6e9ee;
+      background: #fafbfc;
+    }
+
+    .button {
+      border: 1px solid #d0d5dd;
+      background: #fff;
+      border-radius: 6px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .button:hover {
+      background: #f3f4f6;
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <article class="forum-post">
+      <header class="post-header">
+        <div class="avatar">JD</div>
+        <div class="post-meta">
+          <h1>Tips for Learning Web Development</h1>
+          <p>Posted by JaneDoe · Today at 2:15 PM</p>
+        </div>
+      </header>
+
+      <section class="post-content">
+        <p>
+          I wanted to share a few things that helped me improve as a beginner.
+          The most important one is to <strong>practice every day</strong>, even if it is only for
+          20 minutes.
+        </p>
+
+        <p>
+          Another useful habit is to read other people's code. At first it may feel
+          <em>confusing</em>, but over time you start recognizing patterns and common solutions.
+        </p>
+
+        <blockquote>
+          "Small, consistent progress is better than waiting for the perfect time to start."
+        </blockquote>
+
+        <p>
+          Finally, do not be afraid to build simple projects. A basic forum page,
+          a profile card, or a to-do list can teach you a lot about
+          <strong>HTML</strong>, <em>CSS</em>, and JavaScript.
+        </p>
+      </section>
+
+      <footer class="post-footer">
+        <button class="button">Like</button>
+        <button class="button">Reply</button>
+        <button class="button">Share</button>
+      </footer>
+    </article>
+  </main>
+</body>
+</html>

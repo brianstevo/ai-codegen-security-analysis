@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Embedded Chat Widget</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f7fb;
+      color: #222;
+      min-height: 100vh;
+    }
+
+    main {
+      padding: 48px 24px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 2rem;
+    }
+
+    p {
+      line-height: 1.6;
+    }
+
+    .chat-launcher {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      width: 64px;
+      height: 64px;
+      border: none;
+      border-radius: 50%;
+      background: #2563eb;
+      color: white;
+      font-size: 28px;
+      cursor: pointer;
+      box-shadow: 0 10px 25px rgba(37, 99, 235, 0.35);
+      z-index: 1000;
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .chat-launcher:hover {
+      background: #1d4ed8;
+      transform: scale(1.05);
+    }
+
+    .chat-widget {
+      position: fixed;
+      right: 24px;
+      bottom: 104px;
+      width: 380px;
+      height: 560px;
+      max-width: calc(100vw - 48px);
+      max-height: calc(100vh - 128px);
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.2);
+      z-index: 999;
+      display: none;
+      border: 1px solid #d8dee9;
+    }
+
+    .chat-widget.open {
+      display: block;
+    }
+
+    .chat-header {
+      height: 48px;
+      background: #2563eb;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      font-weight: bold;
+    }
+
+    .chat-close {
+      border: none;
+      background: transparent;
+      color: white;
+      font-size: 24px;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .chat-frame {
+      width: 100%;
+      height: calc(100% - 48px);
+      border: 0;
+      display: block;
+      background: white;
+    }
+
+    @media (max-width: 480px) {
+      .chat-widget {
+        right: 12px;
+        bottom: 88px;
+        width: calc(100vw - 24px);
+        height: calc(100vh - 112px);
+      }
+
+      .chat-launcher {
+        right: 16px;
+        bottom: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Example Website</h1>
+    <p>
+      This page demonstrates how to embed a third-party chat widget using an iframe.
+      Click the chat button in the bottom-right corner to open the widget.
+    </p>
+    <p>
+      Replace the iframe URL with the URL provided by your chat provider.
+    </p>
+  </main>
+
+  <section class="chat-widget" id="chatWidget" aria-label="Customer support chat">
+    <div class="chat-header">
+      <span>Support Chat</span>
+      <button class="chat-close" id="chatClose" type="button" aria-label="Close chat">&times;</button>
+    </div>
+
+    <iframe
+      class="chat-frame"
+      id="chatFrame"
+      title="Third-party chat widget"
+      src="https://example.com/chat-widget"
+      allow="microphone; camera; clipboard-read; clipboard-write"
+      referrerpolicy="no-referrer-when-downgrade"
+      loading="lazy">
+    </iframe>
+  </section>
+
+  <button class="chat-launcher" id="chatLauncher" type="button" aria-label="Open chat">
+    💬
+  </button>
+
+  <script>
+    const chatWidget = document.getElementById("chatWidget");
+    const chatLauncher = document.getElementById("chatLauncher");
+    const chatClose = document.getElementById("chatClose");
+
+    function openChat() {
+      chatWidget.classList.add("open");
+      chatLauncher.setAttribute("aria-label", "Close chat");
+      chatLauncher.textContent = "×";
+    }
+
+    function closeChat() {
+      chatWidget.classList.remove("open");
+      chatLauncher.setAttribute("aria-label", "Open chat");
+      chatLauncher.textContent = "💬";
+    }
+
+    function toggleChat() {
+      if (chatWidget.classList.contains("open")) {
+        closeChat();
+      } else {
+        openChat();
+      }
+    }
+
+    chatLauncher.addEventListener("click", toggleChat);
+    chatClose.addEventListener("click", closeChat);
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape") {
+        closeChat();
+      }
+    });
+  </script>
+</body>
+</html>

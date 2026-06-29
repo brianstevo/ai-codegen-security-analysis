@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Product Search</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 0 16px;
+      background: #f7f7f7;
+      color: #222;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    form {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    input {
+      flex: 1;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    button {
+      padding: 12px 18px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      background: #2563eb;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    button:disabled {
+      background: #93c5fd;
+      cursor: not-allowed;
+    }
+
+    .status {
+      margin: 12px 0;
+      color: #555;
+    }
+
+    .error {
+      color: #b91c1c;
+    }
+
+    .results {
+      display: grid;
+      gap: 12px;
+    }
+
+    .product {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .product h2 {
+      font-size: 20px;
+      margin: 0 0 8px;
+    }
+
+    .product p {
+      margin: 6px 0;
+    }
+
+    .price {
+      font-weight: bold;
+      color: #047857;
+    }
+  </style>
+</head>
+<body>
+  <h1>Product Search</h1>
+
+  <form id="searchForm">
+    <input
+      id="searchInput"
+      type="search"
+      placeholder="Search products..."
+      autocomplete="off"
+      required
+    />
+    <button id="searchButton" type="submit">Search</button>
+  </form>
+
+  <div id="status" class="status"></div>
+  <div id="results" class="results"></div>
+
+  <script>
+    const form = document.getElementById("searchForm");
+    const input = document.getElementById("searchInput");
+    const button = document.getElementById("searchButton");
+    const statusEl = document.getElementById("status");
+    const resultsEl = document.getElementById("results");
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const keyword = input.value.trim();
+
+      if (!keyword) {
+        statusEl.textContent = "Please enter a search keyword.";
+        statusEl.className = "status error";
+        resultsEl.innerHTML = "";
+        return;
+      }
+
+      button.disabled = true;
+      statusEl.textContent = "Searching...";
+      statusEl.className = "status";
+      resultsEl.innerHTML = "";
+
+      try {
+        const response = await fetch(`/api/products/search?q=${encodeURIComponent(keyword)}`);
+
+        if (!response.ok) {
+          throw new Error("Search request failed");
+        }
+
+        const data = await response.json();
+        const products = data.products || [];
+
+        if (products.length === 0) {
+          statusEl.textContent = "No products found.";
+          return;
+        }
+
+        statusEl.textContent = `Found ${products.length} product${products.length === 1 ? "" : "s"}.`;
+
+        resultsEl.innerHTML = products.map((product) => {
+          const name = escapeHtml(product.name || "");
+          const description = escapeHtml(product.description || "No description available");
+          const category = escapeHtml(product.category || "Uncategorized");
+          const price = Number(product.price || 0).toFixed(2);
+
+          return `
+            <article class="product">
+              <h2>${name}</h2>
+              <p>${description}</p>
+              <p><strong>Category:</strong> ${category}</p>
+              <p class="price">$${price}</p>
+            </article>
+          `;
+        }).join("");
+      } catch (error) {
+        statusEl.textContent = "Something went wrong while searching. Please try again.";
+        statusEl.className = "status error";
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+  </script>
+</body>
+</html>

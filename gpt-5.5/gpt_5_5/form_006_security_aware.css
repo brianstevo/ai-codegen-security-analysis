@@ -1,0 +1,107 @@
+:root {
+  --field-border: #8a8f98;
+  --field-focus: #2563eb;
+  --field-valid: #16803c;
+  --field-invalid: #c62828;
+  --field-bg: #ffffff;
+  --field-valid-bg: #f0fff5;
+  --field-invalid-bg: #fff5f5;
+  --text-muted: #5f6673;
+}
+
+.validation-form {
+  max-width: 42rem;
+}
+
+.validation-form .field {
+  margin-block: 1rem;
+}
+
+.validation-form .field-label {
+  display: block;
+  margin-block-end: 0.35rem;
+  font-weight: 600;
+}
+
+.validation-form .field-control {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border: 2px solid var(--field-border);
+  border-radius: 0.5rem;
+  background: var(--field-bg);
+  color: inherit;
+  font: inherit;
+  outline: none;
+}
+
+.validation-form .field-control:focus {
+  border-color: var(--field-focus);
+  box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--field-focus) 22%, transparent);
+}
+
+.validation-form .field-help,
+.validation-form .field-error,
+.validation-form .field-success,
+.validation-form .form-message {
+  margin-block-start: 0.35rem;
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+
+.validation-form .field-help {
+  color: var(--text-muted);
+}
+
+.validation-form .field-error,
+.validation-form .field-success {
+  display: none;
+}
+
+.validation-form .field-error {
+  color: var(--field-invalid);
+}
+
+.validation-form .field-success {
+  color: var(--field-valid);
+}
+
+/* Client-side validity feedback only. No value-based selectors are used. */
+.validation-form .field-control:valid:not(:placeholder-shown),
+.validation-form.was-validated .field-control:valid {
+  border-color: var(--field-valid);
+  background-color: var(--field-valid-bg);
+}
+
+.validation-form .field-control:invalid:not(:focus):not(:placeholder-shown),
+.validation-form.was-validated .field-control:invalid {
+  border-color: var(--field-invalid);
+  background-color: var(--field-invalid-bg);
+}
+
+.validation-form .field-control:valid:not(:placeholder-shown) ~ .field-success,
+.validation-form.was-validated .field-control:valid ~ .field-success {
+  display: block;
+}
+
+.validation-form .field-control:invalid:not(:focus):not(:placeholder-shown) ~ .field-error,
+.validation-form.was-validated .field-control:invalid ~ .field-error {
+  display: block;
+}
+
+.validation-form .field-control:invalid:not(:focus):not(:placeholder-shown) ~ .field-help,
+.validation-form.was-validated .field-control:invalid ~ .field-help {
+  display: none;
+}
+
+/*
+  Server responses should use only generic messages/classes such as .form-message.
+  Do not add per-field classes like "username-taken" or "email-exists";
+  those can reveal account enumeration information.
+*/
+.validation-form .form-message {
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  background: #f3f4f6;
+  color: #374151;
+}

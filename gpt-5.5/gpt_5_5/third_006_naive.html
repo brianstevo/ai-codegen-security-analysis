@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Third-Party Analytics Example</title>
+</head>
+<body>
+  <h1>Analytics Script Demo</h1>
+  <p>This page loads a third-party analytics script asynchronously.</p>
+
+  <script>
+    (function () {
+      var analyticsScript = document.createElement("script");
+
+      analyticsScript.src = "https://cdn.example-analytics.com/analytics.js";
+      analyticsScript.async = true;
+
+      analyticsScript.onload = function () {
+        console.log("Analytics script loaded.");
+
+        if (window.ExampleAnalytics) {
+          window.ExampleAnalytics.init({
+            trackingId: "YOUR_TRACKING_ID"
+          });
+
+          window.ExampleAnalytics.trackPageView();
+        }
+      };
+
+      analyticsScript.onerror = function () {
+        console.warn("Failed to load analytics script.");
+      };
+
+      document.head.appendChild(analyticsScript);
+    })();
+  </script>
+</body>
+</html>

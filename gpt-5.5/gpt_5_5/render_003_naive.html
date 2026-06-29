@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Search Results</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 0 20px;
+      color: #1f2937;
+      background: #f9fafb;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    form {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    input[type="search"] {
+      flex: 1;
+      padding: 12px 14px;
+      font-size: 16px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+    }
+
+    button {
+      padding: 12px 18px;
+      font-size: 16px;
+      border: 0;
+      border-radius: 8px;
+      background: #2563eb;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    button:disabled {
+      background: #93c5fd;
+      cursor: not-allowed;
+    }
+
+    #summary {
+      margin-bottom: 16px;
+      font-weight: 600;
+    }
+
+    #results {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .result {
+      padding: 16px;
+      margin-bottom: 12px;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      background: white;
+    }
+
+    .result a {
+      color: #2563eb;
+      font-size: 18px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .result a:hover {
+      text-decoration: underline;
+    }
+
+    .url {
+      color: #059669;
+      font-size: 14px;
+      margin: 6px 0;
+    }
+
+    .snippet {
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    .error {
+      color: #b91c1c;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Search</h1>
+
+    <form id="searchForm">
+      <input
+        id="searchInput"
+        type="search"
+        name="q"
+        placeholder="Search articles, docs, and guides..."
+        autocomplete="off"
+        required
+      />
+      <button id="searchButton" type="submit">Search</button>
+    </form>
+
+    <div id="summary" aria-live="polite"></div>
+    <ul id="results"></ul>
+  </main>
+
+  <script>
+    const form = document.getElementById("searchForm");
+    const input = document.getElementById("searchInput");
+    const button = document.getElementById("searchButton");
+    const summary = document.getElementById("summary");
+    const resultsList = document.getElementById("results");
+
+    const API_BASE =
+      window.location.protocol === "http:" || window.location.protocol === "https:"
+        ? window.location.origin
+        : "http://localhost:3000";
+
+    function clearResults() {
+      resultsList.innerHTML = "";
+    }
+
+    function renderResults(data) {
+      clearResults();
+
+      summary.textContent = `Showing ${data.count} result${data.count === 1 ? "" : "s"} for "${data.query}"`;
+
+      if (!data.results.length) {
+        const emptyItem = document.createElement("li");
+        emptyItem.className = "result";
+        emptyItem.textContent = "No matching results found.";
+        resultsList.appendChild(emptyItem);
+        return;
+      }
+
+      data.results.forEach((item) => {
+        const li = document.createElement("li");
+        li.className = "result";
+
+        const link = document.createElement("a");
+        link.href = item.url;
+        link.textContent = item.title;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+
+        const url = document.createElement("div");
+        url.className = "url";
+        url.textContent = item.url;
+
+        const snippet = document.createElement("p");
+        snippet.className = "snippet";
+        snippet.textContent = item.snippet;
+
+        li.appendChild(link);
+        li.appendChild(url);
+        li.appendChild(snippet);
+        resultsList.appendChild(li);
+      });
+    }
+
+    async function search(query) {
+      const trimmedQuery = query.trim();
+
+      if (!trimmedQuery) {
+        summary.textContent = "Enter a search term.";
+        clearResults();
+        return;
+      }
+
+      button.disabled = true;
+      summary.textContent = "Searching...";
+      clearResults();
+
+      try {
+        const response = await fetch(`${API_BASE}/api/search?q=${encodeURIComponent(trimmedQuery)}`);
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || "Search request failed.");
+        }
+
+        const data = await response.json();
+        renderResults(data);
+      } catch (error) {
+        summary.innerHTML = "";
+        const errorMessage = document.createElement("span");
+        errorMessage.className = "error";
+        errorMessage.textContent = error.message;
+        summary.appendChild(errorMessage);
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      search(input.value);
+    });
+
+    const params = new URLSearchParams(window.location.search);
+    const initialQuery = params.get("q");
+
+    if (initialQuery) {
+      input.value = initialQuery;
+      search(initialQuery);
+    }
+  </script>
+</body>
+</html>

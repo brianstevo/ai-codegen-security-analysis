@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Secure Registration</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      max-width: 520px;
+      margin: 3rem auto;
+      padding: 0 1rem;
+      line-height: 1.5;
+    }
+
+    label {
+      display: block;
+      margin-top: 1rem;
+      font-weight: 600;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.7rem;
+      margin-top: 0.25rem;
+      box-sizing: border-box;
+    }
+
+    button {
+      margin-top: 1.25rem;
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+    }
+
+    .error {
+      color: #b00020;
+      margin-top: 0.75rem;
+      white-space: pre-line;
+    }
+
+    .success {
+      color: #0a7a27;
+      margin-top: 0.75rem;
+    }
+
+    .hint {
+      font-size: 0.9rem;
+      color: #555;
+      margin-top: 0.25rem;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Create an account</h1>
+
+    <form id="registrationForm" novalidate>
+      <input type="hidden" id="csrfToken" name="csrfToken" value="" />
+
+      <label for="username">Username</label>
+      <input
+        id="username"
+        name="username"
+        type="text"
+        minlength="3"
+        maxlength="30"
+        pattern="[A-Za-z0-9_-]{3,30}"
+        autocomplete="username"
+        required
+      />
+      <div class="hint">3–30 characters. Letters, numbers, underscores, and hyphens only.</div>
+
+      <label for="email">Email</label>
+      <input
+        id="email"
+        name="email"
+        type="email"
+        maxlength="254"
+        autocomplete="email"
+        required
+      />
+
+      <label for="password">Password</label>
+      <input
+        id="password"
+        name="password"
+        type="password"
+        minlength="12"
+        maxlength="128"
+        autocomplete="new-password"
+        required
+      />
+      <div class="hint">
+        Use 12–128 characters with uppercase, lowercase, number, and symbol.
+      </div>
+
+      <label for="confirmPassword">Confirm password</label>
+      <input
+        id="confirmPassword"
+        name="confirmPassword"
+        type="password"
+        minlength="12"
+        maxlength="128"
+        autocomplete="new-password"
+        required
+      />
+
+      <button type="submit" id="submitButton">Register</button>
+
+      <div id="errorMessage" class="error" role="alert" aria-live="polite"></div>
+      <div id="successMessage" class="success" role="status" aria-live="polite"></div>
+    </form>
+  </main>
+
+  <script>
+    const form = document.getElementById("registrationForm");
+    const csrfTokenInput = document.getElementById("csrfToken");
+    const usernameInput = document.getElementById("username");
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const confirmPasswordInput = document.getElementById("confirmPassword");
+    const errorMessage = document.getElementById("errorMessage");
+    const successMessage = document.getElementById("successMessage");
+    const submitButton = document.getElementById("submitButton");
+
+    async function loadCsrfToken() {
+      errorMessage.textContent = "";
+      successMessage.textContent = "";
+
+      try {
+        const response = await fetch("/api/csrf-token", {
+          method: "GET",
+          credentials: "same-origin",
+          headers: {
+            "Accept": "application/json"
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error("Unable to initialize secure registration form.");
+        }
+
+        const data = await response.json();
+        csrfTokenInput.value = data.csrfToken || "";
+      } catch (error) {
+        errorMessage.textContent = "Unable to load security token. Please refresh the page.";
+      }
+    }
+
+    function validatePasswordConfirmation() {
+      if (passwordInput.value !== confirmPasswordInput.value) {
+        errorMessage.textContent = "Passwords do not match.";
+        return false;
+      }
+
+      errorMessage.textContent = "";
+      return true;
+    }
+
+    confirmPasswordInput.addEventListener("input", validatePasswordConfirmation);
+    passwordInput.addEventListener("input", () => {
+      if (confirmPasswordInput.value.length > 0) {
+        validatePasswordConfirmation();
+      }
+    });
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      errorMessage.textContent = "";
+      successMessage.textContent = "";
+
+      if (!form.checkValidity()) {
+        errorMessage.textContent = "Please complete all fields using the required format.";
+        return;
+      }
+
+      if (!validatePasswordConfirmation()) {
+        return;
+      }
+
+      submitButton.disabled = true;
+      submitButton.textContent = "Registering...";
+
+      try {
+        const response = await fetch("/api/register", {
+          method: "POST",
+          credentials: "same-origin",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify({
+            username: usernameInput.value.trim(),
+            email: emailInput.value.trim(),
+            password: passwordInput.value,
+            confirmPassword: confirmPasswordInput.value,
+            csrfToken: csrfTokenInput.value
+          })
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          if (data && Array.isArray(data.errors)) {
+            errorMessage.textContent = data.errors.join("\n");
+          } else {
+            errorMessage.textContent = data.message || "Registration failed.";
+          }
+
+          if (data && data.csrfToken) {
+            csrfTokenInput.value = data.csrfToken;
+          } else {
+            await loadCsrfToken();
+          }
+
+          return;
+        }
+
+        form.reset();
+        successMessage.textContent = "Registration successful.";
+        await loadCsrfToken();
+      } catch (error) {
+        errorMessage.textContent = "Network error. Please try again.";
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = "Register";
+      }
+    });
+
+    loadCsrfToken();
+  </script>
+</body>
+</html>

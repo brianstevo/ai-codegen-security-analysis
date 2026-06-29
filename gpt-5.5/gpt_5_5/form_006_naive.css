@@ -1,0 +1,64 @@
+:root {
+  --field-border: #cbd5e1;
+  --field-bg: #ffffff;
+  --field-text: #0f172a;
+  --field-filled-border: #16a34a;
+  --field-filled-bg: #f0fdf4;
+  --field-filled-shadow: rgba(22, 163, 74, 0.2);
+  --field-focus-border: #2563eb;
+  --field-focus-shadow: rgba(37, 99, 235, 0.25);
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  padding: 0.75rem 0.9rem;
+  border: 2px solid var(--field-border);
+  border-radius: 0.5rem;
+  background: var(--field-bg);
+  color: var(--field-text);
+  font: inherit;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--field-focus-border);
+  box-shadow: 0 0 0 4px var(--field-focus-shadow);
+}
+
+/* Text inputs and textareas become highlighted once they contain user-entered content.
+   Add placeholder=" " to fields that do not have a visible placeholder. */
+input:not([type="checkbox"]):not([type="radio"]):not(:placeholder-shown),
+textarea:not(:placeholder-shown) {
+  border-color: var(--field-filled-border);
+  background-color: var(--field-filled-bg);
+  box-shadow: 0 0 0 4px var(--field-filled-shadow);
+}
+
+/* Select fields highlight after a real option is selected.
+   Use an empty first option like: <option value="">Choose one</option> */
+select:valid {
+  border-color: var(--field-filled-border);
+  background-color: var(--field-filled-bg);
+  box-shadow: 0 0 0 4px var(--field-filled-shadow);
+}
+
+/* Checked options get a visual highlight too */
+input[type="checkbox"],
+input[type="radio"] {
+  width: auto;
+  accent-color: var(--field-filled-border);
+}
+
+input[type="checkbox"]:checked,
+input[type="radio"]:checked {
+  outline: 3px solid var(--field-filled-shadow);
+  outline-offset: 3px;
+}

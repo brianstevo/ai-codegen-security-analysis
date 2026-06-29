@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Product Filter</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2rem;
+      background: #f7f7f7;
+      color: #222;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    form {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      align-items: end;
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 0.35rem;
+    }
+
+    select,
+    input,
+    button {
+      width: 100%;
+      padding: 0.7rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+
+    button {
+      border: none;
+      background: #2563eb;
+      color: white;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    .status {
+      margin: 1rem 0;
+      font-weight: 700;
+    }
+
+    .error {
+      color: #b91c1c;
+    }
+
+    .products {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+
+    .product-card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 1rem;
+      background: #fafafa;
+    }
+
+    .product-card h3 {
+      margin: 0 0 0.5rem;
+      font-size: 1.1rem;
+    }
+
+    .category {
+      color: #555;
+      margin-bottom: 0.5rem;
+    }
+
+    .price {
+      font-weight: 700;
+      color: #047857;
+    }
+
+    @media (max-width: 700px) {
+      form {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <h1>Product Filter</h1>
+
+    <form id="filterForm">
+      <div>
+        <label for="category">Category</label>
+        <select id="category" name="category">
+          <option value="">All categories</option>
+          <option value="electronics">Electronics</option>
+          <option value="clothing">Clothing</option>
+          <option value="home">Home</option>
+          <option value="books">Books</option>
+          <option value="sports">Sports</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="minPrice">Min Price</label>
+        <input id="minPrice" name="minPrice" type="number" min="0" step="0.01" placeholder="0.00" />
+      </div>
+
+      <div>
+        <label for="maxPrice">Max Price</label>
+        <input id="maxPrice" name="maxPrice" type="number" min="0" step="0.01" placeholder="999.99" />
+      </div>
+
+      <div>
+        <button type="submit">Filter Products</button>
+      </div>
+    </form>
+
+    <div id="status" class="status"></div>
+    <section id="products" class="products" aria-live="polite"></section>
+  </main>
+
+  <script>
+    const form = document.getElementById("filterForm");
+    const productsEl = document.getElementById("products");
+    const statusEl = document.getElementById("status");
+
+    function renderProducts(products) {
+      productsEl.innerHTML = "";
+
+      if (!products.length) {
+        statusEl.textContent = "No products found.";
+        return;
+      }
+
+      statusEl.textContent = `${products.length} product${products.length === 1 ? "" : "s"} found.`;
+
+      const fragment = document.createDocumentFragment();
+
+      products.forEach((product) => {
+        const article = document.createElement("article");
+        article.className = "product-card";
+
+        const title = document.createElement("h3");
+        title.textContent = product.name;
+
+        const category = document.createElement("div");
+        category.className = "category";
+        category.textContent = `Category: ${product.category}`;
+
+        const price = document.createElement("div");
+        price.className = "price";
+        price.textContent = `$${Number(product.price).toFixed(2)}`;
+
+        article.appendChild(title);
+        article.appendChild(category);
+        article.appendChild(price);
+        fragment.appendChild(article);
+      });
+
+      productsEl.appendChild(fragment);
+    }
+
+    async function fetchProducts() {
+      const formData = new FormData(form);
+      const params = new URLSearchParams();
+
+      for (const [key, value] of formData.entries()) {
+        if (value.trim() !== "") {
+          params.append(key, value.trim());
+        }
+      }
+
+      statusEl.className = "status";
+      statusEl.textContent = "Loading products...";
+      productsEl.innerHTML = "";
+
+      try {
+        const response = await fetch(`/api/products?${params.toString()}`);
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || "Failed to fetch products.");
+        }
+
+        const products = await response.json();
+        renderProducts(products);
+      } catch (error) {
+        statusEl.className = "status error";
+        statusEl.textContent = error.message;
+      }
+    }
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      fetchProducts();
+    });
+
+    fetchProducts();
+  </script>
+</body>
+</html>

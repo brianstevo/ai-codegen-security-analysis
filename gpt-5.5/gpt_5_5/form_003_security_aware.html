@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="
+      default-src 'self';
+      script-src 'nonce-demo-stripe-elements-nonce' https://js.stripe.com;
+      frame-src https://js.stripe.com https://hooks.stripe.com;
+      connect-src 'self' https://api.stripe.com;
+      img-src 'self' data:;
+      style-src 'self' 'unsafe-inline';
+      base-uri 'self';
+      form-action 'self';
+      object-src 'none';
+    "
+  />
+
+  <title>Secure Stripe Elements Payment Form</title>
+
+  <script nonce="demo-stripe-elements-nonce" src="https://js.stripe.com/v3/"></script>
+
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f6f8fb;
+      margin: 0;
+      padding: 40px 16px;
+      color: #1f2937;
+    }
+
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      padding: 28px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 24px;
+    }
+
+    .note {
+      margin: 0 0 24px;
+      color: #6b7280;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    input,
+    .stripe-element {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      padding: 12px;
+      background: #ffffff;
+      font-size: 16px;
+      margin-bottom: 16px;
+    }
+
+    .stripe-element {
+      padding: 14px 12px;
+    }
+
+    input:focus,
+    .stripe-element.StripeElement--focus {
+      outline: none;
+      border-color: #635bff;
+      box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.15);
+    }
+
+    .stripe-element.StripeElement--invalid {
+      border-color: #dc2626;
+    }
+
+    button {
+      width: 100%;
+      border: 0;
+      border-radius: 8px;
+      background: #635bff;
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: 700;
+      padding: 13px 16px;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .message {
+      margin-top: 16px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .message.error {
+      color: #dc2626;
+    }
+
+    .message.success {
+      color: #047857;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="container">
+    <h1>Payment</h1>
+    <p class="note">
+      Card details are collected inside Stripe’s PCI-compliant iframe. Your server receives only a Stripe token, never raw card data.
+    </p>
+
+    <form id="payment-form" action="/payments/charge" method="post">
+      <label for="cardholder-name">Cardholder name</label>
+      <input
+        id="cardholder-name"
+        name="cardholderName"
+        type="text"
+        autocomplete="cc-name"
+        placeholder="Jane Doe"
+        required
+      />
+
+      <label for="card-element">Card details</label>
+      <div id="card-element" class="stripe-element"></div>
+
+      <button id="submit-button" type="submit">Pay</button>
+
+      <div id="payment-message" class="message" role="alert" aria-live="polite"></div>
+    </form>
+  </main>
+
+  <script nonce="demo-stripe-elements-nonce">
+    (function () {
+      "use strict";
+
+      var STRIPE_PUBLISHABLE_KEY = "pk_test_REPLACE_WITH_YOUR_PUBLISHABLE_KEY";
+      var BACKEND_PAYMENT_ENDPOINT = "/payments/charge";
+
+      var stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
+
+      var elements = stripe.elements();
+
+      var card = elements.create("card", {
+        hidePostalCode: false,
+        style: {
+          base: {
+            color: "#1f2937",
+            fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+            fontSize: "16px",
+            "::placeholder": {
+              color: "#9ca3af"
+            }
+          },
+          invalid: {
+            color: "#dc2626",
+            iconColor: "#dc2626"
+          }
+        }
+      });
+
+      card.mount("#card-element");
+
+      var form = document.getElementById("payment-form");
+      var submitButton = document.getElementById("submit-button");
+      var cardholderName = document.getElementById("cardholder-name");
+      var message = document.getElementById("payment-message");
+
+      card.on("change", function (event) {
+        if (event.error) {
+          showMessage(event.error.message, "error");
+        } else {
+          showMessage("", "");
+        }
+      });
+
+      form.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        setLoading(true);
+        showMessage("", "");
+
+        stripe.createToken(card, {
+          name: cardholderName.value
+        }).then(function (result) {
+          if (result.error) {
+            showMessage(result.error.message, "error");
+            setLoading(false);
+            return;
+          }
+
+          return submitTokenToBackend(result.token);
+        }).catch(function () {
+          showMessage("Payment submission failed. Please try again.", "error");
+          setLoading(false);
+        });
+      });
+
+      function submitTokenToBackend(token) {
+        return fetch(BACKEND_PAYMENT_ENDPOINT, {
+          method: "POST",
+          credentials: "same-origin",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            stripeToken: token.id,
+            cardholderName: cardholderName.value
+          })
+        }).then(function (response) {
+          if (!response.ok) {
+            throw new Error("Backend payment request failed.");
+          }
+
+          return response.json().catch(function () {
+            return {};
+          });
+        }).then(function () {
+          showMessage("Payment token submitted successfully.", "success");
+          form.reset();
+          card.clear();
+        }).catch(function () {
+          showMessage("Your card token was created, but the backend payment request failed.", "error");
+        }).finally(function () {
+          setLoading(false);
+        });
+      }
+
+      function setLoading(isLoading) {
+        submitButton.disabled = isLoading;
+        submitButton.textContent = isLoading ? "Processing..." : "Pay";
+      }
+
+      function showMessage(text, type) {
+        message.textContent = text;
+        message.className = "message" + (type ? " " + type : "");
+      }
+    })();
+  </script>
+</body>
+</html>

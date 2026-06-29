@@ -1,0 +1,554 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!--
+    Clickjacking protection:
+    In production, prefer sending this policy as an HTTP response header, e.g.
+    Content-Security-Policy: frame-ancestors 'none';
+    The HTTP header is preferred because frame-ancestors is designed to be enforced
+    from response headers and may be ignored when delivered via a meta tag.
+  -->
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; object-src 'none'; base-uri 'none'; frame-ancestors 'none';"
+  />
+
+  <title>Banking Dashboard</title>
+
+  <script>
+    // Defence-in-depth frame-busting check. The CSP frame-ancestors HTTP header should be the primary control.
+    (function () {
+      if (window.top !== window.self) {
+        try {
+          window.top.location = window.self.location.href;
+        } catch (error) {
+          document.documentElement.innerHTML =
+            '<!doctype html><html><head><title>Blocked</title></head>' +
+            '<body style="font-family: system-ui, sans-serif; padding: 2rem;">' +
+            '<h1>Access blocked</h1>' +
+            '<p>For your security, this banking dashboard cannot be displayed inside a frame.</p>' +
+            '</body></html>';
+        }
+      }
+    })();
+  </script>
+
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --text: #14213d;
+      --muted: #667085;
+      --primary: #0b5fff;
+      --primary-dark: #084ccf;
+      --green: #087443;
+      --red: #b42318;
+      --border: #d9e2ec;
+      --shadow: 0 14px 40px rgba(20, 33, 61, 0.08);
+      --radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      min-height: 100vh;
+    }
+
+    aside {
+      background: #101828;
+      color: #ffffff;
+      padding: 28px 22px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 34px;
+      font-weight: 800;
+      font-size: 1.25rem;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #38bdf8, #0b5fff);
+      font-weight: 900;
+    }
+
+    nav a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #cbd5e1;
+      text-decoration: none;
+      padding: 12px 14px;
+      border-radius: 12px;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    nav a.active,
+    nav a:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+    }
+
+    .secure-note {
+      margin-top: 32px;
+      padding: 14px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #dbeafe;
+      font-size: 0.88rem;
+      line-height: 1.4;
+    }
+
+    main {
+      padding: 28px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 26px;
+    }
+
+    .welcome h1 {
+      margin: 0 0 6px;
+      font-size: clamp(1.7rem, 3vw, 2.4rem);
+      letter-spacing: -0.04em;
+    }
+
+    .welcome p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-weight: 700;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn-secondary {
+      background: white;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .grid {
+      display: grid;
+      gap: 18px;
+    }
+
+    .summary {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      margin-bottom: 18px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+    }
+
+    .metric-label {
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin-bottom: 8px;
+    }
+
+    .metric-value {
+      font-size: 1.55rem;
+      font-weight: 850;
+      letter-spacing: -0.04em;
+    }
+
+    .metric-change {
+      margin-top: 8px;
+      font-size: 0.88rem;
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    .content {
+      grid-template-columns: 1.45fr 0.85fr;
+      align-items: start;
+    }
+
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .section-title h2 {
+      margin: 0;
+      font-size: 1.1rem;
+      letter-spacing: -0.02em;
+    }
+
+    .section-title a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.92rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      padding: 14px 10px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      font-size: 0.95rem;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .amount {
+      font-weight: 800;
+      text-align: right;
+    }
+
+    .credit {
+      color: var(--green);
+    }
+
+    .debit {
+      color: var(--red);
+    }
+
+    .account {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .account:last-child {
+      border-bottom: 0;
+    }
+
+    .account-name {
+      font-weight: 800;
+    }
+
+    .account-number {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: 4px;
+    }
+
+    .account-balance {
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    .progress {
+      height: 10px;
+      background: #e6edf7;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 12px;
+    }
+
+    .progress span {
+      display: block;
+      height: 100%;
+      width: 68%;
+      background: linear-gradient(90deg, #0b5fff, #38bdf8);
+    }
+
+    .security-banner {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      margin-top: 18px;
+      background: #ecfdf3;
+      border: 1px solid #abefc6;
+      color: #054f31;
+    }
+
+    .security-banner strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    @media (max-width: 980px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      aside {
+        display: none;
+      }
+
+      .summary,
+      .content {
+        grid-template-columns: 1fr;
+      }
+
+      header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+
+    @media (max-width: 620px) {
+      main {
+        padding: 18px;
+      }
+
+      .actions {
+        width: 100%;
+        flex-direction: column;
+      }
+
+      button {
+        width: 100%;
+      }
+
+      th:nth-child(3),
+      td:nth-child(3) {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <aside aria-label="Primary navigation">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">B</div>
+        BlueBank
+      </div>
+
+      <nav>
+        <a href="#" class="active">Dashboard</a>
+        <a href="#">Accounts</a>
+        <a href="#">Transfers</a>
+        <a href="#">Payments</a>
+        <a href="#">Cards</a>
+        <a href="#">Security</a>
+        <a href="#">Support</a>
+      </nav>
+
+      <div class="secure-note">
+        Secure session active. Always confirm the address bar before entering sensitive information.
+      </div>
+    </aside>
+
+    <main>
+      <header>
+        <div class="welcome">
+          <h1>Good morning, Jordan</h1>
+          <p>Here is your account overview for today.</p>
+        </div>
+
+        <div class="actions">
+          <button class="btn-secondary" type="button" id="lockButton">Lock Dashboard</button>
+          <button class="btn-primary" type="button">Make Transfer</button>
+        </div>
+      </header>
+
+      <section class="grid summary" aria-label="Financial summary">
+        <article class="card">
+          <div class="metric-label">Total Balance</div>
+          <div class="metric-value" id="totalBalance">$48,920.15</div>
+          <div class="metric-change">+2.4% this month</div>
+        </article>
+
+        <article class="card">
+          <div class="metric-label">Checking</div>
+          <div class="metric-value">$12,430.55</div>
+          <div class="metric-change">Available now</div>
+        </article>
+
+        <article class="card">
+          <div class="metric-label">Savings</div>
+          <div class="metric-value">$34,100.00</div>
+          <div class="metric-change">Goal 68% funded</div>
+        </article>
+
+        <article class="card">
+          <div class="metric-label">Credit Used</div>
+          <div class="metric-value">$2,389.60</div>
+          <div class="metric-change">18% utilization</div>
+        </article>
+      </section>
+
+      <section class="grid content">
+        <article class="card">
+          <div class="section-title">
+            <h2>Recent Transactions</h2>
+            <a href="#">View all</a>
+          </div>
+
+          <table aria-label="Recent transactions">
+            <thead>
+              <tr>
+                <th>Merchant</th>
+                <th>Date</th>
+                <th>Account</th>
+                <th class="amount">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Payroll Deposit</td>
+                <td>Today</td>
+                <td>Checking</td>
+                <td class="amount credit">+$3,420.00</td>
+              </tr>
+              <tr>
+                <td>City Utilities</td>
+                <td>Yesterday</td>
+                <td>Checking</td>
+                <td class="amount debit">-$186.45</td>
+              </tr>
+              <tr>
+                <td>Grocery Market</td>
+                <td>Jun 26</td>
+                <td>Credit Card</td>
+                <td class="amount debit">-$92.18</td>
+              </tr>
+              <tr>
+                <td>Online Savings Transfer</td>
+                <td>Jun 25</td>
+                <td>Savings</td>
+                <td class="amount credit">+$500.00</td>
+              </tr>
+              <tr>
+                <td>Streaming Service</td>
+                <td>Jun 24</td>
+                <td>Credit Card</td>
+                <td class="amount debit">-$16.99</td>
+              </tr>
+            </tbody>
+          </table>
+        </article>
+
+        <aside class="card" aria-label="Account list">
+          <div class="section-title">
+            <h2>Your Accounts</h2>
+            <a href="#">Manage</a>
+          </div>
+
+          <div class="account">
+            <div>
+              <div class="account-name">Everyday Checking</div>
+              <div class="account-number">•••• 1048</div>
+            </div>
+            <div class="account-balance">$12,430.55</div>
+          </div>
+
+          <div class="account">
+            <div>
+              <div class="account-name">High-Yield Savings</div>
+              <div class="account-number">•••• 8821</div>
+            </div>
+            <div class="account-balance">$34,100.00</div>
+          </div>
+
+          <div class="account">
+            <div>
+              <div class="account-name">Rewards Credit</div>
+              <div class="account-number">•••• 3920</div>
+            </div>
+            <div class="account-balance">$2,389.60</div>
+          </div>
+
+          <div style="margin-top: 18px;">
+            <div class="metric-label">Savings goal progress</div>
+            <div class="progress" aria-label="Savings goal progress: 68%">
+              <span></span>
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <section class="card security-banner" aria-label="Security status">
+        <div aria-hidden="true">🔒</div>
+        <div>
+          <strong>Enhanced protection enabled</strong>
+          <span>This dashboard includes CSP configuration and a JavaScript frame-busting fallback to reduce clickjacking risk.</span>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    document.getElementById("lockButton").addEventListener("click", function () {
+      document.body.innerHTML =
+        '<main style="min-height:100vh;display:grid;place-items:center;background:#101828;color:white;font-family:system-ui,sans-serif;padding:2rem;text-align:center;">' +
+        '<section>' +
+        '<h1>Dashboard locked</h1>' +
+        '<p>Your banking dashboard has been hidden on this device.</p>' +
+        '<button type="button" onclick="location.reload()" style="border:0;border-radius:12px;padding:12px 16px;font:inherit;font-weight:700;cursor:pointer;">Unlock</button>' +
+        '</section>' +
+        '</main>';
+    });
+  </script>
+</body>
+</html>

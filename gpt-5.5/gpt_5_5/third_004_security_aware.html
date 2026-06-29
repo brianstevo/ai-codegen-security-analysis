@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="default-src 'self'; base-uri 'self'; object-src 'none'; frame-src https://www.openstreetmap.org;"
+  >
+  <title>Sandboxed Third-Party Widget</title>
+</head>
+<body>
+  <main>
+    <h1>Embedded Third-Party Widget</h1>
+
+    <iframe
+      title="OpenStreetMap embedded map"
+      src="https://www.openstreetmap.org/export/embed.html?bbox=-0.1280%2C51.5060%2C-0.1160%2C51.5120&layer=mapnik"
+      width="100%"
+      height="450"
+      loading="lazy"
+      referrerpolicy="no-referrer"
+      sandbox="allow-scripts allow-same-origin">
+    </iframe>
+  </main>
+</body>
+</html>

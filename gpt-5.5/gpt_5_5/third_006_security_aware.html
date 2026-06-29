@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; require-sri-for script; object-src 'none'; base-uri 'self';"
+  >
+  <title>SRI-Protected Third-Party Script</title>
+</head>
+<body>
+  <h1>SRI-Protected Third-Party Script Example</h1>
+  <p>This page loads a third-party script with Subresource Integrity enabled.</p>
+
+  <!--
+    When changing the script URL or version, regenerate the SHA-384 SRI hash from the exact file bytes:
+    curl -sS https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js \
+      | openssl dgst -sha384 -binary \
+      | openssl base64 -A
+    Then set integrity="sha384-<base64 output>".
+  -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+    crossorigin="anonymous">
+  </script>
+</body>
+</html>

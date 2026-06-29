@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payment Form</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      color: #222;
+    }
+
+    .payment-card {
+      width: 100%;
+      max-width: 420px;
+      background: #fff;
+      padding: 28px;
+      border-radius: 14px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    h1 {
+      margin: 0 0 22px;
+      font-size: 24px;
+      text-align: center;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 7px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    input {
+      width: 100%;
+      padding: 13px 14px;
+      font-size: 16px;
+      border: 1px solid #ccd3dc;
+      border-radius: 8px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    .row {
+      display: flex;
+      gap: 14px;
+    }
+
+    .row .form-group {
+      flex: 1;
+    }
+
+    .hint {
+      margin-top: 6px;
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .error {
+      display: none;
+      margin-top: 6px;
+      font-size: 12px;
+      color: #dc2626;
+    }
+
+    .success {
+      display: none;
+      margin-top: 16px;
+      padding: 12px;
+      border-radius: 8px;
+      background: #ecfdf5;
+      color: #047857;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 6px;
+      padding: 14px;
+      border: none;
+      border-radius: 8px;
+      background: #2563eb;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+  </style>
+</head>
+<body>
+  <main class="payment-card">
+    <h1>Payment Details</h1>
+
+    <form id="paymentForm" novalidate>
+      <div class="form-group">
+        <label for="cardNumber">Credit Card Number</label>
+        <input
+          id="cardNumber"
+          name="cardNumber"
+          type="text"
+          inputmode="numeric"
+          autocomplete="cc-number"
+          placeholder="1234 5678 9012 3456"
+          maxlength="19"
+          required
+        />
+        <div class="hint">Enter the 16-digit card number.</div>
+        <div class="error" id="cardNumberError">Please enter a valid card number.</div>
+      </div>
+
+      <div class="row">
+        <div class="form-group">
+          <label for="expiryDate">Expiry Date</label>
+          <input
+            id="expiryDate"
+            name="expiryDate"
+            type="text"
+            inputmode="numeric"
+            autocomplete="cc-exp"
+            placeholder="MM/YY"
+            maxlength="5"
+            required
+          />
+          <div class="error" id="expiryDateError">Enter a valid future date.</div>
+        </div>
+
+        <div class="form-group">
+          <label for="cvv">CVV</label>
+          <input
+            id="cvv"
+            name="cvv"
+            type="text"
+            inputmode="numeric"
+            autocomplete="cc-csc"
+            placeholder="123"
+            maxlength="4"
+            required
+          />
+          <div class="error" id="cvvError">Enter a valid CVV.</div>
+        </div>
+      </div>
+
+      <button type="submit">Pay Now</button>
+
+      <div class="success" id="successMessage">
+        Payment details look valid.
+      </div>
+    </form>
+  </main>
+
+  <script>
+    const form = document.getElementById("paymentForm");
+    const cardNumber = document.getElementById("cardNumber");
+    const expiryDate = document.getElementById("expiryDate");
+    const cvv = document.getElementById("cvv");
+    const successMessage = document.getElementById("successMessage");
+
+    const cardNumberError = document.getElementById("cardNumberError");
+    const expiryDateError = document.getElementById("expiryDateError");
+    const cvvError = document.getElementById("cvvError");
+
+    cardNumber.addEventListener("input", () => {
+      const digits = cardNumber.value.replace(/\D/g, "").slice(0, 16);
+      cardNumber.value = digits.replace(/(.{4})/g, "$1 ").trim();
+      hideError(cardNumberError);
+      successMessage.style.display = "none";
+    });
+
+    expiryDate.addEventListener("input", () => {
+      let digits = expiryDate.value.replace(/\D/g, "").slice(0, 4);
+
+      if (digits.length >= 3) {
+        digits = digits.slice(0, 2) + "/" + digits.slice(2);
+      }
+
+      expiryDate.value = digits;
+      hideError(expiryDateError);
+      successMessage.style.display = "none";
+    });
+
+    cvv.addEventListener("input", () => {
+      cvv.value = cvv.value.replace(/\D/g, "").slice(0, 4);
+      hideError(cvvError);
+      successMessage.style.display = "none";
+    });
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const isCardValid = validateCardNumber(cardNumber.value);
+      const isExpiryValid = validateExpiryDate(expiryDate.value);
+      const isCvvValid = /^\d{3,4}$/.test(cvv.value);
+
+      toggleError(cardNumberError, !isCardValid);
+      toggleError(expiryDateError, !isExpiryValid);
+      toggleError(cvvError, !isCvvValid);
+
+      if (isCardValid && isExpiryValid && isCvvValid) {
+        successMessage.style.display = "block";
+        form.reset();
+      } else {
+        successMessage.style.display = "none";
+      }
+    });
+
+    function validateCardNumber(value) {
+      const digits = value.replace(/\D/g, "");
+
+      if (!/^\d{13,19}$/.test(digits)) {
+        return false;
+      }
+
+      let sum = 0;
+      let shouldDouble = false;
+
+      for (let i = digits.length - 1; i >= 0; i--) {
+        let digit = Number(digits[i]);
+
+        if (shouldDouble) {
+          digit *= 2;
+          if (digit > 9) digit -= 9;
+        }
+
+        sum += digit;
+        shouldDouble = !shouldDouble;
+      }
+
+      return sum % 10 === 0;
+    }
+
+    function validateExpiryDate(value) {
+      const match = value.match(/^(\d{2})\/(\d{2})$/);
+
+      if (!match) {
+        return false;
+      }
+
+      const month = Number(match[1]);
+      const year = Number("20" + match[2]);
+
+      if (month < 1 || month > 12) {
+        return false;
+      }
+
+      const now = new Date();
+      const currentMonth = now.getMonth() + 1;
+      const currentYear = now.getFullYear();
+
+      return year > currentYear || (year === currentYear && month >= currentMonth);
+    }
+
+    function toggleError(element, show) {
+      element.style.display = show ? "block" : "none";
+    }
+
+    function hideError(element) {
+      element.style.display = "none";
+    }
+  </script>
+</body>
+</html>

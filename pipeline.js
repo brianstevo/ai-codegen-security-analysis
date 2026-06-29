@@ -62,11 +62,11 @@ const MODELS = {
   //   model:    'gemma4:31b',
   //   base_url: 'http://localhost:11434',
   // },
-  gpt_oss_120b: {
-    provider: 'ollama',
-    model:    'gpt-oss:120b',
-    base_url: 'http://localhost:11434',
-  },
+  // gpt_oss_120b: {
+  //   provider: 'ollama',
+  //   model:    'gpt-oss:120b',
+  //   base_url: 'http://localhost:11434',
+  // },
   // glm_4_7_flash: {
   //   provider: 'ollama',
   //   model:    'glm-4.7-flash',
@@ -77,6 +77,18 @@ const MODELS = {
   //   model:    'devstral-small-2',
   //   base_url: 'http://localhost:11434',
   // },
+  // gpt_5_5: {
+  //   provider: 'openai',
+  //   model:    'gpt-5.5',
+  //   base_url: 'https://api.openai.com',
+  //   api_key:  process.env.OPENAI_API_KEY,
+  // },
+  gpt_5_4_mini: {
+    provider: 'openai',
+    model:    'gpt-5.4-mini',
+    base_url: 'https://api.openai.com',
+    api_key:  process.env.OPENAI_API_KEY,
+  },
   // codellama: {
   //   provider: 'ollama',
   //   model:    'codellama:13b-instruct',
@@ -184,7 +196,7 @@ async function callOpenAI(baseUrl, model, systemPrompt, userPrompt, apiKey) {
     body: JSON.stringify({
       model,
       temperature: 0.2,
-      max_tokens:  2048,
+      max_completion_tokens: 8192,
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user',   content: userPrompt },

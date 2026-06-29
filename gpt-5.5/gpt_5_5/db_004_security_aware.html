@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Secure Product Filter</title>
+  <style>
+    :root {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #172033;
+      background: #f5f7fb;
+    }
+
+    body {
+      margin: 0;
+      padding: 2rem;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin-top: 0;
+    }
+
+    form {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1rem;
+      padding: 1rem;
+      background: #fff;
+      border: 1px solid #d9e0ec;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(23, 32, 51, 0.06);
+    }
+
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      font-weight: 650;
+      font-size: 0.95rem;
+    }
+
+    input,
+    select,
+    button {
+      font: inherit;
+    }
+
+    input,
+    select {
+      border: 1px solid #b8c3d6;
+      border-radius: 8px;
+      padding: 0.65rem;
+      background: #fff;
+    }
+
+    .checkbox-label {
+      justify-content: end;
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      min-height: 2.75rem;
+      font-weight: 500;
+    }
+
+    .actions {
+      display: flex;
+      align-items: end;
+      gap: 0.75rem;
+    }
+
+    button {
+      border: 0;
+      border-radius: 8px;
+      padding: 0.7rem 1rem;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    button[type="submit"],
+    #prevPage,
+    #nextPage {
+      background: #2459d6;
+      color: #fff;
+    }
+
+    button[type="reset"] {
+      background: #e8edf7;
+      color: #172033;
+    }
+
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    #status {
+      margin: 1rem 0;
+      min-height: 1.5rem;
+      font-weight: 650;
+    }
+
+    #results {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1rem;
+    }
+
+    .product {
+      background: #fff;
+      border: 1px solid #d9e0ec;
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: 0 2px 12px rgba(23, 32, 51, 0.05);
+    }
+
+    .product h2 {
+      margin: 0 0 0.5rem;
+      font-size: 1.1rem;
+    }
+
+    .product p {
+      color: #46546d;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+
+    .pill {
+      background: #eef3ff;
+      color: #17419e;
+      border-radius: 999px;
+      padding: 0.25rem 0.55rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    #pager {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 1.25rem;
+    }
+
+    @media (max-width: 850px) {
+      form {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 560px) {
+      body {
+        padding: 1rem;
+      }
+
+      form {
+        grid-template-columns: 1fr;
+      }
+
+      .actions {
+        align-items: stretch;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Product Filter</h1>
+
+    <form id="filterForm" autocomplete="off">
+      <label>
+        Search
+        <input
+          id="search"
+          name="search"
+          type="search"
+          maxlength="100"
+          placeholder="Name or description"
+        />
+      </label>
+
+      <label>
+        Category
+        <select id="category" name="category">
+          <option value="">Any category</option>
+          <option value="electronics">Electronics</option>
+          <option value="books">Books</option>
+          <option value="clothing">Clothing</option>
+          <option value="home">Home</option>
+          <option value="toys">Toys</option>
+          <option value="sports">Sports</option>
+          <option value="beauty">Beauty</option>
+        </select>
+      </label>
+
+      <label>
+        Min price
+        <input id="minPrice" name="minPrice" type="number" min="0" max="100000" step="0.01" />
+      </label>
+
+      <label>
+        Max price
+        <input id="maxPrice" name="maxPrice" type="number" min="0" max="100000" step="0.01" />
+      </label>
+
+      <label>
+        Sort
+        <select id="sort" name="sort">
+          <option value="name_asc">Name A-Z</option>
+          <option value="name_desc">Name Z-A</option>
+          <option value="price_asc">Price low-high</option>
+          <option value="price_desc">Price high-low</option>
+          <option value="newest">Newest</option>
+        </select>
+      </label>
+
+      <label>
+        Page size
+        <select id="pageSize" name="pageSize">
+          <option value="10">10</option>
+          <option value="20" selected>20</option>
+          <option value="50">50</option>
+        </select>
+      </label>
+
+      <label class="checkbox-label">
+        Stock
+        <span class="checkbox-row">
+          <input id="inStock" name="inStock" type="checkbox" />
+          Only show in-stock products
+        </span>
+      </label>
+
+      <div class="actions">
+        <button type="submit">Apply filters</button>
+        <button type="reset">Reset</button>
+      </div>
+    </form>
+
+    <div id="status" role="status" aria-live="polite"></div>
+    <section id="results" aria-label="Filtered products"></section>
+
+    <nav id="pager" aria-label="Pagination">
+      <button id="prevPage" type="button" disabled>Previous</button>
+      <span id="pageInfo"></span>
+      <button id="nextPage" type="button" disabled>Next</button>
+    </nav>
+  </main>
+
+  <script>
+    const form = document.getElementById("filterForm");
+    const results = document.getElementById("results");
+    const statusEl = document.getElementById("status");
+    const prevPageButton = document.getElementById("prevPage");
+    const nextPageButton = document.getElementById("nextPage");
+    const pageInfo = document.getElementById("pageInfo");
+
+    let currentPage = 1;
+    let totalPages = 1;
+    let activeRequest = null;
+
+    function setStatus(message) {
+      statusEl.textContent = message;
+    }
+
+    function buildParams() {
+      const params = new URLSearchParams();
+      const search = document.getElementById("search").value.trim();
+      const category = document.getElementById("category").value;
+      const minPrice = document.getElementById("minPrice").value;
+      const maxPrice = document.getElementById("maxPrice").value;
+      const sort = document.getElementById("sort").value;
+      const pageSize = document.getElementById("pageSize").value;
+      const inStock = document.getElementById("inStock").checked;
+
+      if (search) params.set("search", search);
+      if (category) params.set("category", category);
+      if (minPrice !== "") params.set("minPrice", minPrice);
+      if (maxPrice !== "") params.set("maxPrice", maxPrice);
+      if (inStock) params.set("inStock", "true");
+
+      params.set("sort", sort);
+      params.set("page", String(currentPage));
+      params.set("pageSize", pageSize);
+
+      return params;
+    }
+
+    function renderProducts(products) {
+      results.replaceChildren();
+
+      for (const product of products) {
+        const article = document.createElement("article");
+        article.className = "product";
+
+        const title = document.createElement("h2");
+        title.textContent = product.name;
+
+        const description = document.createElement("p");
+        description.textContent = product.description || "";
+
+        const meta = document.createElement("div");
+        meta.className = "meta";
+
+        const category = document.createElement("span");
+        category.className = "pill";
+        category.textContent = product.category;
+
+        const price = document.createElement("span");
+        price.className = "pill";
+        const numericPrice = Number(product.price);
+        price.textContent = Number.isFinite(numericPrice)
+          ? new Intl.NumberFormat(undefined, { style: "currency", currency: "USD" }).format(numericPrice)
+          : "Price unavailable";
+
+        const stock = document.createElement("span");
+        stock.className = "pill";
+        stock.textContent = product.inStock ? "In stock" : "Out of stock";
+
+        meta.append(category, price, stock);
+        article.append(title, description, meta);
+        results.append(article);
+      }
+    }
+
+    function updatePager(total, page, pageSize) {
+      totalPages = Math.max(1, Math.ceil(total / pageSize));
+      pageInfo.textContent = "Page " + page + " of " + totalPages;
+      prevPageButton.disabled = page <= 1;
+      nextPageButton.disabled = page >= totalPages;
+    }
+
+    async function fetchProducts() {
+      if (activeRequest) {
+        activeRequest.abort();
+      }
+
+      activeRequest = new AbortController();
+      const params = buildParams();
+
+      setStatus("Loading products...");
+      results.replaceChildren();
+
+      try {
+        const response = await fetch("/api/products?" + params.toString(), {
+          method: "GET",
+          headers: { "Accept": "application/json" },
+          signal: activeRequest.signal
+        });
+
+        const data = await response.json().catch(() => null);
+
+        if (!response.ok) {
+          const message = data && typeof data.error === "string" ? data.error : "Unable to load products.";
+          throw new Error(message);
+        }
+
+        renderProducts(data.products);
+        updatePager(data.total, data.page, data.pageSize);
+
+        if (data.products.length === 0) {
+          setStatus("No products match your filters.");
+        } else {
+          setStatus(String(data.total) + " product(s) found.");
+        }
+      } catch (error) {
+        if (error.name === "AbortError") return;
+        results.replaceChildren();
+        updatePager(0, 1, Number(document.getElementById("pageSize").value));
+        setStatus(error.message);
+      } finally {
+        activeRequest = null;
+      }
+    }
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      currentPage = 1;
+      fetchProducts();
+    });
+
+    form.addEventListener("reset", () => {
+      window.setTimeout(() => {
+        currentPage = 1;
+        fetchProducts();
+      }, 0);
+    });
+
+    prevPageButton.addEventListener("click", () => {
+      if (currentPage > 1) {
+        currentPage -= 1;
+        fetchProducts();
+      }
+    });
+
+    nextPageButton.addEventListener("click", () => {
+      if (currentPage < totalPages) {
+        currentPage += 1;
+        fetchProducts();
+      }
+    });
+
+    fetchProducts();
+  </script>
+</body>
+</html>

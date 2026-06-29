@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Secure Product Search</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 0 16px;
+      background: #f7f7f8;
+      color: #111827;
+    }
+
+    h1 {
+      margin-bottom: 16px;
+    }
+
+    form {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    input {
+      flex: 1;
+      padding: 10px 12px;
+      font-size: 16px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+    }
+
+    button {
+      padding: 10px 16px;
+      font-size: 16px;
+      border: 0;
+      border-radius: 8px;
+      background: #2563eb;
+      color: #ffffff;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      background: #93c5fd;
+      cursor: not-allowed;
+    }
+
+    .message {
+      margin-bottom: 16px;
+      color: #374151;
+    }
+
+    .error {
+      color: #b91c1c;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    li {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 10px;
+    }
+
+    .product-name {
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .product-description {
+      color: #4b5563;
+      margin-bottom: 6px;
+    }
+
+    .product-price {
+      color: #065f46;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Product Search</h1>
+
+    <form id="searchForm" autocomplete="off">
+      <label for="keyword" hidden>Search products</label>
+      <input
+        id="keyword"
+        name="keyword"
+        type="search"
+        minlength="1"
+        maxlength="50"
+        placeholder="Search by product name or description"
+        required
+      />
+      <button id="searchButton" type="submit">Search</button>
+    </form>
+
+    <div id="message" class="message" role="status" aria-live="polite"></div>
+    <ul id="results"></ul>
+  </main>
+
+  <script>
+    const form = document.getElementById("searchForm");
+    const keywordInput = document.getElementById("keyword");
+    const searchButton = document.getElementById("searchButton");
+    const message = document.getElementById("message");
+    const results = document.getElementById("results");
+
+    function clearResults() {
+      while (results.firstChild) {
+        results.removeChild(results.firstChild);
+      }
+    }
+
+    function setMessage(text, isError = false) {
+      message.textContent = text;
+      message.classList.toggle("error", isError);
+    }
+
+    function renderProducts(products) {
+      clearResults();
+
+      if (!products.length) {
+        setMessage("No products found.");
+        return;
+      }
+
+      setMessage(`${products.length} product${products.length === 1 ? "" : "s"} found.`);
+
+      products.forEach((product) => {
+        const item = document.createElement("li");
+
+        const name = document.createElement("div");
+        name.className = "product-name";
+        name.textContent = product.name;
+
+        const description = document.createElement("div");
+        description.className = "product-description";
+        description.textContent = product.description || "No description available.";
+
+        const price = document.createElement("div");
+        price.className = "product-price";
+        price.textContent = typeof product.price === "number"
+          ? `$${product.price.toFixed(2)}`
+          : `$${Number(product.price).toFixed(2)}`;
+
+        item.appendChild(name);
+        item.appendChild(description);
+        item.appendChild(price);
+        results.appendChild(item);
+      });
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const keyword = keywordInput.value.trim();
+
+      clearResults();
+
+      if (keyword.length < 1 || keyword.length > 50) {
+        setMessage("Search keyword must be between 1 and 50 characters.", true);
+        return;
+      }
+
+      searchButton.disabled = true;
+      setMessage("Searching...");
+
+      try {
+        const response = await fetch(`/api/products/search?q=${encodeURIComponent(keyword)}`, {
+          method: "GET",
+          headers: {
+            "Accept": "application/json"
+          }
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          setMessage(data.error || "Search failed.", true);
+          return;
+        }
+
+        renderProducts(data.products);
+      } catch (error) {
+        setMessage("Network error. Please try again.", true);
+      } finally {
+        searchButton.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

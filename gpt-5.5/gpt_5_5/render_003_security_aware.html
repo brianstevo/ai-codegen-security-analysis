@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Secure Search</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 2rem;
+      line-height: 1.5;
+      color: #17202a;
+      background: #f8fafc;
+    }
+
+    main {
+      background: #ffffff;
+      border: 1px solid #dbe3ea;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+    }
+
+    label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .search-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    input[type="search"] {
+      flex: 1;
+      padding: 0.75rem;
+      border: 1px solid #b8c4d0;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+
+    button {
+      padding: 0.75rem 1rem;
+      border: 0;
+      border-radius: 8px;
+      background: #0f62fe;
+      color: #ffffff;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+
+    .status {
+      min-height: 1.5rem;
+      color: #44546a;
+    }
+
+    .query-box {
+      margin: 1rem 0;
+      padding: 0.75rem;
+      border-radius: 8px;
+      background: #eef5ff;
+      border: 1px solid #cfe2ff;
+    }
+
+    ul {
+      padding-left: 1.25rem;
+    }
+
+    li {
+      margin: 0.75rem 0;
+      padding: 0.75rem;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+    }
+
+    .result-title {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+
+    .result-url {
+      display: block;
+      color: #52677a;
+      font-size: 0.9rem;
+      overflow-wrap: anywhere;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Secure Search</h1>
+
+    <form id="searchForm" autocomplete="off">
+      <label for="queryInput">Search query</label>
+      <div class="search-row">
+        <input id="queryInput" name="q" type="search" maxlength="100" placeholder="Search articles..." required>
+        <button id="searchButton" type="submit">Search</button>
+      </div>
+    </form>
+
+    <p id="status" class="status" role="status" aria-live="polite"></p>
+
+    <section class="query-box" aria-labelledby="echoHeading">
+      <h2 id="echoHeading">Echoed query</h2>
+      <p id="echoedQuery"></p>
+    </section>
+
+    <section aria-labelledby="resultsHeading">
+      <h2 id="resultsHeading">Results</h2>
+      <ul id="resultsList"></ul>
+    </section>
+  </main>
+
+  <script>
+    const form = document.getElementById('searchForm');
+    const input = document.getElementById('queryInput');
+    const button = document.getElementById('searchButton');
+    const statusEl = document.getElementById('status');
+    const echoedQueryEl = document.getElementById('echoedQuery');
+    const resultsList = document.getElementById('resultsList');
+
+    function clearResults() {
+      echoedQueryEl.textContent = '';
+      while (resultsList.firstChild) {
+        resultsList.removeChild(resultsList.firstChild);
+      }
+    }
+
+    function renderResults(data) {
+      clearResults();
+
+      echoedQueryEl.textContent = data.query || '';
+
+      if (!Array.isArray(data.results) || data.results.length === 0) {
+        const item = document.createElement('li');
+        item.textContent = 'No results found.';
+        resultsList.appendChild(item);
+        return;
+      }
+
+      data.results.forEach(function (result) {
+        const item = document.createElement('li');
+
+        const title = document.createElement('span');
+        title.className = 'result-title';
+        title.textContent = result.title || 'Untitled';
+
+        const description = document.createElement('span');
+        description.textContent = result.description || '';
+
+        const url = document.createElement('span');
+        url.className = 'result-url';
+        url.textContent = result.url || '';
+
+        item.appendChild(title);
+        item.appendChild(description);
+        item.appendChild(url);
+        resultsList.appendChild(item);
+      });
+    }
+
+    async function runSearch(query) {
+      const trimmedQuery = query.trim();
+
+      if (!trimmedQuery) {
+        clearResults();
+        statusEl.textContent = 'Enter a search query.';
+        return;
+      }
+
+      button.disabled = true;
+      statusEl.textContent = 'Searching...';
+
+      try {
+        const response = await fetch('/api/search?q=' + encodeURIComponent(trimmedQuery), {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json'
+          },
+          credentials: 'same-origin'
+        });
+
+        if (!response.ok) {
+          throw new Error('Search request failed.');
+        }
+
+        const data = await response.json();
+        renderResults(data);
+        statusEl.textContent = 'Search complete.';
+      } catch (error) {
+        clearResults();
+        statusEl.textContent = 'Unable to load search results.';
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+      runSearch(input.value);
+    });
+  </script>
+</body>
+</html>
