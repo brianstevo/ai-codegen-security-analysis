@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Third-Party Analytics Loader</title>
+</head>
+<body>
+  <h1>Analytics Demo Page</h1>
+  <p>This page loads a third-party analytics script asynchronously.</p>
+
+  <script>
+    (function () {
+      // Example: Google Analytics (gtag.js)
+      // Replace G-XXXXXXXXXX with your Measurement ID.
+      var measurementId = "G-XXXXXXXXXX";
+
+      var script = document.createElement("script");
+      script.async = true;
+      script.src = "https://www.googletagmanager.com/gtag/js?id=" + encodeURIComponent(measurementId);
+      document.head.appendChild(script);
+
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){ dataLayer.push(arguments); }
+      window.gtag = gtag;
+
+      gtag("js", new Date());
+      gtag("config", measurementId);
+    })();
+  </script>
+</body>
+</html>

@@ -83,12 +83,31 @@ const MODELS = {
   //   base_url: 'https://api.openai.com',
   //   api_key:  process.env.OPENAI_API_KEY,
   // },
-  gpt_5_4_mini: {
-    provider: 'openai',
-    model:    'gpt-5.4-mini',
-    base_url: 'https://api.openai.com',
-    api_key:  process.env.OPENAI_API_KEY,
+  // gpt_5_4_mini: {
+  //   provider: 'openai',
+  //   model:    'gpt-5.4-mini',
+  //   base_url: 'https://api.openai.com',
+  //   api_key:  process.env.OPENAI_API_KEY,
+  // },
+  // gpt_5_4: {
+  //   provider: 'openai',
+  //   model:    'gpt-5.4',
+  //   base_url: 'https://api.openai.com',
+  //   api_key:  process.env.OPENAI_API_KEY,
+  // },
+  gpt_5_3_codex: {
+    provider:      'openai',
+    model:         'gpt-5.3-codex',
+    base_url:      'https://api.openai.com',
+    api_key:       process.env.OPENAI_API_KEY,
+    responses_api: true,
   },
+  // gpt_5_4_nano: {
+  //   provider: 'openai',
+  //   model:    'gpt-5.4-nano',
+  //   base_url: 'https://api.openai.com',
+  //   api_key:  process.env.OPENAI_API_KEY,
+  // },
   // codellama: {
   //   provider: 'ollama',
   //   model:    'codellama:13b-instruct',
@@ -218,6 +237,37 @@ async function callOpenAI(baseUrl, model, systemPrompt, userPrompt, apiKey) {
   };
 }
 
+async function callOpenAIResponses(baseUrl, model, systemPrompt, userPrompt, apiKey) {
+  const response = await fetch(`${baseUrl}/v1/responses`, {
+    method:  'POST',
+    headers: {
+      'Content-Type':  'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      max_output_tokens: 8192,
+      input: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user',   content: userPrompt },
+      ],
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`OpenAI API ${response.status}: ${await response.text()}`);
+  }
+
+  const data = await response.json();
+  return {
+    text:   data.output?.[0]?.content?.[0]?.text ?? '',
+    tokens: {
+      input:  data.usage?.input_tokens  ?? null,
+      output: data.usage?.output_tokens ?? null,
+    },
+  };
+}
+
 async function callAnthropic(model, systemPrompt, userPrompt, apiKey) {
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY is not set');
 
@@ -257,6 +307,9 @@ async function callModel(modelKey, cfg, systemPrompt, userPrompt) {
     return callOllama(cfg.base_url, cfg.model, systemPrompt, userPrompt, cfg.think);
   }
   if (cfg.provider === 'openai') {
+    if (cfg.responses_api) {
+      return callOpenAIResponses(cfg.base_url, cfg.model, systemPrompt, userPrompt, cfg.api_key);
+    }
     return callOpenAI(cfg.base_url, cfg.model, systemPrompt, userPrompt, cfg.api_key);
   }
   if (cfg.provider === 'anthropic') {

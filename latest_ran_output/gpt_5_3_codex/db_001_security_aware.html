@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Secure Product Search</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; }
+    form { margin-bottom: 1rem; }
+    input[type="text"] { padding: 0.5rem; width: 280px; }
+    button { padding: 0.5rem 0.8rem; }
+    #status { margin-top: 0.5rem; color: #444; }
+    ul { padding-left: 1.2rem; }
+    li { margin: 0.35rem 0; }
+  </style>
+</head>
+<body>
+  <h1>Product Search</h1>
+
+  <form id="searchForm" autocomplete="off">
+    <label for="keyword">Keyword:</label>
+    <input
+      id="keyword"
+      name="keyword"
+      type="text"
+      minlength="1"
+      maxlength="50"
+      required
+      placeholder="Search products..."
+    />
+    <button type="submit">Search</button>
+  </form>
+
+  <p id="status" aria-live="polite"></p>
+  <ul id="results" aria-live="polite"></ul>
+
+  <script>
+    (function () {
+      const form = document.getElementById('searchForm');
+      const keywordInput = document.getElementById('keyword');
+      const statusEl = document.getElementById('status');
+      const resultsEl = document.getElementById('results');
+
+      function clearResults() {
+        while (resultsEl.firstChild) resultsEl.removeChild(resultsEl.firstChild);
+      }
+
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        clearResults();
+        statusEl.textContent = '';
+
+        const keyword = keywordInput.value.trim();
+
+        if (!keyword) {
+          statusEl.textContent = 'Please enter a search keyword.';
+          return;
+        }
+
+        statusEl.textContent = 'Searching...';
+
+        try {
+          const res = await fetch('/api/products/search?keyword=' + encodeURIComponent(keyword), {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' }
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            statusEl.textContent = data && data.error ? data.error : 'Search failed.';
+            return;
+          }
+
+          if (!Array.isArray(data.results) || data.results.length === 0) {
+            statusEl.textContent = 'No products found.';
+            return;
+          }
+
+          statusEl.textContent = 'Found ' + data.results.length + ' product(s).';
+
+          data.results.forEach(function (product) {
+            const li = document.createElement('li');
+            const name = (product && product.name) ? String(product.name) : 'Unnamed product';
+            const price = (product && product.price != null) ? String(product.price) : 'N/A';
+            li.textContent = name + ' — $' + price;
+            resultsEl.appendChild(li);
+          });
+        } catch (err) {
+          statusEl.textContent = 'Network error. Please try again.';
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

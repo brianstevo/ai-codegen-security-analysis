@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Profile Bio</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #111827;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #22d3ee;
+      --error: #f87171;
+      --border: #1f2937;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: radial-gradient(circle at top, #1e293b, var(--bg));
+      color: var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      padding: 24px;
+    }
+
+    .card {
+      width: min(700px, 100%);
+      background: linear-gradient(180deg, #0b1220, var(--card));
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #334155;
+      background: #1f2937;
+      flex: 0 0 auto;
+    }
+
+    .name {
+      margin: 0;
+      font-size: 1.25rem;
+      line-height: 1.2;
+    }
+
+    .username {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .bio {
+      margin-top: 14px;
+      line-height: 1.65;
+      color: #dbeafe;
+      white-space: pre-wrap;
+    }
+
+    .status {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .error {
+      color: var(--error);
+    }
+
+    .controls {
+      margin-top: 18px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    input, button {
+      border-radius: 10px;
+      border: 1px solid #334155;
+      background: #0b1220;
+      color: var(--text);
+      padding: 10px 12px;
+      font: inherit;
+    }
+
+    input {
+      flex: 1 1 280px;
+      min-width: 0;
+    }
+
+    button {
+      cursor: pointer;
+      border-color: #155e75;
+      background: #083344;
+      color: #cffafe;
+    }
+
+    button:hover {
+      filter: brightness(1.1);
+    }
+  </style>
+</head>
+<body>
+  <main class="card" aria-live="polite">
+    <div class="header">
+      <img id="avatar" class="avatar" alt="User avatar" />
+      <div>
+        <h1 id="name" class="name">Loading...</h1>
+        <p id="username" class="username"></p>
+      </div>
+    </div>
+
+    <p id="bio" class="bio">Fetching profile bio…</p>
+    <p id="status" class="status">Please wait.</p>
+
+    <form id="form" class="controls">
+      <input id="userIdInput" type="number" min="1" max="10" value="1" aria-label="User ID" placeholder="Enter user ID (1-10)" />
+      <button type="submit">Load Profile</button>
+    </form>
+  </main>
+
+  <script>
+    const els = {
+      avatar: document.getElementById('avatar'),
+      name: document.getElementById('name'),
+      username: document.getElementById('username'),
+      bio: document.getElementById('bio'),
+      status: document.getElementById('status'),
+      form: document.getElementById('form'),
+      userIdInput: document.getElementById('userIdInput')
+    };
+
+    function setStatus(message, isError = false) {
+      els.status.textContent = message;
+      els.status.classList.toggle('error', isError);
+    }
+
+    function fakeBioFromUser(user) {
+      return `${user.company.catchPhrase}. ${user.company.bs}.\n\nReach me at ${user.email} or visit ${user.website}.`;
+    }
+
+    async function loadUserProfile(userId) {
+      setStatus('Loading profile...');
+      els.name.textContent = 'Loading...';
+      els.username.textContent = '';
+      els.bio.textContent = 'Fetching profile bio…';
+      els.avatar.src = '';
+      els.avatar.alt = 'Loading avatar';
+
+      try {
+        const res = await fetch(`https://jsonplaceholder.typicode.com/users/${encodeURIComponent(userId)}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const user = await res.json();
+        if (!user || !user.id) throw new Error('User not found');
+
+        els.name.textContent = user.name;
+        els.username.textContent = `@${user.username}`;
+        els.bio.textContent = fakeBioFromUser(user);
+        els.avatar.src = `https://i.pravatar.cc/112?u=${encodeURIComponent(user.email)}`;
+        els.avatar.alt = `${user.name} avatar`;
+
+        setStatus('Profile loaded successfully.');
+      } catch (err) {
+        els.name.textContent = 'Could not load profile';
+        els.username.textContent = '';
+        els.bio.textContent = 'No bio available.';
+        els.avatar.src = '';
+        els.avatar.alt = 'No avatar';
+        setStatus(`Failed to fetch profile bio: ${err.message}`, true);
+      }
+    }
+
+    els.form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const id = Number(els.userIdInput.value);
+      if (!Number.isInteger(id) || id < 1 || id > 10) {
+        setStatus('Please enter a valid user ID from 1 to 10.', true);
+        return;
+      }
+      loadUserProfile(id);
+    });
+
+    loadUserProfile(1);
+  </script>
+</body>
+</html>

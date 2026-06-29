@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Secure File Upload</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; }
+    .container { max-width: 640px; margin: 0 auto; }
+    .card { border: 1px solid #ddd; border-radius: 8px; padding: 1rem; }
+    .row { margin-bottom: 1rem; }
+    button { padding: 0.6rem 1rem; cursor: pointer; }
+    #result { white-space: pre-wrap; background: #f7f7f7; padding: 0.75rem; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Secure File Upload</h1>
+    <div class="card">
+      <form id="uploadForm">
+        <div class="row">
+          <label for="file">Choose file:</label><br />
+          <input id="file" name="file" type="file" required />
+        </div>
+        <button type="submit">Upload</button>
+      </form>
+      <h3>Server Response</h3>
+      <div id="result">No upload yet.</div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('uploadForm');
+    const fileInput = document.getElementById('file');
+    const result = document.getElementById('result');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      result.textContent = 'Uploading...';
+
+      if (!fileInput.files || fileInput.files.length === 0) {
+        result.textContent = 'Please select a file first.';
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+
+      try {
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await res.json().catch(() => ({}));
+        result.textContent = JSON.stringify(
+          {
+            status: res.status,
+            ok: res.ok,
+            response: data
+          },
+          null,
+          2
+        );
+      } catch (err) {
+        result.textContent = `Upload failed: ${err.message}`;
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Secure Registration</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; max-width: 520px; }
+    form { display: grid; gap: 0.75rem; }
+    label { font-weight: 600; }
+    input { padding: 0.5rem; font-size: 1rem; }
+    button { padding: 0.6rem 0.9rem; font-size: 1rem; cursor: pointer; }
+    .error { color: #b00020; min-height: 1.2rem; }
+    .success { color: #0a7a2a; min-height: 1.2rem; }
+  </style>
+</head>
+<body>
+  <h1>Create Account</h1>
+
+  <div id="message" class="error" aria-live="polite"></div>
+
+  <form id="registerForm" novalidate>
+    <label for="username">Username</label>
+    <input
+      id="username"
+      name="username"
+      type="text"
+      required
+      minlength="3"
+      maxlength="30"
+      autocomplete="username"
+      pattern="^[A-Za-z0-9_]+$"
+      title="Use letters, numbers, and underscores only."
+    />
+
+    <label for="email">Email</label>
+    <input
+      id="email"
+      name="email"
+      type="email"
+      required
+      minlength="5"
+      maxlength="254"
+      autocomplete="email"
+    />
+
+    <label for="password">Password</label>
+    <input
+      id="password"
+      name="password"
+      type="password"
+      required
+      minlength="12"
+      maxlength="128"
+      autocomplete="new-password"
+    />
+
+    <label for="confirmPassword">Confirm Password</label>
+    <input
+      id="confirmPassword"
+      name="confirmPassword"
+      type="password"
+      required
+      minlength="12"
+      maxlength="128"
+      autocomplete="new-password"
+    />
+
+    <input id="csrfToken" name="_csrf" type="hidden" value="" />
+
+    <button type="submit">Register</button>
+  </form>
+
+  <script>
+    (async function initCsrf() {
+      const messageEl = document.getElementById('message');
+      try {
+        const res = await fetch('/api/csrf-token', { credentials: 'same-origin' });
+        const data = await res.json();
+        if (!res.ok || !data.csrfToken) throw new Error('Could not load CSRF token.');
+        document.getElementById('csrfToken').value = data.csrfToken;
+      } catch (err) {
+        messageEl.textContent = 'Failed to initialize form security. Please refresh.';
+      }
+    })();
+
+    const form = document.getElementById('registerForm');
+    const messageEl = document.getElementById('message');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      messageEl.className = 'error';
+      messageEl.textContent = '';
+
+      const username = document.getElementById('username').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      const _csrf = document.getElementById('csrfToken').value;
+
+      if (password !== confirmPassword) {
+        messageEl.textContent = 'Passwords do not match.';
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({ username, email, password, confirmPassword, _csrf })
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+          messageEl.textContent = data.error || 'Registration failed.';
+          return;
+        }
+
+        messageEl.className = 'success';
+        messageEl.textContent = 'Registration successful.';
+        form.reset();
+
+        const csrfRes = await fetch('/api/csrf-token', { credentials: 'same-origin' });
+        const csrfData = await csrfRes.json();
+        if (csrfRes.ok && csrfData.csrfToken) {
+          document.getElementById('csrfToken').value = csrfData.csrfToken;
+        }
+      } catch (err) {
+        messageEl.textContent = 'Network error. Please try again.';
+      }
+    });
+  </script>
+</body>
+</html>

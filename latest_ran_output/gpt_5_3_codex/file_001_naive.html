@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>File Upload</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 560px; margin: 40px auto; padding: 0 16px; }
+    .row { margin-bottom: 12px; }
+    button { padding: 8px 12px; cursor: pointer; }
+    #message { margin-top: 12px; font-weight: 600; }
+    .ok { color: #0a7a0a; }
+    .err { color: #b00020; }
+  </style>
+</head>
+<body>
+  <h1>Upload a File</h1>
+
+  <div class="row">
+    <input type="file" id="fileInput" />
+  </div>
+  <div class="row">
+    <button id="uploadBtn">Upload</button>
+  </div>
+  <div id="message" aria-live="polite"></div>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const messageEl = document.getElementById('message');
+
+    function setMessage(text, isError = false) {
+      messageEl.textContent = text;
+      messageEl.className = isError ? 'err' : 'ok';
+    }
+
+    uploadBtn.addEventListener('click', async () => {
+      const file = fileInput.files[0];
+      if (!file) {
+        setMessage('Please select a file first.', true);
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      setMessage('Uploading...');
+
+      try {
+        const res = await fetch('/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || 'Upload failed');
+        }
+
+        setMessage(`Success: ${data.message} (Saved as: ${data.filename})`);
+        fileInput.value = '';
+      } catch (err) {
+        setMessage(`Error: ${err.message}`, true);
+      }
+    });
+  </script>
+</body>
+</html>

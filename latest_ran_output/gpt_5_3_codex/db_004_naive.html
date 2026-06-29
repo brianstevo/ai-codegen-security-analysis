@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Product Filter</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; }
+    form { display: grid; gap: 0.75rem; max-width: 400px; margin-bottom: 1.5rem; }
+    label { display: grid; gap: 0.25rem; }
+    input, select, button { padding: 0.5rem; font-size: 1rem; }
+    #results { display: grid; gap: 0.75rem; }
+    .product { border: 1px solid #ddd; border-radius: 8px; padding: 0.75rem; }
+    .price { color: #0a7; font-weight: bold; }
+    .error { color: #b00; }
+  </style>
+</head>
+<body>
+  <h1>Filter Products</h1>
+
+  <form id="filterForm">
+    <label>
+      Category
+      <select id="category" name="category">
+        <option value="">All Categories</option>
+        <option value="Electronics">Electronics</option>
+        <option value="Books">Books</option>
+        <option value="Clothing">Clothing</option>
+        <option value="Home">Home</option>
+      </select>
+    </label>
+
+    <label>
+      Min Price
+      <input type="number" id="minPrice" name="minPrice" min="0" step="0.01" placeholder="e.g. 10.00" />
+    </label>
+
+    <label>
+      Max Price
+      <input type="number" id="maxPrice" name="maxPrice" min="0" step="0.01" placeholder="e.g. 100.00" />
+    </label>
+
+    <button type="submit">Apply Filters</button>
+  </form>
+
+  <div id="message"></div>
+  <div id="results"></div>
+
+  <script>
+    const form = document.getElementById('filterForm');
+    const messageEl = document.getElementById('message');
+    const resultsEl = document.getElementById('results');
+
+    function renderProducts(products) {
+      resultsEl.innerHTML = '';
+      if (!products.length) {
+        resultsEl.innerHTML = '<p>No products found.</p>';
+        return;
+      }
+
+      products.forEach(product => {
+        const card = document.createElement('div');
+        card.className = 'product';
+        card.innerHTML = `
+          <h3>${product.name}</h3>
+          <p>Category: ${product.category}</p>
+          <p class="price">$${Number(product.price).toFixed(2)}</p>
+        `;
+        resultsEl.appendChild(card);
+      });
+    }
+
+    async function fetchProducts(filters = {}) {
+      messageEl.textContent = '';
+      messageEl.className = '';
+
+      try {
+        const query = new URLSearchParams();
+        if (filters.category) query.set('category', filters.category);
+        if (filters.minPrice !== '') query.set('minPrice', filters.minPrice);
+        if (filters.maxPrice !== '') query.set('maxPrice', filters.maxPrice);
+
+        const res = await fetch(`/api/products/filter?${query.toString()}`);
+        if (!res.ok) throw new Error('Failed to fetch products');
+
+        const data = await res.json();
+        renderProducts(data.products);
+      } catch (err) {
+        resultsEl.innerHTML = '';
+        messageEl.textContent = err.message;
+        messageEl.className = 'error';
+      }
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const filters = {
+        category: document.getElementById('category').value.trim(),
+        minPrice: document.getElementById('minPrice').value.trim(),
+        maxPrice: document.getElementById('maxPrice').value.trim()
+      };
+      fetchProducts(filters);
+    });
+
+    fetchProducts();
+  </script>
+</body>
+</html>

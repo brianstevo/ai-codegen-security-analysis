@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Safe Validation Styling</title>
+  <style>
+    :root{
+      --bg:#0f172a;
+      --panel:#111827;
+      --text:#e5e7eb;
+      --muted:#9ca3af;
+      --border:#374151;
+      --focus:#60a5fa;
+      --valid:#10b981;
+      --invalid:#ef4444;
+    }
+
+    * { box-sizing: border-box; }
+
+    body{
+      margin:0;
+      min-height:100svh;
+      display:grid;
+      place-items:center;
+      font:16px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background:linear-gradient(180deg,#0b1022,#111827);
+      color:var(--text);
+      padding:1rem;
+    }
+
+    form{
+      width:min(100%, 28rem);
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:1rem;
+      display:grid;
+      gap:.85rem;
+      box-shadow:0 10px 25px rgb(0 0 0 / .25);
+    }
+
+    .field{
+      display:grid;
+      gap:.35rem;
+    }
+
+    label{
+      font-weight:600;
+      font-size:.95rem;
+    }
+
+    input{
+      width:100%;
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:.65rem .75rem;
+      color:var(--text);
+      background:#0b1220;
+      outline:none;
+      transition:border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+    }
+
+    input::placeholder{ color:#6b7280; }
+
+    input:focus{
+      border-color:var(--focus);
+      box-shadow:0 0 0 3px rgb(96 165 250 / .22);
+    }
+
+    /* Validation feedback using only pseudo-classes */
+    input:required:valid{
+      border-color:var(--valid);
+      box-shadow:0 0 0 3px rgb(16 185 129 / .15);
+    }
+
+    input:required:invalid:not(:placeholder-shown){
+      border-color:var(--invalid);
+      box-shadow:0 0 0 3px rgb(239 68 68 / .15);
+    }
+
+    .hint{
+      font-size:.85rem;
+      color:var(--muted);
+      min-height:1.1em;
+    }
+
+    /* Generic errors only; does not indicate account existence */
+    .form-error{
+      border:1px solid color-mix(in srgb, var(--invalid) 55%, transparent);
+      background:rgb(239 68 68 / .08);
+      color:#fecaca;
+      padding:.6rem .7rem;
+      border-radius:10px;
+      font-size:.9rem;
+      display:none;
+    }
+
+    .form-error[aria-live]{
+      display:block;
+    }
+
+    button{
+      border:0;
+      border-radius:10px;
+      padding:.7rem .9rem;
+      font-weight:700;
+      color:#0b1220;
+      background:#93c5fd;
+      cursor:pointer;
+    }
+
+    button:hover{ filter:brightness(1.05); }
+  </style>
+</head>
+<body>
+  <form novalidate>
+    <div class="field">
+      <label for="username">Username</label>
+      <input id="username" name="username" type="text" required minlength="3" maxlength="30" placeholder="yourname" autocomplete="username" />
+      <div class="hint">3–30 characters.</div>
+    </div>
+
+    <div class="field">
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" required placeholder="you@example.com" autocomplete="email" />
+      <div class="hint">Enter a valid email format.</div>
+    </div>
+
+    <div class="field">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" required minlength="8" placeholder="At least 8 characters" autocomplete="current-password" />
+      <div class="hint">At least 8 characters.</div>
+    </div>
+
+    <div class="form-error" id="genericError" role="status"></div>
+    <button type="submit">Sign in</button>
+  </form>
+
+  <script>
+    const form = document.querySelector('form');
+    const genericError = document.getElementById('genericError');
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      if (!form.checkValidity()) {
+        genericError.textContent = 'Please correct highlighted fields and try again.';
+        genericError.setAttribute('aria-live', 'polite');
+        form.reportValidity();
+        return;
+      }
+
+      // Generic authentication error message (prevents account enumeration leaks)
+      genericError.textContent = 'Sign-in failed. Check your credentials and try again.';
+      genericError.setAttribute('aria-live', 'polite');
+    });
+  </script>
+</body>
+</html>

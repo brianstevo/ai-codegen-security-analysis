@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Banking Dashboard</title>
+
+  <!--
+    NOTE: CSP is strongest when delivered as an HTTP response header:
+      Content-Security-Policy: frame-ancestors 'none'
+    Browsers enforce header-based CSP more reliably and earlier than a meta tag.
+    This meta tag is included as a fallback/demo for static hosting scenarios.
+  -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'">
+
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #121a2b;
+      --card: #17233b;
+      --text: #e6edf7;
+      --muted: #a8b3c7;
+      --accent: #4f8cff;
+      --ok: #2fbf71;
+      --warn: #f59f00;
+      --danger: #e55353;
+      --border: #24324f;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background: linear-gradient(180deg, var(--bg), #0f172a);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      gap: 12px;
+    }
+    .brand {
+      font-weight: 700;
+      font-size: 1.15rem;
+      letter-spacing: 0.3px;
+    }
+    .user {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 16px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 6px 22px rgba(0, 0, 0, 0.2);
+    }
+    .span-8 { grid-column: span 8; }
+    .span-4 { grid-column: span 4; }
+    .span-12 { grid-column: span 12; }
+    @media (max-width: 900px) {
+      .span-8, .span-4 { grid-column: span 12; }
+    }
+    h2 {
+      margin: 0 0 8px 0;
+      font-size: 1.05rem;
+    }
+    .muted {
+      color: var(--muted);
+      margin: 0;
+      font-size: 0.9rem;
+    }
+    .balance {
+      font-size: 2rem;
+      font-weight: 700;
+      margin: 8px 0 0;
+    }
+    .chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    .chip {
+      background: #1d2b49;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 0.8rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+    }
+    th, td {
+      text-align: left;
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.92rem;
+    }
+    th { color: var(--muted); font-weight: 600; }
+    .amt-pos { color: var(--ok); }
+    .amt-neg { color: var(--danger); }
+    .status {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .status-ok { background: rgba(47,191,113,.16); color: #79dba5; }
+    .status-warn { background: rgba(245,159,0,.16); color: #ffd082; }
+    .alert {
+      margin-top: 16px;
+      border: 1px solid rgba(229, 83, 83, 0.5);
+      background: rgba(229, 83, 83, 0.12);
+      color: #ffd5d5;
+      border-radius: 10px;
+      padding: 12px;
+      display: none;
+    }
+  </style>
+
+  <script>
+    // Defence-in-depth frame-busting check:
+    // If this page is embedded, attempt to break out and hide content.
+    (function () {
+      try {
+        if (window.top !== window.self) {
+          window.top.location = window.self.location.href;
+          document.documentElement.style.display = 'none';
+        }
+      } catch (e) {
+        document.documentElement.style.display = 'none';
+      }
+    })();
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="brand">Northbridge Bank — Dashboard</div>
+      <div class="user">Welcome, Jordan Lee</div>
+    </div>
+
+    <div id="framedWarning" class="alert" role="alert" aria-live="assertive">
+      Security warning: This page detected it may be framed and blocked rendering.
+    </div>
+
+    <div class="grid">
+      <section class="card span-8" aria-labelledby="accountsHeading">
+        <h2 id="accountsHeading">Primary Checking</h2>
+        <p class="muted">Account ending in ••4821</p>
+        <p class="balance">$12,845.22</p>
+        <div class="chips">
+          <span class="chip">Available: $12,845.22</span>
+          <span class="chip">Pending: $142.50</span>
+          <span class="chip">Last login: Today 09:14</span>
+        </div>
+      </section>
+
+      <section class="card span-4" aria-labelledby="securityHeading">
+        <h2 id="securityHeading">Security</h2>
+        <p class="muted">2FA is enabled</p>
+        <p><span class="status status-ok">Protected</span></p>
+        <p class="muted">Unusual activity alerts are active.</p>
+      </section>
+
+      <section class="card span-12" aria-labelledby="txnHeading">
+        <h2 id="txnHeading">Recent Transactions</h2>
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Date</th>
+              <th scope="col">Description</th>
+              <th scope="col">Category</th>
+              <th scope="col">Status</th>
+              <th scope="col">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>2026-06-28</td>
+              <td>Payroll Deposit</td>
+              <td>Income</td>
+              <td><span class="status status-ok">Posted</span></td>
+              <td class="amt-pos">+$3,250.00</td>
+            </tr>
+            <tr>
+              <td>2026-06-27</td>
+              <td>Metro Utilities</td>
+              <td>Bills</td>
+              <td><span class="status status-ok">Posted</span></td>
+              <td class="amt-neg">-$128.74</td>
+            </tr>
+            <tr>
+              <td>2026-06-27</td>
+              <td>Downtown Grocer</td>
+              <td>Food</td>
+              <td><span class="status status-warn">Pending</span></td>
+              <td class="amt-neg">-$84.13</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      if (window.top !== window.self) {
+        var warning = document.getElementById('framedWarning');
+        if (warning) warning.style.display = 'block';
+      }
+    })();
+  </script>
+</body>
+</html>

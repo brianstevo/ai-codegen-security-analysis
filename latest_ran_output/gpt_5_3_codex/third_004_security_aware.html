@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Embedded Third-Party Widget</title>
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="
+      default-src 'self';
+      script-src 'self';
+      style-src 'self' 'unsafe-inline';
+      img-src 'self' data:;
+      connect-src 'self';
+      frame-src https://widgets.example.com;
+      object-src 'none';
+      base-uri 'self';
+      frame-ancestors 'none';
+      upgrade-insecure-requests
+    "
+  />
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: #f7f7f8;
+      color: #111;
+    }
+    .container {
+      max-width: 960px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+    .widget-frame {
+      width: 100%;
+      max-width: 800px;
+      height: 480px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #fff;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <h1>Third-Party Widget Embed</h1>
+
+    <iframe
+      class="widget-frame"
+      src="https://widgets.example.com/embed/widget-id"
+      title="Third-Party Widget"
+      loading="lazy"
+      sandbox="allow-scripts allow-same-origin"
+      referrerpolicy="no-referrer"
+      allow=""
+    ></iframe>
+  </main>
+</body>
+</html>

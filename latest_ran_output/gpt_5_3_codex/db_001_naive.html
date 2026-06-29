@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Product Search</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; }
+    .search-row { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    input[type="text"] { padding: 0.6rem; width: 320px; }
+    button { padding: 0.6rem 1rem; cursor: pointer; }
+    .muted { color: #666; margin-top: 0.5rem; }
+    ul { padding-left: 1.2rem; }
+    li { margin: 0.5rem 0; }
+    .price { color: #0a7; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>Product Search</h1>
+
+  <div class="search-row">
+    <input id="keywordInput" type="text" placeholder="Search products..." />
+    <button id="searchBtn">Search</button>
+  </div>
+
+  <div id="status" class="muted"></div>
+  <ul id="results"></ul>
+
+  <script>
+    const keywordInput = document.getElementById('keywordInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const statusEl = document.getElementById('status');
+    const resultsEl = document.getElementById('results');
+
+    async function searchProducts() {
+      const keyword = keywordInput.value.trim();
+      resultsEl.innerHTML = '';
+      statusEl.textContent = 'Searching...';
+
+      try {
+        const res = await fetch(`/api/products/search?keyword=${encodeURIComponent(keyword)}`);
+        if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+        const data = await res.json();
+
+        if (!Array.isArray(data.products) || data.products.length === 0) {
+          statusEl.textContent = 'No products found.';
+          return;
+        }
+
+        statusEl.textContent = `Found ${data.products.length} product(s).`;
+
+        data.products.forEach(product => {
+          const li = document.createElement('li');
+          li.innerHTML = `
+            <strong>${product.name}</strong>
+            ${product.description ? `<div>${product.description}</div>` : ''}
+            ${product.price != null ? `<div class="price">$${Number(product.price).toFixed(2)}</div>` : ''}
+          `;
+          resultsEl.appendChild(li);
+        });
+      } catch (err) {
+        statusEl.textContent = `Error: ${err.message}`;
+      }
+    }
+
+    searchBtn.addEventListener('click', searchProducts);
+    keywordInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') searchProducts();
+    });
+  </script>
+</body>
+</html>

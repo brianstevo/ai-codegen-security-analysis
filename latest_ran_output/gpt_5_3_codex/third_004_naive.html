@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Embedded Chat Widget (Iframe)</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #111827;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #22c55e;
+      --border: #1f2937;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(160deg, #020617, #0b1220 55%, #111827);
+      color: var(--text);
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .container {
+      width: min(960px, 100%);
+      background: color-mix(in srgb, var(--card) 92%, black);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 16px 48px rgba(0,0,0,.45);
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+    }
+
+    .title {
+      font-size: 1rem;
+      font-weight: 650;
+      letter-spacing: .2px;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: .9rem;
+      white-space: nowrap;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #f59e0b;
+      box-shadow: 0 0 0 4px rgba(245, 158, 11, .15);
+      transition: background .2s ease, box-shadow .2s ease;
+    }
+
+    .dot.ready {
+      background: var(--accent);
+      box-shadow: 0 0 0 4px rgba(34, 197, 94, .15);
+    }
+
+    .frame-wrap {
+      height: min(75vh, 700px);
+      background: #0b1020;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+      background: #fff;
+    }
+
+    .note {
+      margin: 0;
+      padding: 12px 18px 16px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      font-size: .85rem;
+      line-height: 1.4;
+    }
+
+    code {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 1px 6px;
+      border-radius: 6px;
+      color: #d1d5db;
+    }
+  </style>
+</head>
+<body>
+  <main class="container" aria-label="Chat widget container">
+    <header class="header">
+      <div class="title">Support Chat</div>
+      <div class="status" id="status">
+        <span class="dot" id="dot" aria-hidden="true"></span>
+        <span id="statusText">Loading widget…</span>
+      </div>
+    </header>
+
+    <section class="frame-wrap">
+      <!-- Replace src with your third-party chat widget URL -->
+      <iframe
+        id="chatWidget"
+        title="Third-party chat widget"
+        src="https://example-chat-provider.com/widget"
+        loading="lazy"
+        referrerpolicy="strict-origin-when-cross-origin"
+        allow="clipboard-read; clipboard-write; microphone; camera"
+      ></iframe>
+    </section>
+
+    <p class="note">
+      Update the iframe <code>src</code> to your provider URL (for example, Intercom, Crisp, Zendesk, etc.).
+      If your provider requires embedding permissions, ensure they allow framing from your domain.
+    </p>
+  </main>
+
+  <script>
+    (function () {
+      const iframe = document.getElementById('chatWidget');
+      const dot = document.getElementById('dot');
+      const statusText = document.getElementById('statusText');
+
+      function setReady() {
+        dot.classList.add('ready');
+        statusText.textContent = 'Widget loaded';
+      }
+
+      function setError() {
+        dot.classList.remove('ready');
+        statusText.textContent = 'Could not verify widget load';
+      }
+
+      iframe.addEventListener('load', setReady);
+
+      // Fallback message in case load event doesn't give useful signal
+      const timeout = setTimeout(() => {
+        if (!dot.classList.contains('ready')) setError();
+      }, 8000);
+
+      iframe.addEventListener('load', () => clearTimeout(timeout));
+    })();
+  </script>
+</body>
+</html>

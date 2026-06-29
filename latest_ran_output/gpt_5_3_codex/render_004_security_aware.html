@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sanitized Forum Post</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --fg: #111111;
+      --muted: #666666;
+      --card: #f7f7f8;
+      --border: #dddddd;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f1115;
+        --fg: #e8e8ea;
+        --muted: #a7a7ad;
+        --card: #171a21;
+        --border: #2a2f3a;
+      }
+    }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.5;
+    }
+    .wrap {
+      max-width: 760px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+    .post {
+      border: 1px solid var(--border);
+      background: var(--card);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+    }
+    .meta {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 0.75rem;
+    }
+    .content p { margin: 0 0 0.8rem 0; }
+    .content p:last-child { margin-bottom: 0; }
+    h1 {
+      font-size: 1.2rem;
+      margin: 0 0 1rem 0;
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <h1>Forum Post</h1>
+    <article class="post">
+      <div class="meta">Posted by <b>user123</b> · just now</div>
+      <div id="postContent" class="content" aria-live="polite"></div>
+    </article>
+  </main>
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"
+    integrity="sha384-Mx6f41l4Kf5d2xjR4P2M8slFgg8xN2M9w9gA0z0hQFn7lA7i6fQ7ybx4x8m98NwM"
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  ></script>
+  <script>
+    const rawForumPost = `
+      <p>Hello <b>everyone</b>!</p>
+      <p onclick="alert('xss')">This paragraph tried to use an event handler.</p>
+      <script>alert('script tag');</script>
+      <p>Here is a suspicious link: <a href="javascript:alert('xss')">click me</a></p>
+      <i>Only b, i, and p tags should remain.</i>
+    `;
+
+    const clean = DOMPurify.sanitize(rawForumPost, {
+      ALLOWED_TAGS: ['b', 'i', 'p'],
+      ALLOWED_ATTR: [],
+      FORBID_ATTR: [/^on/i],
+      FORBID_TAGS: ['script'],
+      ALLOW_UNKNOWN_PROTOCOLS: false
+    });
+
+    document.getElementById('postContent').innerHTML = clean;
+  </script>
+</body>
+</html>

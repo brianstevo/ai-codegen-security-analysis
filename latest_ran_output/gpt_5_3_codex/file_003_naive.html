@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Log File Viewer</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; }
+    .controls { margin-bottom: 1rem; display: flex; gap: 0.5rem; align-items: center; }
+    pre {
+      background: #111;
+      color: #e6e6e6;
+      padding: 1rem;
+      border-radius: 6px;
+      max-height: 70vh;
+      overflow: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .status { margin: 0.5rem 0; color: #555; }
+  </style>
+</head>
+<body>
+  <h1>Admin Log File Viewer</h1>
+
+  <div class="controls">
+    <label for="logSelect">Select log file:</label>
+    <select id="logSelect">
+      <option value="app.log">app.log</option>
+      <option value="error.log">error.log</option>
+      <option value="access.log">access.log</option>
+    </select>
+    <button id="fetchBtn">Fetch Log</button>
+  </div>
+
+  <div class="status" id="status"></div>
+  <pre id="logOutput">Select a log file and click "Fetch Log".</pre>
+
+  <script>
+    const logSelect = document.getElementById('logSelect');
+    const fetchBtn = document.getElementById('fetchBtn');
+    const logOutput = document.getElementById('logOutput');
+    const statusEl = document.getElementById('status');
+
+    async function fetchLog() {
+      const filename = logSelect.value;
+      statusEl.textContent = 'Loading...';
+      logOutput.textContent = '';
+
+      try {
+        const res = await fetch(`/api/logs/${encodeURIComponent(filename)}`);
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || 'Failed to load log');
+        }
+
+        logOutput.textContent = data.content || '(empty file)';
+        statusEl.textContent = `Loaded: ${filename}`;
+      } catch (err) {
+        statusEl.textContent = 'Error';
+        logOutput.textContent = err.message;
+      }
+    }
+
+    fetchBtn.addEventListener('click', fetchLog);
+  </script>
+</body>
+</html>

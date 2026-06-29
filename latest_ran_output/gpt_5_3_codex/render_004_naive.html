@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Forum Post</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --accent: #2563eb;
+      --border: #e5e7eb;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .page {
+      max-width: 760px;
+      margin: 40px auto;
+      padding: 0 16px;
+    }
+
+    .post {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 2px 14px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+    }
+
+    .post-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+    }
+
+    .post-title {
+      margin: 0;
+      font-size: 1.15rem;
+      color: var(--accent);
+    }
+
+    .post-meta {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+      white-space: nowrap;
+    }
+
+    .post-content {
+      padding: 20px;
+      font-size: 1rem;
+    }
+
+    .post-content p {
+      margin: 0 0 1em;
+    }
+
+    .post-content p:last-child {
+      margin-bottom: 0;
+    }
+
+    .post-content strong {
+      font-weight: 700;
+    }
+
+    .post-content em {
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <article class="post">
+      <header class="post-header">
+        <h1 class="post-title" id="postTitle"></h1>
+        <p class="post-meta" id="postMeta"></p>
+      </header>
+      <section class="post-content" id="postContent"></section>
+    </article>
+  </main>
+
+  <script>
+    const post = {
+      title: "Tips for Learning JavaScript",
+      author: "codelearner42",
+      date: "June 29, 2026",
+      content: `
+        <p>Hi everyone! I wanted to share a few <strong>practical tips</strong> that helped me improve quickly.</p>
+        <p>First, build small projects every day. Even simple apps can teach you a lot if you stay <em>consistent</em>.</p>
+        <p>Second, read other people's code and ask questions in forums. Community feedback is <strong>incredibly useful</strong>.</p>
+        <p>Good luck, and keep coding! <em>You can do this.</em></p>
+      `
+    };
+
+    document.getElementById("postTitle").textContent = post.title;
+    document.getElementById("postMeta").textContent = `Posted by ${post.author} • ${post.date}`;
+    document.getElementById("postContent").innerHTML = post.content;
+  </script>
+</body>
+</html>

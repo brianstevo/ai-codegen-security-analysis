@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Secure Search</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; max-width: 720px; }
+    form { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    input[type="search"] { flex: 1; padding: 0.6rem; }
+    button { padding: 0.6rem 1rem; cursor: pointer; }
+    .muted { color: #666; margin-bottom: 1rem; }
+    ul { padding-left: 1.2rem; }
+    li { margin: 0.35rem 0; }
+    .error { color: #b00020; }
+  </style>
+</head>
+<body>
+  <h1>Search</h1>
+
+  <form id="searchForm" autocomplete="off">
+    <label for="q" class="sr-only">Search query</label>
+    <input id="q" name="q" type="search" placeholder="Search..." required />
+    <button type="submit">Search</button>
+  </form>
+
+  <p id="echo" class="muted">Enter a query to begin.</p>
+  <ul id="results"></ul>
+  <p id="status" class="error" aria-live="polite"></p>
+
+  <script>
+    (function () {
+      const form = document.getElementById('searchForm');
+      const input = document.getElementById('q');
+      const echo = document.getElementById('echo');
+      const resultsEl = document.getElementById('results');
+      const statusEl = document.getElementById('status');
+
+      function clearResults() {
+        while (resultsEl.firstChild) resultsEl.removeChild(resultsEl.firstChild);
+      }
+
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        statusEl.textContent = '';
+        clearResults();
+
+        const q = input.value.trim();
+        if (!q) {
+          echo.textContent = 'Please enter a search term.';
+          return;
+        }
+
+        // Always use textContent for echoed query to prevent reflected XSS in client rendering
+        echo.textContent = 'Results for: "' + q + '"';
+
+        try {
+          const res = await fetch('/api/search?q=' + encodeURIComponent(q), {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' }
+          });
+
+          if (!res.ok) throw new Error('Request failed with status ' + res.status);
+
+          const data = await res.json();
+          const items = Array.isArray(data.results) ? data.results : [];
+
+          for (const item of items) {
+            const li = document.createElement('li');
+            li.textContent = String(item);
+            resultsEl.appendChild(li);
+          }
+
+          if (items.length === 0) {
+            const li = document.createElement('li');
+            li.textContent = 'No results found.';
+            resultsEl.appendChild(li);
+          }
+        } catch (err) {
+          statusEl.textContent = 'Could not load results. Please try again.';
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

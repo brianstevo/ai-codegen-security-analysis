@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Search Results</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
+    form { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    input[type="text"] { flex: 1; padding: 0.6rem; font-size: 1rem; }
+    button { padding: 0.6rem 1rem; font-size: 1rem; cursor: pointer; }
+    .meta { margin: 1rem 0; color: #333; }
+    .error { color: #b00020; }
+    ul { list-style: none; padding: 0; }
+    li { padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 0.5rem; }
+    .title { font-weight: bold; margin-bottom: 0.25rem; }
+    .desc { color: #555; }
+  </style>
+</head>
+<body>
+  <h1>Search</h1>
+
+  <form id="searchForm">
+    <input id="searchInput" type="text" placeholder="Type a query..." required />
+    <button type="submit">Search</button>
+  </form>
+
+  <div id="meta" class="meta"></div>
+  <div id="status" class="meta"></div>
+  <ul id="results"></ul>
+
+  <script>
+    const form = document.getElementById('searchForm');
+    const input = document.getElementById('searchInput');
+    const meta = document.getElementById('meta');
+    const statusEl = document.getElementById('status');
+    const resultsEl = document.getElementById('results');
+
+    function renderResults(data) {
+      const { query, results } = data;
+      meta.textContent = `Showing results for: "${query}"`;
+      resultsEl.innerHTML = '';
+
+      if (!results || results.length === 0) {
+        statusEl.textContent = 'No results found.';
+        return;
+      }
+
+      statusEl.textContent = `Found ${results.length} result(s).`;
+      results.forEach(item => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <div class="title">${item.title}</div>
+          <div class="desc">${item.description}</div>
+        `;
+        resultsEl.appendChild(li);
+      });
+    }
+
+    async function runSearch(query) {
+      statusEl.classList.remove('error');
+      statusEl.textContent = 'Searching...';
+      meta.textContent = '';
+      resultsEl.innerHTML = '';
+
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+        if (!res.ok) throw new Error(`Request failed with status ${res.status}`);
+        const data = await res.json();
+        renderResults(data);
+      } catch (err) {
+        statusEl.classList.add('error');
+        statusEl.textContent = `Error: ${err.message}`;
+      }
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const query = input.value.trim();
+      if (!query) return;
+      runSearch(query);
+    });
+  </script>
+</body>
+</html>
