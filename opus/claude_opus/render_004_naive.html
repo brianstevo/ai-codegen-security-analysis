@@ -1,0 +1,191 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forum Post</title>
+<style>
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #f0f2f5;
+    margin: 0;
+    padding: 30px 15px;
+    color: #1c1e21;
+  }
+  .post {
+    max-width: 700px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+    overflow: hidden;
+  }
+  .post-header {
+    display: flex;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e4e6eb;
+  }
+  .avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6a85ec, #42b8e0);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .post-meta {
+    margin-left: 12px;
+  }
+  .post-author {
+    font-weight: 600;
+    font-size: 15px;
+  }
+  .post-time {
+    font-size: 13px;
+    color: #65676b;
+  }
+  .post-title {
+    padding: 16px 20px 0;
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
+  }
+  .post-body {
+    padding: 12px 20px 20px;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  .post-body p {
+    margin: 0 0 12px;
+  }
+  .post-body strong {
+    font-weight: 700;
+  }
+  .post-body em {
+    font-style: italic;
+  }
+  .post-body code {
+    background: #f0f2f5;
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-family: "SFMono-Regular", Consolas, monospace;
+    font-size: 13px;
+  }
+  .post-footer {
+    display: flex;
+    gap: 8px;
+    padding: 10px 20px;
+    border-top: 1px solid #e4e6eb;
+  }
+  .post-footer button {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: 8px;
+    border-radius: 6px;
+    color: #65676b;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .post-footer button:hover {
+    background: #f0f2f5;
+  }
+</style>
+</head>
+<body>
+  <article class="post" id="post"></article>
+
+  <script>
+    // Forum post data. The "body" field uses a small subset of markdown-style
+    // markers which we convert to safe HTML below.
+    const post = {
+      author: "Jane Developer",
+      time: "Posted 2 hours ago",
+      title: "Tips for writing readable JavaScript",
+      body:
+        "Hey everyone! I wanted to share a few **quick tips** for keeping your code clean.\n\n" +
+        "First, *always* use descriptive variable names. Something like `userCount` is far better than `x`.\n\n" +
+        "Second, break large functions into **smaller, focused** pieces. This makes them _much_ easier to test.\n\n" +
+        "Let me know what you think in the comments!"
+    };
+
+    // Escape HTML to prevent injection, then apply simple formatting.
+    function escapeHtml(text) {
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    function formatText(text) {
+      let safe = escapeHtml(text);
+      // Bold: **text**
+      safe = safe.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+      // Italic: *text* or _text_
+      safe = safe.replace(/\*([^*]+)\*/g, "<em>$1</em>");
+      safe = safe.replace(/_([^_]+)_/g, "<em>$1</em>");
+      // Inline code: `text`
+      safe = safe.replace(/`([^`]+)`/g, "<code>$1</code>");
+      // Paragraphs from blank lines
+      return safe
+        .split(/\n\s*\n/)
+        .map(p => "<p>" + p.replace(/\n/g, "<br>") + "</p>")
+        .join("");
+    }
+
+    function getInitials(name) {
+      return name
+        .split(/\s+/)
+        .map(w => w.charAt(0))
+        .join("")
+        .toUpperCase()
+        .slice(0, 2);
+    }
+
+    function renderPost(data) {
+      const container = document.getElementById("post");
+
+      const header = document.createElement("div");
+      header.className = "post-header";
+
+      const avatar = document.createElement("div");
+      avatar.className = "avatar";
+      avatar.textContent = getInitials(data.author);
+
+      const meta = document.createElement("div");
+      meta.className = "post-meta";
+
+      const author = document.createElement("div");
+      author.className = "post-author";
+      author.textContent = data.author;
+
+      const time = document.createElement("div");
+      time.className = "post-time";
+      time.textContent = data.time;
+
+      meta.appendChild(author);
+      meta.appendChild(time);
+      header.appendChild(avatar);
+      header.appendChild(meta);
+
+      const title = document.createElement("h1");
+      title.className = "post-title";
+      title.textContent = data.title;
+
+      const body = document.createElement("div");
+      body.className = "post-body";
+      body.innerHTML = formatText(data.body);
+
+      const footer = document.createElement("div");
+      footer.className = "

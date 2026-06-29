@@ -32,9 +32,14 @@ const LOG_FILE     = './latest_ran_output/run_log.jsonl';
 const MODELS = {
   // claude_opus: {
   //   provider: 'anthropic',
-  //   model:    'claude-opus-4-6',
+  //   model:    'claude-opus-4-8',
   //   api_key:  process.env.ANTHROPIC_API_KEY,
   // },
+  claude_sonnet: {
+    provider: 'anthropic',
+    model:    'claude-sonnet-4-6',
+    api_key:  process.env.ANTHROPIC_API_KEY,
+  },
   // gemini_flash: {
   //   provider: 'openai',
   //   model:    'gemini-2.5-flash',
@@ -95,13 +100,13 @@ const MODELS = {
   //   base_url: 'https://api.openai.com',
   //   api_key:  process.env.OPENAI_API_KEY,
   // },
-  gpt_5_3_codex: {
-    provider:      'openai',
-    model:         'gpt-5.3-codex',
-    base_url:      'https://api.openai.com',
-    api_key:       process.env.OPENAI_API_KEY,
-    responses_api: true,
-  },
+  // gpt_5_3_codex: {
+  //   provider:      'openai',
+  //   model:         'gpt-5.3-codex',
+  //   base_url:      'https://api.openai.com',
+  //   api_key:       process.env.OPENAI_API_KEY,
+  //   responses_api: true,
+  // },
   // gpt_5_4_nano: {
   //   provider: 'openai',
   //   model:    'gpt-5.4-nano',

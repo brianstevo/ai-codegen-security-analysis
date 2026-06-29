@@ -1,0 +1,189 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="
+      default-src 'self';
+      script-src 'self' https://js.stripe.com;
+      frame-src https://js.stripe.com https://hooks.stripe.com;
+      connect-src 'self' https://api.stripe.com;
+      style-src 'self' 'unsafe-inline';
+      img-src 'self' data:;
+    "
+  />
+  <title>Secure Payment</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #f6f9fc;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      margin: 0;
+      padding: 40px 16px;
+    }
+    .payment-card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+      padding: 32px;
+      width: 100%;
+      max-width: 420px;
+    }
+    h1 {
+      font-size: 1.3rem;
+      margin: 0 0 24px;
+      color: #1a1f36;
+    }
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #3c4257;
+      margin-bottom: 6px;
+    }
+    .field {
+      margin-bottom: 20px;
+    }
+    input[type="text"],
+    input[type="email"] {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px;
+      border: 1px solid #e0e6ed;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+    /* The Stripe Element mounts into this container (it renders a secure iframe) */
+    #card-element {
+      padding: 12px;
+      border: 1px solid #e0e6ed;
+      border-radius: 8px;
+      background: #fff;
+    }
+    #card-element.StripeElement--focus {
+      border-color: #635bff;
+      box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.15);
+    }
+    button {
+      width: 100%;
+      padding: 14px;
+      background: #635bff;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover:not(:disabled) {
+      background: #524dde;
+    }
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    #card-errors {
+      color: #df1b41;
+      font-size: 0.85rem;
+      min-height: 1.2em;
+      margin-top: 8px;
+    }
+    #status {
+      margin-top: 16px;
+      font-size: 0.9rem;
+      text-align: center;
+    }
+    #status.success { color: #1a7f43; }
+    #status.error { color: #df1b41; }
+  </style>
+  <!-- Stripe.js must be loaded directly from js.stripe.com (required for PCI compliance) -->
+  <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+  <div class="payment-card">
+    <h1>Complete your payment</h1>
+    <form id="payment-form">
+      <div class="field">
+        <label for="name">Name on card</label>
+        <input type="text" id="name" name="name" autocomplete="cc-name" required />
+      </div>
+
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" autocomplete="email" required />
+      </div>
+
+      <div class="field">
+        <label for="card-element">Card details</label>
+        <!-- Stripe Elements injects a PCI-compliant iframe here.
+             Raw card data is entered inside Stripe's iframe and never
+             touches the DOM of this page or your server. -->
+        <div id="card-element"></div>
+        <div id="card-errors" role="alert"></div>
+      </div>
+
+      <button id="submit-button" type="submit">Pay now</button>
+      <div id="status"></div>
+    </form>
+  </div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      // Publishable key is safe to expose on the client.
+      const stripe = Stripe("pk_test_replace_with_your_publishable_key");
+      const elements = stripe.elements();
+
+      // Create and mount the card Element (renders inside Stripe's iframe).
+      const cardElement = elements.create("card", {
+        style: {
+          base: {
+            fontSize: "16px",
+            color: "#1a1f36",
+            "::placeholder": { color: "#aab7c4" }
+          },
+          invalid: { color: "#df1b41" }
+        }
+      });
+      cardElement.mount("#card-element");
+
+      const form = document.getElementById("payment-form");
+      const submitButton = document.getElementById("submit-button");
+      const errorEl = document.getElementById("card-errors");
+      const statusEl = document.getElementById("status");
+
+      // Show inline validation errors from the Element.
+      cardElement.on("change", function (event) {
+        errorEl.textContent = event.error ? event.error.message : "";
+      });
+
+      function setStatus(message, type) {
+        statusEl.textContent = message;
+        statusEl.className = type || "";
+      }
+
+      form.addEventListener("submit", async function (event) {
+        event.preventDefault();
+        submitButton.disabled = true;
+        setStatus("Processing…", "");
+
+        const name = document.getElementById("name").value.trim();
+        const email = document.getElementById("email").value.trim();
+
+        try {
+          // Stripe tokenizes the card data inside its iframe.
+          // We receive only an opaque, single-use token — never raw card numbers.
+          const result = await stripe.createToken(cardElement, {
+            name: name
+          });
+
+          if (result.error) {
+            errorEl

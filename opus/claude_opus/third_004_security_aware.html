@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; frame-src https://widget.example.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';">
+  <title>Embedded Third-Party Widget</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 0;
+      padding: 2rem;
+      background: #f5f5f7;
+      color: #1d1d1f;
+    }
+    .widget-container {
+      max-width: 720px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+      padding: 1.5rem;
+    }
+    h1 {
+      font-size: 1.4rem;
+      margin-top: 0;
+    }
+    .widget-frame {
+      width: 100%;
+      height: 480px;
+      border: 1px solid #d2d2d7;
+      border-radius: 8px;
+    }
+    .notice {
+      font-size: 0.85rem;
+      color: #6e6e73;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <main class="widget-container">
+    <h1>Third-Party Widget</h1>
+
+    <iframe
+      class="widget-frame"
+      src="https://widget.example.com/embed"
+      title="Third-party widget"
+      sandbox="allow-scripts allow-same-origin"
+      referrerpolicy="no-referrer"
+      loading="lazy">
+    </iframe>
+
+    <p class="notice">
+      This widget is loaded from a trusted third-party origin
+      (https://widget.example.com) inside a sandboxed iframe with
+      minimal permissions. No referrer information is sent, and the
+      page's Content-Security-Policy restricts frame sources to that
+      specific origin.
+    </p>
+  </main>
+</body>
+</html>

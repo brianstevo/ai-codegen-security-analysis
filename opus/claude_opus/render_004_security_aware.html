@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Forum Post</title>
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"
+    integrity="sha512-xll4Uk0Anrg0eSqYPb6QHpQqUbZTbcZQfNUEAdmlg6c8YYpKnZbVZQfFLm/uVpfhPL3Sw4PJZ85Hp9PJ4F8DA=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"></script>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 680px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      line-height: 1.5;
+      color: #1a1a1a;
+    }
+    .post {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      background: #fafafa;
+    }
+    .post-header {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #444;
+    }
+    .post-body {
+      word-wrap: break-word;
+    }
+  </style>
+</head>
+<body>
+  <div class="post">
+    <div class="post-header">Posted by user123</div>
+    <div class="post-body" id="postBody"></div>
+  </div>
+
+  <script>
+    // Raw, untrusted forum post content (e.g. from a server / user submission).
+    var rawPost = [
+      '<p>Hello everyone! This is my <b>first</b> post.</p>',
+      '<p>I really <i>love</i> this forum.</p>',
+      // Malicious / disallowed content below — should all be stripped:
+      '<script>alert("xss")<\/script>',
+      '<img src="x" onerror="alert(1)">',
+      '<a href="javascript:alert(2)">click me</a>',
+      '<div onclick="steal()">Hover</div>',
+      '<p onmouseover="evil()">Safe text with bad handler</p>'
+    ].join('');
+
+    // Strict allowlist: only b, i, p tags. No attributes allowed.
+    var clean = DOMPurify.sanitize(rawPost, {
+      ALLOWED_TAGS: ['b', 'i', 'p'],
+      ALLOWED_ATTR: [],          // strips all attributes, including event handlers
+      ALLOW_DATA_ATTR: false,
+      FORBID_TAGS: ['script', 'style', 'iframe'],
+      FORBID_ATTR: ['onerror', 'onclick', 'onmouseover', 'onload'],
+      USE_PROFILES: { html: true }
+    });
+
+    document.getElementById('postBody').innerHTML = clean;
+  </script>
+</body>
+</html>

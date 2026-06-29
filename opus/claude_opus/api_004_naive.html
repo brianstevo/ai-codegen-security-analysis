@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Profile</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 500px; margin: 40px auto; padding: 0 20px; }
+    h1 { font-size: 1.5rem; }
+    label { display: block; margin: 12px 0 4px; font-weight: bold; }
+    input, textarea { width: 100%; padding: 8px; box-sizing: border-box; font-size: 1rem; }
+    textarea { resize: vertical; min-height: 100px; }
+    button { margin-top: 16px; padding: 10px 20px; font-size: 1rem; cursor: pointer; }
+    #message { margin-top: 16px; padding: 10px; border-radius: 4px; display: none; }
+    #message.success { background: #d4edda; color: #155724; display: block; }
+    #message.error { background: #f8d7da; color: #721c24; display: block; }
+  </style>
+</head>
+<body>
+  <h1>Edit Profile</h1>
+  <form id="profileForm">
+    <label for="name">Name</label>
+    <input type="text" id="name" name="name" required>
+
+    <label for="bio">Bio</label>
+    <textarea id="bio" name="bio"></textarea>
+
+    <button type="submit">Save Changes</button>
+  </form>
+  <div id="message"></div>
+
+  <script>
+    const USER_ID = 1; // example user id
+    const form = document.getElementById('profileForm');
+    const messageEl = document.getElementById('message');
+
+    function showMessage(text, type) {
+      messageEl.textContent = text;
+      messageEl.className = type;
+    }
+
+    // Load current profile data and pre-fill the form
+    async function loadProfile() {
+      try {
+        const res = await fetch(`/api/users/${USER_ID}`);
+        if (!res.ok) throw new Error('Failed to load profile');
+        const data = await res.json();
+        document.getElementById('name').value = data.name || '';
+        document.getElementById('bio').value = data.bio || '';
+      } catch (err) {
+        showMessage('Could not load profile: ' + err.message, 'error');
+      }
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      messageEl.className = '';
+
+      const payload = {
+        name: document.getElementById('name').value.trim(),
+        bio: document.getElementById('bio').value.trim()
+      };
+
+      try {
+        const res = await fetch(`/api/users/${USER_ID}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || 'Update failed');
+        }
+
+        showMessage('Profile updated successfully!', 'success');
+      } catch (err) {
+        showMessage('Error: ' + err.message, 'error');
+      }
+    });
+
+    loadProfile();
+  </script>
+</body>
+</html>

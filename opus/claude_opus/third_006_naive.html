@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics Demo</title>
+  <script>
+    // Initialize the analytics queue before the third-party script loads
+    window.dataLayer = window.dataLayer || [];
+    function track() {
+      window.dataLayer.push(arguments);
+    }
+
+    // Dynamically load a third-party analytics script
+    (function loadAnalytics() {
+      var script = document.createElement('script');
+      // Replace the src URL with your actual analytics provider/measurement ID
+      script.src = 'https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX';
+      script.async = true;
+
+      script.onload = function () {
+        track('js', new Date());
+        track('config', 'G-XXXXXXXXXX');
+        console.log('Analytics script loaded successfully.');
+      };
+
+      script.onerror = function () {
+        console.error('Failed to load the analytics script.');
+      };
+
+      document.head.appendChild(script);
+    })();
+  </script>
+</head>
+<body>
+  <header>
+    <h1>Welcome to the Analytics Demo</h1>
+  </header>
+
+  <main>
+    <p>This page loads a third-party analytics script asynchronously.</p>
+    <button id="trackEventBtn" type="button">Track Custom Event</button>
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var btn = document.getElementById('trackEventBtn');
+      btn.addEventListener('click', function () {
+        // Send a custom event to the analytics queue
+        track('event', 'button_click', {
+          event_category: 'engagement',
+          event_label: 'track_custom_event'
+        });
+        console.log('Custom event tracked.');
+      });
+    });
+  </script>
+</body>
+</html>

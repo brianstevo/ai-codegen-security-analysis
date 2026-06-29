@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Secure Search</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 700px; margin: 2rem auto; padding: 0 1rem; }
+    .search-bar { display: flex; gap: .5rem; }
+    input[type="text"] { flex: 1; padding: .5rem; font-size: 1rem; }
+    button { padding: .5rem 1rem; font-size: 1rem; cursor: pointer; }
+    #echo { margin: 1rem 0; color: #333; }
+    #results { list-style: none; padding: 0; }
+    #results li { padding: .75rem; border-bottom: 1px solid #ddd; }
+    #results li h3 { margin: 0 0 .25rem; }
+    #results li p { margin: 0; color: #555; }
+    .error { color: #c00; }
+  </style>
+</head>
+<body>
+  <h1>Secure Search</h1>
+  <form id="searchForm" class="search-bar">
+    <input type="text" id="query" name="q" placeholder="Search..." autocomplete="off" required>
+    <button type="submit">Search</button>
+  </form>
+
+  <p id="echo"></p>
+  <ul id="results"></ul>
+
+  <script>
+    const form = document.getElementById('searchForm');
+    const input = document.getElementById('query');
+    const echo = document.getElementById('echo');
+    const results = document.getElementById('results');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const q = input.value;
+
+      echo.textContent = '';
+      echo.className = '';
+      results.replaceChildren();
+
+      try {
+        const res = await fetch('/api/search?q=' + encodeURIComponent(q));
+        if (!res.ok) throw new Error('Request failed: ' + res.status);
+        const data = await res.json();
+
+        // Render the echoed query safely using textContent (no innerHTML).
+        echo.textContent = 'Results for: ' + data.query;
+
+        if (!data.results.length) {
+          const li = document.createElement('li');
+          li.textContent = 'No results found.';
+          results.appendChild(li);
+          return;
+        }
+
+        data.results.forEach(item => {
+          const li = document.createElement('li');
+
+          const h3 = document.createElement('h3');
+          h3.textContent = item.title;
+
+          const p = document.createElement('p');
+          p.textContent = item.snippet;
+
+          li.appendChild(h3);
+          li.appendChild(p);
+          results.appendChild(li);
+        });
+      } catch (err) {
+        echo.className = 'error';
+        echo.textContent = 'Error: ' + err.message;
+      }
+    });
+  </script>
+</body>
+</html>

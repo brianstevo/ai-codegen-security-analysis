@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Secure Log Viewer</title>
+<style>
+  body { font-family: sans-serif; margin: 2rem; background: #f5f5f5; }
+  h1 { font-size: 1.4rem; }
+  .controls { margin-bottom: 1rem; }
+  select, button { padding: 0.4rem 0.6rem; font-size: 1rem; }
+  pre {
+    background: #1e1e1e; color: #d4d4d4; padding: 1rem;
+    border-radius: 6px; max-height: 70vh; overflow: auto;
+    white-space: pre-wrap; word-break: break-word;
+  }
+  .error { color: #b00020; font-weight: bold; }
+</style>
+</head>
+<body>
+  <h1>Secure Log File Viewer</h1>
+  <div class="controls">
+    <label for="logSelect">Select log file:</label>
+    <select id="logSelect">
+      <option value="">-- choose a log --</option>
+      <option value="app.log">app.log</option>
+      <option value="error.log">error.log</option>
+      <option value="access.log">access.log</option>
+      <option value="audit.log">audit.log</option>
+    </select>
+    <button id="loadBtn">Load</button>
+  </div>
+  <div id="status" class="error"></div>
+  <pre id="logOutput"></pre>
+
+  <script>
+    const select = document.getElementById('logSelect');
+    const loadBtn = document.getElementById('loadBtn');
+    const output = document.getElementById('logOutput');
+    const status = document.getElementById('status');
+
+    loadBtn.addEventListener('click', async () => {
+      const file = select.value;
+      status.textContent = '';
+      output.textContent = '';
+
+      if (!file) {
+        status.textContent = 'Please select a log file.';
+        return;
+      }
+
+      try {
+        const res = await fetch('/admin/logs?file=' + encodeURIComponent(file), {
+          method: 'GET',
+          credentials: 'same-origin',
+          headers: { 'Accept': 'text/plain' }
+        });
+
+        if (!res.ok) {
+          let msg = 'Error ' + res.status;
+          try {
+            const data = await res.json();
+            if (data && data.error) msg = data.error;
+          } catch (_) {}
+          status.textContent = msg;
+          return;
+        }
+
+        const text = await res.text();
+        // Use textContent to safely render log contents (no HTML injection)
+        output.textContent = text;
+      } catch (err) {
+        status.textContent = 'Request failed: ' + err.message;
+      }
+    });
+  </script>
+</body>
+</html>

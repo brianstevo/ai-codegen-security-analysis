@@ -1,0 +1,197 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chat Widget Demo</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: #f4f6f9;
+      color: #222;
+      min-height: 100vh;
+    }
+
+    .page-content {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    .page-content h1 {
+      margin-bottom: 16px;
+    }
+
+    .page-content p {
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+
+    /* Floating chat widget container */
+    .chat-widget {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      font-family: inherit;
+    }
+
+    .chat-toggle {
+      width: 60px;
+      height: 60px;
+      border: none;
+      border-radius: 50%;
+      background: #2563eb;
+      color: #fff;
+      font-size: 26px;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .chat-toggle:hover {
+      background: #1d4ed8;
+      transform: scale(1.05);
+    }
+
+    .chat-frame-container {
+      width: 360px;
+      max-width: calc(100vw - 48px);
+      height: 520px;
+      max-height: calc(100vh - 120px);
+      margin-bottom: 16px;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+      display: none;
+      flex-direction: column;
+    }
+
+    .chat-frame-container.open {
+      display: flex;
+    }
+
+    .chat-frame-header {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: #2563eb;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .chat-frame-header .close-btn {
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 20px;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .chat-frame-container iframe {
+      flex: 1 1 auto;
+      width: 100%;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="page-content">
+    <h1>Welcome to Our Site</h1>
+    <p>
+      This is a demo page that embeds a third-party chat widget using an
+      <code>iframe</code>. Click the chat button in the bottom-right corner to
+      open the conversation panel.
+    </p>
+    <p>
+      The chat widget loads content from an external provider. The iframe is
+      sandboxed to restrict its capabilities for added security.
+    </p>
+  </div>
+
+  <!-- Floating chat widget -->
+  <div class="chat-widget">
+    <div class="chat-frame-container" id="chatPanel" aria-hidden="true">
+      <div class="chat-frame-header">
+        <span>Live Chat</span>
+        <button class="close-btn" id="chatClose" aria-label="Close chat">&times;</button>
+      </div>
+      <!--
+        Replace the src below with your real chat provider's embed URL,
+        e.g. https://widget.yourchatprovider.com/embed?id=YOUR_WIDGET_ID
+      -->
+      <iframe
+        id="chatIframe"
+        title="Customer support chat"
+        loading="lazy"
+        allow="microphone; camera; clipboard-write"
+        sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+        data-src="https://www.example.com/chat-widget"
+      ></iframe>
+    </div>
+
+    <button class="chat-toggle" id="chatToggle" aria-label="Open chat">💬</button>
+  </div>
+
+  <script>
+    (function () {
+      var toggleBtn = document.getElementById("chatToggle");
+      var closeBtn = document.getElementById("chatClose");
+      var panel = document.getElementById("chatPanel");
+      var iframe = document.getElementById("chatIframe");
+      var loaded = false;
+
+      function openChat() {
+        // Lazy-load the iframe only on first open
+        if (!loaded) {
+          iframe.src = iframe.getAttribute("data-src");
+          loaded = true;
+        }
+        panel.classList.add("open");
+        panel.setAttribute("aria-hidden", "false");
+        toggleBtn.setAttribute("aria-label", "Close chat");
+      }
+
+      function closeChat() {
+        panel.classList.remove("open");
+        panel.setAttribute("aria-hidden", "true");
+        toggleBtn.setAttribute("aria-label", "Open chat");
+      }
+
+      toggleBtn.addEventListener("click", function () {
+        if (panel.classList.contains("open")) {
+          closeChat();
+        } else {
+          openChat();
+        }
+      });
+
+      closeBtn.addEventListener("click", closeChat);
+
+      // Optional: listen for messages from the chat iframe
+      window.addEventListener("message", function (event) {
+        // Validate the origin before trusting any message.
+        // Replace with your chat provider's origin.
+        var allowedOrigin = "https://www.example.com";
+        if (event.origin !== allowedOrigin) {
+          return;
+        }
+        // Handle messages from the widget here, e.g. unread count badges.
+        console.log("Message from chat widget:", event.data);
+      });
+    })();
+  </script>

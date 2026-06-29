@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!--
+    Content-Security-Policy with frame-ancestors 'none' prevents this page
+    from being embedded in any <frame>, <iframe>, <object>, or <embed>,
+    which mitigates clickjacking attacks.
+
+    NOTE: Delivering CSP via an HTTP response header is STRONGLY PREFERRED
+    over this <meta> tag because:
+      1. The 'frame-ancestors' directive is IGNORED when CSP is delivered
+         via a <meta> tag — it is only honoured when sent as an HTTP header.
+         (Per the CSP spec, frame-ancestors, report-uri, and sandbox are
+         meta-tag-incompatible directives.)
+      2. HTTP headers are applied by the browser before any HTML is parsed,
+         so protection is in effect immediately, with no parser race window.
+      3. Headers cannot be stripped or altered by injected markup the way a
+         meta tag potentially could in certain injection scenarios.
+
+    Recommended HTTP header to set on the server:
+      Content-Security-Policy: frame-ancestors 'none'
+    (Optionally also: X-Frame-Options: DENY for legacy browser support.)
+
+    The meta tag below is retained as defence-in-depth for the directives
+    it *does* support, but the real frame-ancestors enforcement must come
+    from the server-sent header.
+  -->
+  <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'none'; default-src 'self'; style-src 'self' 'unsafe-inline';">
+
+  <title>SecureBank — Dashboard</title>
+  <style>
+    body {
+      font-family: system-ui, Arial, sans-serif;
+      margin: 0;
+      background: #f4f6f8;
+      color: #1a2b3c;
+    }
+    header {
+      background: #0b3d91;
+      color: #fff;
+      padding: 1rem 2rem;
+    }
+    .container {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+    .card {
+      background: #fff;
+      border-radius: 8px;
+      padding: 1.25rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+    .card h3 {
+      margin: 0 0 .5rem;
+      font-size: .9rem;
+      color: #6b7785;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+    .balance {
+      font-size: 1.6rem;
+      font-weight: 700;
+    }
+    .blocked {
+      display: none;
+      text-align: center;
+      padding: 4rem 1rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>SecureBank Dashboard</h1>
+  </header>
+
+  <main class="container" id="dashboard">
+    <div class="cards">
+      <div class="card">
+        <h3>Checking Account</h3>
+        <div class="balance">$4,820.55</div>
+      </div>
+      <div class="card">
+        <h3>Savings Account</h3>
+        <div class="balance">$18,340.12</div>
+      </div>
+      <div class="card">
+        <h3>Credit Card</h3>
+        <div class="balance">-$612.78</div>
+      </div>
+    </div>
+  </main>
+
+  <div class="blocked" id="blocked">
+    <h2>Access blocked</h2>
+    <p>This page cannot be displayed inside a frame for your security.</p>
+  </div>
+
+  <script>
+    /*
+     * Frame-busting check (defence-in-depth).
+     *
+     * The authoritative protection is the server-sent
+     * "Content-Security-Policy: frame-ancestors 'none'" HTTP header.
+     * This script is a fallback for environments where the header is
+     * absent or for older browsers without CSP support.
+     */
+    (function frameBust() {
+      try {
+        // If we are not the top-level window, we are being framed.
+        if (window.top !== window.self) {
+          // Hide sensitive content immediately.
+          var dash = document.getElementById('dashboard');
+          var blocked = document.getElementById('blocked');
+          if (dash) dash.style.display = 'none';
+          if (blocked) blocked.style.display = 'block';
+
+          // Attempt to break out of the frame.
+          window.top.location = window.self.location.href;
+        }
+      } catch (e) {
+        /*
+         * A cross-origin parent throws a SecurityException when we try to
+         * read window.top.location. The throw itself tells us we are framed
+         * by a hostile origin, so block the content defensively.
+         */
+        var d = document.getElementById('dashboard');
+        var b = document.getElementById('blocked');
+        if (d) d.style.display = 'none';
+        if (b) b.style.display = 'block';
+      }
+    })();
+  </script>
+</body>
+</html>

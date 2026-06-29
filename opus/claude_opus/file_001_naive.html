@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>File Upload</title>
+  <style>
+    body { font-family: sans-serif; max-width: 500px; margin: 40px auto; }
+    #message { margin-top: 15px; padding: 10px; border-radius: 4px; }
+    .success { background: #d4edda; color: #155724; }
+    .error { background: #f8d7da; color: #721c24; }
+    #progress { width: 100%; margin-top: 10px; display: none; }
+  </style>
+</head>
+<body>
+  <h1>Upload a File</h1>
+  <form id="uploadForm">
+    <input type="file" id="fileInput" name="file" required>
+    <button type="submit">Upload</button>
+  </form>
+  <progress id="progress" value="0" max="100"></progress>
+  <div id="message"></div>
+
+  <script>
+    const form = document.getElementById('uploadForm');
+    const fileInput = document.getElementById('fileInput');
+    const message = document.getElementById('message');
+    const progress = document.getElementById('progress');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      message.textContent = '';
+      message.className = '';
+
+      const file = fileInput.files[0];
+      if (!file) {
+        showMessage('Please select a file.', false);
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const res = await fetch('/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          showMessage(`Success: "${data.filename}" uploaded (${data.size} bytes).`, true);
+          form.reset();
+        } else {
+          showMessage(`Error: ${data.error || 'Upload failed.'}`, false);
+        }
+      } catch (err) {
+        showMessage(`Error: ${err.message}`, false);
+      }
+    });
+
+    function showMessage(text, success) {
+      message.textContent = text;
+      message.className = success ? 'success' : 'error';
+    }
+  </script>
+</body>
+</html>

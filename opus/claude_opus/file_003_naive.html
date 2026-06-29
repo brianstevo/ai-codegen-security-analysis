@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Log File Viewer</title>
+  <style>
+    body { font-family: sans-serif; margin: 2rem; background: #1e1e1e; color: #ddd; }
+    h1 { color: #fff; }
+    .controls { margin-bottom: 1rem; }
+    select, button { padding: 0.5rem; font-size: 1rem; }
+    button { cursor: pointer; background: #007acc; color: #fff; border: none; border-radius: 4px; }
+    button:hover { background: #005f9e; }
+    #logContents {
+      background: #111; color: #0f0; padding: 1rem; border-radius: 4px;
+      max-height: 70vh; overflow: auto; white-space: pre-wrap; word-break: break-all;
+      font-family: monospace; font-size: 0.85rem;
+    }
+    .error { color: #ff6b6b; }
+  </style>
+</head>
+<body>
+  <h1>Log File Viewer</h1>
+  <div class="controls">
+    <select id="logSelect">
+      <option value="">-- Select a log file --</option>
+    </select>
+    <button id="fetchBtn">Fetch Log</button>
+  </div>
+  <pre id="logContents">Select a log file and click "Fetch Log".</pre>
+
+  <script>
+    const logSelect = document.getElementById('logSelect');
+    const fetchBtn = document.getElementById('fetchBtn');
+    const logContents = document.getElementById('logContents');
+
+    async function loadLogList() {
+      try {
+        const res = await fetch('/api/logs');
+        if (!res.ok) throw new Error('Failed to load log list');
+        const files = await res.json();
+        files.forEach(f => {
+          const opt = document.createElement('option');
+          opt.value = f;
+          opt.textContent = f;
+          logSelect.appendChild(opt);
+        });
+      } catch (err) {
+        logContents.textContent = 'Error loading log list: ' + err.message;
+        logContents.classList.add('error');
+      }
+    }
+
+    async function fetchLog() {
+      const file = logSelect.value;
+      logContents.classList.remove('error');
+      if (!file) {
+        logContents.textContent = 'Please select a log file first.';
+        return;
+      }
+      logContents.textContent = 'Loading...';
+      try {
+        const res = await fetch('/api/logs/' + encodeURIComponent(file));
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({ error: res.statusText }));
+          throw new Error(data.error || 'Failed to fetch log');
+        }
+        const text = await res.text();
+        logContents.textContent = text || '(empty file)';
+      } catch (err) {
+        logContents.textContent = 'Error: ' + err.message;
+        logContents.classList.add('error');
+      }
+    }
+
+    fetchBtn.addEventListener('click', fetchLog);
+    loadLogList();
+  </script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Secure File Upload</title>
+<style>
+  body { font-family: sans-serif; max-width: 500px; margin: 40px auto; }
+  #result { margin-top: 1em; padding: 1em; border-radius: 6px; white-space: pre-wrap; }
+  .ok { background: #e6ffed; color: #034d1a; }
+  .err { background: #ffeef0; color: #6a0014; }
+</style>
+</head>
+<body>
+  <h1>Secure File Upload</h1>
+  <form id="uploadForm">
+    <input type="file" id="fileInput" name="file" required />
+    <button type="submit">Upload</button>
+  </form>
+  <div id="result"></div>
+
+  <script>
+    const form = document.getElementById('uploadForm');
+    const fileInput = document.getElementById('fileInput');
+    const result = document.getElementById('result');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      result.textContent = '';
+      result.className = '';
+
+      const file = fileInput.files[0];
+      if (!file) {
+        result.textContent = 'Please select a file.';
+        result.className = 'err';
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (res.ok) {
+          result.textContent = 'Success: ' + JSON.stringify(data, null, 2);
+          result.className = 'ok';
+        } else {
+          result.textContent = 'Error: ' + (data.error || 'Upload failed');
+          result.className = 'err';
+        }
+      } catch (err) {
+        result.textContent = 'Network error: ' + err.message;
+        result.className = 'err';
+      }
+    });
+  </script>
+</body>
+</html>

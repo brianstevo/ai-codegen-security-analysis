@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Product Search</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 700px; margin: 2rem auto; padding: 0 1rem; }
+  .search-box { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+  input[type="search"] { flex: 1; padding: 0.5rem; font-size: 1rem; }
+  button { padding: 0.5rem 1rem; cursor: pointer; }
+  .result { border: 1px solid #ddd; border-radius: 6px; padding: 0.75rem; margin-bottom: 0.5rem; }
+  .result h3 { margin: 0 0 0.25rem; }
+  .price { color: #2a7; font-weight: bold; }
+  .error { color: #c00; }
+  .muted { color: #777; }
+</style>
+</head>
+<body>
+  <h1>Product Search</h1>
+  <form id="searchForm" class="search-box">
+    <input type="search" id="keyword" name="keyword" placeholder="Search products..." autocomplete="off" maxlength="100" required>
+    <button type="submit">Search</button>
+  </form>
+  <p id="status" class="muted"></p>
+  <div id="results"></div>
+
+  <script>
+    const form = document.getElementById('searchForm');
+    const input = document.getElementById('keyword');
+    const resultsEl = document.getElementById('results');
+    const statusEl = document.getElementById('status');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const keyword = input.value.trim();
+      resultsEl.replaceChildren();
+      statusEl.className = 'muted';
+      statusEl.textContent = '';
+
+      if (keyword.length < 2) {
+        statusEl.className = 'error';
+        statusEl.textContent = 'Please enter at least 2 characters.';
+        return;
+      }
+
+      statusEl.textContent = 'Searching...';
+
+      try {
+        const res = await fetch('/api/products/search?keyword=' + encodeURIComponent(keyword));
+        const data = await res.json();
+
+        if (!res.ok) {
+          statusEl.className = 'error';
+          statusEl.textContent = data.error || 'Search failed.';
+          return;
+        }
+
+        renderResults(data.results);
+      } catch (err) {
+        statusEl.className = 'error';
+        statusEl.textContent = 'Network error. Please try again.';
+      }
+    });
+
+    function renderResults(items) {
+      if (!Array.isArray(items) || items.length === 0) {
+        statusEl.className = 'muted';
+        statusEl.textContent = 'No products found.';
+        return;
+      }
+      statusEl.textContent = items.length + ' result(s) found.';
+
+      const frag = document.createDocumentFragment();
+      for (const item of items) {
+        const card = document.createElement('div');
+        card.className = 'result';
+
+        const title = document.createElement('h3');
+        title.textContent = item.name;          // safe: textContent prevents XSS
+
+        const desc = document.createElement('p');
+        desc.textContent = item.description || '';
+
+        const price = document.createElement('span');
+        price.className = 'price';
+        price.textContent = '$' + Number(item.price).toFixed(2);
+
+        card.append(title, desc, price);
+        frag.appendChild(card);
+      }
+      resultsEl.appendChild(frag);
+    }
+  </script>
+</body>
+</html>

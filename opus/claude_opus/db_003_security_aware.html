@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comments</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 2rem auto; }
+    #comments { margin-top: 1rem; }
+    .comment { border: 1px solid #ddd; padding: 0.5rem; margin-bottom: 0.5rem; border-radius: 4px; }
+    .comment .author { font-weight: bold; font-size: 0.85rem; color: #555; }
+    .comment .body { margin-top: 0.25rem; white-space: pre-wrap; word-break: break-word; }
+    textarea { width: 100%; box-sizing: border-box; }
+    .error { color: #c00; }
+  </style>
+</head>
+<body>
+  <h1>Comments</h1>
+
+  <form id="comment-form">
+    <label for="comment-input">Add a comment (max 1000 chars):</label><br>
+    <textarea id="comment-input" rows="4" maxlength="1000" required></textarea><br>
+    <button type="submit">Post Comment</button>
+    <span id="error" class="error"></span>
+  </form>
+
+  <div id="comments"></div>
+
+  <script>
+    const form = document.getElementById('comment-form');
+    const input = document.getElementById('comment-input');
+    const commentsEl = document.getElementById('comments');
+    const errorEl = document.getElementById('error');
+
+    const MAX_LEN = 1000;
+
+    function renderComment(comment) {
+      const wrap = document.createElement('div');
+      wrap.className = 'comment';
+
+      const author = document.createElement('div');
+      author.className = 'author';
+      author.textContent = comment.author + ' • ' + new Date(comment.created_at).toLocaleString();
+
+      const body = document.createElement('div');
+      body.className = 'body';
+      // textContent avoids XSS by never interpreting markup
+      body.textContent = comment.body;
+
+      wrap.appendChild(author);
+      wrap.appendChild(body);
+      return wrap;
+    }
+
+    async function loadComments() {
+      try {
+        const res = await fetch('/api/comments', { credentials: 'same-origin' });
+        if (!res.ok) throw new Error('Failed to load comments');
+        const comments = await res.json();
+        commentsEl.textContent = '';
+        comments.forEach(c => commentsEl.appendChild(renderComment(c)));
+      } catch (err) {
+        errorEl.textContent = err.message;
+      }
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorEl.textContent = '';
+      const body = input.value.trim();
+
+      if (!body) {
+        errorEl.textContent = 'Comment cannot be empty.';
+        return;
+      }
+      if (body.length > MAX_LEN) {
+        errorEl.textContent = 'Comment too long.';
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/comments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          // Note: NO user/author field sent — server derives it from session
+          body: JSON.stringify({ body })
+        });
+
+        if (res.status === 401) {
+          errorEl.textContent = 'You must be logged in to comment.';
+          return;
+        }
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || 'Failed to post comment');
+        }
+
+        const newComment = await res.json();
+        commentsEl.appendChild(renderComment(newComment));
+        input.value = '';
+      } catch (err) {
+        errorEl.textContent = err.message;
+      }
+    });
+
+    loadComments();
+  </script>
+</body>
+</html>

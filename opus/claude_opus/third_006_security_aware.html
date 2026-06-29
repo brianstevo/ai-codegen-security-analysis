@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SRI Demo</title>
+
+  <!--
+    Content-Security-Policy with require-sri-for ensures that any external
+    <script> (and 'style' if added) MUST carry a valid integrity attribute,
+    otherwise the browser refuses to load/execute it.
+
+    Note: require-sri-for is experimental and not supported in all browsers.
+    For broadest enforcement, combine SRI on the tag itself (as done below)
+    with this directive where available.
+  -->
+  <meta http-equiv="Content-Security-Policy"
+        content="require-sri-for script style; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline';">
+
+  <!--
+    ========================================================================
+    HOW TO REGENERATE THE SRI HASH WHEN THE SCRIPT VERSION CHANGES
+    ========================================================================
+    The integrity attribute below contains a SHA-384 hash of the exact bytes
+    of the referenced script file. If you bump the script's version (and thus
+    its contents/URL), you MUST regenerate the hash, or the browser will block
+    the script.
+
+    Option A — Using OpenSSL (Linux/macOS):
+      curl -s https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js \
+        | openssl dgst -sha384 -binary \
+        | openssl base64 -A
+
+      Then prefix the result with "sha384-":
+        integrity="sha384-<output>"
+
+    Option B — Using shasum:
+      curl -s <SCRIPT_URL> | shasum -a 384 -b | awk '{print $1}' | xxd -r -p | base64
+
+    Option C — Online generator:
+      https://www.srihash.org/  (paste the script URL, copy the generated tag)
+
+    After regenerating, replace BOTH the src URL (version) and the
+    integrity value below.
+    ========================================================================
+  -->
+
+  <!-- Example: lodash 4.17.21 loaded from jsDelivr with SRI -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"
+    integrity="sha384-D27dlCBlH88pwbeT1IjPyDLwAt9efWtKtMcv0uVUdN9ZcGFFXShECVnFa+xRBz+0"
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"></script>
+</head>
+<body>
+  <h1>Subresource Integrity (SRI) Demo</h1>
+  <p>Open the console to verify the third-party script loaded successfully.</p>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      if (typeof window._ !== 'undefined') {
+        console.log('lodash loaded with verified integrity. _.VERSION =', window._.VERSION);
+      } else {
+        console.warn('lodash failed to load (possibly blocked by SRI/CSP).');
+      }
+    });
+  </script>
+</body>
+</html>

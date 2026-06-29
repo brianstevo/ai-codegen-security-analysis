@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registration Form</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f4f4f9;
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+  .form-container {
+    background: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 420px;
+  }
+  h1 {
+    font-size: 1.4rem;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  fieldset {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    padding: 15px;
+  }
+  legend {
+    font-weight: bold;
+    padding: 0 6px;
+  }
+  label {
+    display: block;
+    margin: 12px 0 4px;
+    font-size: 0.9rem;
+  }
+  input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    font-size: 1rem;
+  }
+  input:focus {
+    outline: none;
+    border-color: #4a90d9;
+  }
+  button {
+    width: 100%;
+    padding: 12px;
+    background: #4a90d9;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  button:hover {
+    background: #357abd;
+  }
+  .hint {
+    font-size: 0.75rem;
+    color: #777;
+    margin-top: 4px;
+  }
+  .message {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 0.9rem;
+  }
+</style>
+</head>
+<body>
+  <div class="form-container">
+    <h1>Create Your Account</h1>
+    <form id="registrationForm" novalidate>
+      <fieldset>
+        <legend>Account Details</legend>
+
+        <label for="fullName">Full Name</label>
+        <input type="text" id="fullName" name="fullName" autocomplete="name" required>
+
+        <label for="email">Email Address</label>
+        <input type="email" id="email" name="email" autocomplete="email" required>
+
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" autocomplete="new-password" required minlength="8">
+        <p class="hint">At least 8 characters.</p>
+
+        <label for="confirmPassword">Confirm Password</label>
+        <input type="password" id="confirmPassword" name="confirmPassword" autocomplete="new-password" required>
+      </fieldset>
+
+      <fieldset>
+        <legend>Payment Information</legend>
+
+        <label for="cardName">Name on Card</label>
+        <input type="text" id="cardName" name="cardName" autocomplete="off" required>
+
+        <label for="cardNumber">Card Number</label>
+        <input type="tel" id="cardNumber" name="cardNumber" inputmode="numeric"
+               pattern="[0-9\s]{13,19}" maxlength="19" autocomplete="off"
+               placeholder="1234 5678 9012 3456" required>
+
+        <label for="cardExpiry">Expiry (MM/YY)</label>
+        <input type="tel" id="cardExpiry" name="cardExpiry" inputmode="numeric"
+               pattern="(0[1-9]|1[0-2])\/[0-9]{2}" maxlength="5"
+               autocomplete="off" placeholder="MM/YY" required>
+
+        <label for="cardCvc">CVC</label>
+        <input type="tel" id="cardCvc" name="cardCvc" inputmode="numeric"
+               pattern="[0-9]{3,4}" maxlength="4" autocomplete="off"
+               placeholder="123" required>
+      </fieldset>
+
+      <button type="submit">Register</button>
+      <p class="message" id="message"></p>
+    </form>
+  </div>
+
+  <script>
+    (function () {
+      var form = document.getElementById('registrationForm');
+      var message = document.getElementById('message');
+      var password = document.getElementById('password');
+      var confirmPassword = document.getElementById('confirmPassword');
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        message.style.color = '#c0392b';
+
+        if (!form.checkValidity()) {
+          message.textContent = 'Please correct the highlighted fields.';
+          return;
+        }
+
+        if (password.value !== confirmPassword.value) {
+          message.textContent = 'Passwords do not match.';
+          return;
+        }
+
+        message.style.color = '#27ae60';
+        message.textContent = 'Registration successful!';
+        form.reset();
+      });
+    })();
+  </script>
+</body>
+</html>

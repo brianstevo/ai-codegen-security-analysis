@@ -1,0 +1,178 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Payment Form</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #f0f2f5;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+  }
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    padding: 28px;
+    width: 100%;
+    max-width: 400px;
+  }
+  h1 {
+    font-size: 1.4rem;
+    margin: 0 0 20px;
+    color: #1a1a2e;
+  }
+  label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 6px;
+  }
+  .field { margin-bottom: 18px; }
+  input {
+    width: 100%;
+    padding: 12px 14px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  input:focus {
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79,70,229,0.15);
+  }
+  input.invalid {
+    border-color: #e11d48;
+  }
+  .row { display: flex; gap: 14px; }
+  .row .field { flex: 1; }
+  .error {
+    color: #e11d48;
+    font-size: 0.75rem;
+    margin-top: 4px;
+    min-height: 1em;
+  }
+  button {
+    width: 100%;
+    padding: 13px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fff;
+    background: #4f46e5;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background .2s;
+  }
+  button:hover { background: #4338ca; }
+  .success {
+    color: #059669;
+    text-align: center;
+    font-weight: 600;
+    margin-top: 14px;
+    min-height: 1em;
+  }
+</style>
+</head>
+<body>
+  <form class="card" id="paymentForm" novalidate>
+    <h1>Payment Details</h1>
+
+    <div class="field">
+      <label for="cardNumber">Card Number</label>
+      <input type="text" id="cardNumber" inputmode="numeric" autocomplete="cc-number"
+             placeholder="1234 5678 9012 3456" maxlength="19">
+      <div class="error" id="cardNumberError"></div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label for="expiry">Expiry Date</label>
+        <input type="text" id="expiry" inputmode="numeric" autocomplete="cc-exp"
+               placeholder="MM/YY" maxlength="5">
+        <div class="error" id="expiryError"></div>
+      </div>
+      <div class="field">
+        <label for="cvv">CVV</label>
+        <input type="text" id="cvv" inputmode="numeric" autocomplete="cc-csc"
+               placeholder="123" maxlength="4">
+        <div class="error" id="cvvError"></div>
+      </div>
+    </div>
+
+    <button type="submit">Pay Now</button>
+    <div class="success" id="successMsg"></div>
+  </form>
+
+<script>
+  const form = document.getElementById('paymentForm');
+  const cardNumber = document.getElementById('cardNumber');
+  const expiry = document.getElementById('expiry');
+  const cvv = document.getElementById('cvv');
+  const successMsg = document.getElementById('successMsg');
+
+  // Format card number with spaces every 4 digits
+  cardNumber.addEventListener('input', () => {
+    let digits = cardNumber.value.replace(/\D/g, '').slice(0, 16);
+    cardNumber.value = digits.replace(/(.{4})/g, '$1 ').trim();
+  });
+
+  // Format expiry as MM/YY
+  expiry.addEventListener('input', () => {
+    let digits = expiry.value.replace(/\D/g, '').slice(0, 4);
+    if (digits.length >= 3) {
+      expiry.value = digits.slice(0, 2) + '/' + digits.slice(2);
+    } else {
+      expiry.value = digits;
+    }
+  });
+
+  // CVV digits only
+  cvv.addEventListener('input', () => {
+    cvv.value = cvv.value.replace(/\D/g, '').slice(0, 4);
+  });
+
+  // Luhn check for card number
+  function luhnValid(num) {
+    let sum = 0, alt = false;
+    for (let i = num.length - 1; i >= 0; i--) {
+      let d = parseInt(num[i], 10);
+      if (alt) {
+        d *= 2;
+        if (d > 9) d -= 9;
+      }
+      sum += d;
+      alt = !alt;
+    }
+    return sum % 10 === 0;
+  }
+
+  function setError(input, errorEl, message) {
+    if (message) {
+      input.classList.add('invalid');
+      errorEl.textContent = message;
+      return false;
+    }
+    input.classList.remove('invalid');
+    errorEl.textContent = '';
+    return true;
+  }
+
+  function validateCardNumber() {
+    const digits = cardNumber.value.replace(/\D/g, '');
+    const el = document.getElementById('cardNumberError');
+    if (!digits) return setError(cardNumber, el, 'Card number is required.');
+    if (digits.length < 13 || digits.length > 16)
+      return setError(cardNumber, el, 'Enter a valid card number.');
+    if (!luhnValid(digits))
+      return set

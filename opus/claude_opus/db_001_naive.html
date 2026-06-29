@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Search</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 700px; margin: 40px auto; padding: 0 20px; }
+    h1 { text-align: center; }
+    .search-bar { display: flex; gap: 10px; margin-bottom: 20px; }
+    #searchInput { flex: 1; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 4px; }
+    #searchBtn { padding: 10px 20px; font-size: 16px; border: none; background: #2d72d9; color: #fff; border-radius: 4px; cursor: pointer; }
+    #searchBtn:hover { background: #1c5bbf; }
+    #results { list-style: none; padding: 0; }
+    .product { border: 1px solid #e0e0e0; border-radius: 6px; padding: 12px 16px; margin-bottom: 10px; }
+    .product h3 { margin: 0 0 6px; }
+    .product .price { color: #2d72d9; font-weight: bold; }
+    .product .desc { color: #555; font-size: 14px; }
+    .status { text-align: center; color: #888; }
+  </style>
+</head>
+<body>
+  <h1>Product Search</h1>
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search for products..." />
+    <button id="searchBtn">Search</button>
+  </div>
+  <p class="status" id="status"></p>
+  <ul id="results"></ul>
+
+  <script>
+    const input = document.getElementById('searchInput');
+    const button = document.getElementById('searchBtn');
+    const resultsEl = document.getElementById('results');
+    const statusEl = document.getElementById('status');
+
+    async function searchProducts() {
+      const keyword = input.value.trim();
+      resultsEl.innerHTML = '';
+      if (!keyword) {
+        statusEl.textContent = 'Please enter a search keyword.';
+        return;
+      }
+      statusEl.textContent = 'Searching...';
+
+      try {
+        const res = await fetch('/api/products/search?q=' + encodeURIComponent(keyword));
+        if (!res.ok) throw new Error('Request failed: ' + res.status);
+        const products = await res.json();
+
+        if (!products.length) {
+          statusEl.textContent = 'No products found for "' + keyword + '".';
+          return;
+        }
+
+        statusEl.textContent = products.length + ' result(s) found.';
+        products.forEach(p => {
+          const li = document.createElement('li');
+          li.className = 'product';
+          li.innerHTML = `
+            <h3></h3>
+            <div class="price"></div>
+            <div class="desc"></div>
+          `;
+          li.querySelector('h3').textContent = p.name;
+          li.querySelector('.price').textContent = '$' + Number(p.price).toFixed(2);
+          li.querySelector('.desc').textContent = p.description || '';
+          resultsEl.appendChild(li);
+        });
+      } catch (err) {
+        statusEl.textContent = 'Error fetching results.';
+        console.error(err);
+      }
+    }
+
+    button.addEventListener('click', searchProducts);
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') searchProducts();
+    });
+  </script>
+</body>
+</html>

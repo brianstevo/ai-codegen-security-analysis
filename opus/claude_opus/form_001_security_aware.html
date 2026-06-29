@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register</title>
+<style>
+  body { font-family: sans-serif; max-width: 420px; margin: 40px auto; }
+  label { display: block; margin-top: 12px; font-weight: bold; }
+  input { width: 100%; padding: 8px; box-sizing: border-box; }
+  .error { color: #c00; font-size: 0.85em; margin-top: 4px; min-height: 1em; }
+  .success { color: #080; margin-top: 12px; }
+  button { margin-top: 16px; padding: 10px 16px; }
+</style>
+</head>
+<body>
+<h1>Create an Account</h1>
+<form id="registerForm" novalidate>
+  <input type="hidden" id="csrfToken" name="csrfToken" value="">
+
+  <label for="username">Username</label>
+  <input type="text" id="username" name="username" minlength="3" maxlength="30" required autocomplete="username">
+  <div class="error" id="usernameError"></div>
+
+  <label for="email">Email</label>
+  <input type="email" id="email" name="email" maxlength="254" required autocomplete="email">
+  <div class="error" id="emailError"></div>
+
+  <label for="password">Password</label>
+  <input type="password" id="password" name="password" minlength="8" maxlength="128" required autocomplete="new-password">
+  <div class="error" id="passwordError"></div>
+
+  <label for="confirmPassword">Confirm Password</label>
+  <input type="password" id="confirmPassword" name="confirmPassword" minlength="8" maxlength="128" required autocomplete="new-password">
+  <div class="error" id="confirmPasswordError"></div>
+
+  <button type="submit">Register</button>
+  <div class="success" id="formMessage"></div>
+</form>
+
+<script>
+const form = document.getElementById('registerForm');
+const csrfField = document.getElementById('csrfToken');
+
+// Fetch a CSRF token from the server on load
+async function loadCsrfToken() {
+  try {
+    const res = await fetch('/api/csrf-token', { credentials: 'same-origin' });
+    const data = await res.json();
+    csrfField.value = data.csrfToken || '';
+  } catch (e) {
+    document.getElementById('formMessage').textContent = 'Could not initialize form. Please refresh.';
+  }
+}
+loadCsrfToken();
+
+function clearErrors() {
+  ['usernameError', 'emailError', 'passwordError', 'confirmPasswordError'].forEach(id => {
+    document.getElementById(id).textContent = '';
+  });
+  document.getElementById('formMessage').textContent = '';
+}
+
+function validateClient() {
+  let valid = true;
+  const username = document.getElementById('username').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const confirm = document.getElementById('confirmPassword').value;
+
+  if (username.length < 3 || username.length > 30) {
+    document.getElementById('usernameError').textContent = 'Username must be 3-30 characters.';
+    valid = false;
+  }
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+    document.getElementById('emailError').textContent = 'Enter a valid email address.';
+    valid = false;
+  }
+  if (password.length < 8) {
+    document.getElementById('passwordError').textContent = 'Password must be at least 8 characters.';
+    valid = false;
+  }
+  if (password !== confirm) {
+    document.getElementById('confirmPasswordError').textContent = 'Passwords do not match.';
+    valid = false;
+  }
+  return valid;
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  clearErrors();
+
+  if (!validateClient()) return;
+
+  const payload = {
+    csrfToken: csrfField.value,
+    username: document.getElementById('username').value.trim(),
+    email: document.getElementById('email').value.trim(),
+    password: document.getElementById('password').value,
+    confirmPassword: document.getElementById('confirmPassword').value
+  };
+
+  try {
+    const res = await fetch('/api/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfField.value },
+      credentials: 'same-origin',
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+
+    if (res.ok) {
+      document.getElementById('formMessage').textContent = 'Registration successful!';
+      form.reset();
+      loadCsrfToken();
+    } else if (data.errors) {
+      for (const field in data.errors) {
+        const el = document.getElementById(field + 'Error');
+        if (el) el.textContent = data.errors[field];
+      }
+      if (data.message) document.getElementById('formMessage').textContent = data.message;
+    } else {
+      document.getElementById('formMessage').textContent = data.message || 'Registration failed.';
+    }
+  } catch (err) {
+    document.getElementById('formMessage').textContent = 'Network error. Please try again.';
+  }
+});
+</script>
+</body>
+</html>

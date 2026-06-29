@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Profile</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 480px; margin: 40px auto; padding: 0 16px; }
+    label { display: block; margin: 12px 0 4px; font-weight: 600; }
+    input, textarea { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+    button { margin-top: 16px; padding: 10px 18px; border: 0; border-radius: 4px; background: #2563eb; color: #fff; cursor: pointer; }
+    button:disabled { opacity: .6; cursor: default; }
+    #feedback { margin-top: 16px; padding: 10px; border-radius: 4px; display: none; }
+    .success { background: #dcfce7; color: #166534; }
+    .error { background: #fee2e2; color: #991b1b; }
+    .field-error { color: #991b1b; font-size: .85em; min-height: 1em; }
+  </style>
+</head>
+<body>
+  <h1>Edit Profile</h1>
+  <form id="profileForm" novalidate>
+    <label for="displayName">Display Name</label>
+    <input type="text" id="displayName" name="displayName" maxlength="50" required>
+    <div class="field-error" id="err-displayName"></div>
+
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" maxlength="254" required>
+    <div class="field-error" id="err-email"></div>
+
+    <label for="bio">Bio</label>
+    <textarea id="bio" name="bio" rows="4" maxlength="500"></textarea>
+    <div class="field-error" id="err-bio"></div>
+
+    <label for="website">Website</label>
+    <input type="url" id="website" name="website" maxlength="200">
+    <div class="field-error" id="err-website"></div>
+
+    <button type="submit" id="submitBtn">Save Changes</button>
+  </form>
+
+  <div id="feedback"></div>
+
+  <script>
+    const form = document.getElementById('profileForm');
+    const feedback = document.getElementById('feedback');
+    const submitBtn = document.getElementById('submitBtn');
+
+    function showFeedback(msg, type) {
+      feedback.textContent = msg;
+      feedback.className = type;
+      feedback.style.display = 'block';
+    }
+
+    function clearFieldErrors() {
+      document.querySelectorAll('.field-error').forEach(el => el.textContent = '');
+    }
+
+    // Load current profile values
+    async function loadProfile() {
+      try {
+        const res = await fetch('/api/profile', {
+          headers: { 'Accept': 'application/json' },
+          credentials: 'same-origin'
+        });
+        if (!res.ok) throw new Error('Failed to load profile');
+        const data = await res.json();
+        document.getElementById('displayName').value = data.display_name || '';
+        document.getElementById('email').value = data.email || '';
+        document.getElementById('bio').value = data.bio || '';
+        document.getElementById('website').value = data.website || '';
+      } catch (e) {
+        showFeedback('Could not load your profile. Please refresh.', 'error');
+      }
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearFieldErrors();
+      feedback.style.display = 'none';
+      submitBtn.disabled = true;
+
+      const payload = {
+        displayName: document.getElementById('displayName').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        bio: document.getElementById('bio').value.trim(),
+        website: document.getElementById('website').value.trim()
+      };
+
+      try {
+        const res = await fetch('/api/profile', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          credentials: 'same-origin',
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (res.ok) {
+          showFeedback('Profile updated successfully.', 'success');
+        } else if (res.status === 400 && data.errors) {
+          for (const [field, msg] of Object.entries(data.errors)) {
+            const el = document.getElementById('err-' + field);
+            if (el) el.textContent = msg;
+          }
+          showFeedback('Please fix the highlighted errors.', 'error');
+        } else if (res.status === 401) {
+          showFeedback('You must be logged in to update your profile.', 'error');
+        } else if (res.status === 403) {
+          showFeedback('You are not allowed to perform this action.', 'error');
+        } else {
+          showFeedback(data.message || 'Something went wrong. Please try again.', 'error');
+        }
+      } catch (err) {
+        showFeedback('Network error. Please try again.', 'error');
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+
+    loadProfile();
+  </script>
+</body>
+</html>

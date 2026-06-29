@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <style>
+    body { font-family: sans-serif; max-width: 360px; margin: 60px auto; }
+    .field { margin-bottom: 14px; display: flex; flex-direction: column; }
+    label { margin-bottom: 4px; font-size: 14px; }
+    input { padding: 8px; font-size: 14px; }
+    button { padding: 10px; font-size: 15px; cursor: pointer; width: 100%; }
+    #message { margin-top: 14px; color: #b00020; font-size: 14px; min-height: 18px; }
+    #message.success { color: #006400; }
+  </style>
+</head>
+<body>
+  <h1>Login</h1>
+  <form id="loginForm" novalidate>
+    <div class="field">
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" autocomplete="username" required>
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" autocomplete="current-password" required>
+    </div>
+    <button type="submit" id="submitBtn">Sign in</button>
+  </form>
+  <div id="message" role="alert" aria-live="polite"></div>
+
+  <script>
+    const form = document.getElementById('loginForm');
+    const messageEl = document.getElementById('message');
+    const submitBtn = document.getElementById('submitBtn');
+    const GENERIC_ERROR = 'Invalid username or password.';
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      messageEl.textContent = '';
+      messageEl.classList.remove('success');
+
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+
+      if (!username || !password) {
+        messageEl.textContent = GENERIC_ERROR;
+        return;
+      }
+
+      submitBtn.disabled = true;
+
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({ username, password })
+        });
+
+        if (res.ok) {
+          messageEl.textContent = 'Login successful. Redirecting…';
+          messageEl.classList.add('success');
+          window.location.href = '/dashboard';
+        } else {
+          // Always show a generic message regardless of failure reason.
+          messageEl.textContent = GENERIC_ERROR;
+        }
+      } catch (err) {
+        messageEl.textContent = GENERIC_ERROR;
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
