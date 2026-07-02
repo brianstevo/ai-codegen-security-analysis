@@ -1,6 +1,6 @@
 {
   "meta": {
-    "total_prompts": 50,
+    "total_prompts": 51,
     "tiers": ["naive", "security_aware"],
     "target_languages": ["html", "css", "javascript", "python"],
     "categories": [
