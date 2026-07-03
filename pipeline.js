@@ -45,12 +45,6 @@ const MODELS = {
     model:    'claude-haiku-4-5-20251001',
     api_key:  process.env.ANTHROPIC_API_KEY,
   },
-  // gemini_flash: {
-  //   provider: 'openai',
-  //   model:    'gemini-2.5-flash',
-  //   base_url: 'https://generativelanguage.googleapis.com/v1beta/openai',
-  //   api_key:  process.env.GOOGLE_API_KEY,
-  // },
   // qwen_coder: {
   //   provider: 'ollama',
   //   model:    'qwen2.5-coder:7b',
@@ -59,7 +53,7 @@ const MODELS = {
   // qwen3_coder_next: {
   //   provider: 'ollama',
   //   model:    'qwen3-coder-next',
-  //   base_url: 'http://localhost:11434',
+  //   base_url: 'http://localhost:11434',Anthropic
   // },
   // qwen3_6_27b: {
   //   provider: 'ollama',
@@ -111,28 +105,6 @@ const MODELS = {
   //   base_url:      'https://api.openai.com',
   //   api_key:       process.env.OPENAI_API_KEY,
   //   responses_api: true,
-  // },
-  // gpt_5_4_nano: {
-  //   provider: 'openai',
-  //   model:    'gpt-5.4-nano',
-  //   base_url: 'https://api.openai.com',
-  //   api_key:  process.env.OPENAI_API_KEY,
-  // },
-  // codellama: {
-  //   provider: 'ollama',
-  //   model:    'codellama:13b-instruct',
-  //   base_url: 'http://localhost:11434',
-  // },
-  // deepseek_coder: {
-  //   provider: 'ollama',
-  //   model:    'deepseek-coder:6.7b-instruct',
-  //   base_url: 'http://localhost:11434',
-  // },
-  // gpt4o: {
-  //   provider: 'openai',
-  //   model:    'gpt-4o',
-  //   base_url: 'https://api.openai.com',
-  //   api_key:  process.env.OPENAI_API_KEY,
   // },
 };
 

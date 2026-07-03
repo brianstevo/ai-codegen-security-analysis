@@ -31,11 +31,21 @@ Prompts are tagged with `context: backend | frontend | both` to generate the app
 
 ## Models
 
-| Key | Model | Provider |
-|---|---|---|
-| `qwen_coder` | qwen2.5-coder:7b | Local Ollama (free) |
-| `gemini_flash` | gemini-2.5-flash | Google AI Studio (free tier) |
-| `claude_opus` | claude-opus-4-6 | Anthropic API |
+| Key | Model | Provider | Access |
+|---|---|---|---|
+| `qwen_coder` | Qwen2.5-Coder 7B | Alibaba | Local (Ollama) |
+| `qwen3_coder_next` | Qwen3-Coder-Next 80B | Alibaba | Local (Ollama) |
+| `qwen3_6_27b` | Qwen3.6 27B | Alibaba | Local (Ollama) |
+| `gemma4_31b` | Gemma4 31B | Google | Local (Ollama) |
+| `gpt_oss_120b` | GPT-OSS 120B | OpenAI | Local (Ollama) |
+| `glm_4_7_flash` | GLM-4.7-Flash 30B | Zhipu AI | Local (Ollama) |
+| `devstral_small_2` | Devstral-Small-2 24B | Mistral AI | Local (Ollama) |
+| `gpt_5_5` | GPT-5.5 | OpenAI | API |
+| `gpt_5_4_mini` | GPT-5.4-Mini | OpenAI | API |
+| `gpt_5_3_codex` | GPT-5.3-Codex | OpenAI | API |
+| `claude_opus` | Claude Opus 4.8 | Anthropic | API |
+| `claude_sonnet` | Claude Sonnet 4.6 | Anthropic | API |
+| `claude_haiku` | Claude Haiku 4.5 | Anthropic | API |
 
 ## Setup
 
