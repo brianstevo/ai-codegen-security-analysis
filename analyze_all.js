@@ -1,32 +1,33 @@
 /**
- * analyze.js — Static Analysis
+ * analyze_all.js — Static Analysis on all model output folders
  *
- * Runs Semgrep (CWE Top 25 + custom rules) on all generated files in latest_ran_output/,
- * parses the results, and writes findings.json with the schema:
- *   { model, prompt_id, tier, cwe_id, severity, rule, line, file }
+ * Runs Semgrep (CWE Top 25 + custom rules) on each model folder,
+ * saves findings.json inside each folder, and prints a combined summary.
  *
  * Usage:
- *   node analyze.js
+ *   node analyze_all.js
  */
 
-import { execSync }  from 'child_process';
-import fs            from 'fs/promises';
+import { execSync } from 'child_process';
+import fs           from 'fs/promises';
+import path         from 'path';
 
-const RAW_OUTPUTS_DIR = './latest_ran_output';
-const FINDINGS_FILE   = './latest_ran_output/findings.json';
+// Folders to skip — not model output folders
+const SKIP_DIRS = new Set([
+  'node_modules', 'latest_ran_output', 'custom_rules', '.git',
+]);
 
 // Semgrep
 
-function runSemgrep(config, label) {
+function runSemgrep(config, targetDir, label) {
   console.log(`Running Semgrep (${label})...`);
   try {
     const stdout = execSync(
-      `semgrep --config=${config} ${RAW_OUTPUTS_DIR} --json --quiet`,
+      `semgrep --config=${config} ${targetDir} --json --quiet`,
       { maxBuffer: 50 * 1024 * 1024 }
     ).toString();
     return JSON.parse(stdout);
   } catch (err) {
-    // Semgrep exits with code 1 when findings exist — stdout still has valid JSON
     if (err.stdout) {
       try { return JSON.parse(err.stdout.toString()); } catch {}
     }
@@ -35,17 +36,10 @@ function runSemgrep(config, label) {
   }
 }
 
-/**
- * Parse model, prompt_id, tier, and language from a file path.
- * Expected formats:
- *   latest_ran_output/{model}/{prompt_id}_{tier}.{ext}
- *   latest_ran_output/{model}/{prompt_id}_{tier}_backend.{ext}
- *   output_number_N/{model}/{prompt_id}_{tier}.{ext}
- */
-function parseFilePath(filePath) {
-  const parts = filePath.replace(/\\/g, '/').split('/');
+// Parsers
 
-  // model is always the second-to-last path segment
+function parseFilePath(filePath) {
+  const parts    = filePath.replace(/\\/g, '/').split('/');
   const model    = parts[parts.length - 2] ?? 'unknown';
   const filename = parts[parts.length - 1];
 
@@ -53,7 +47,6 @@ function parseFilePath(filePath) {
   const ext      = extMatch?.[1] ?? 'txt';
   const language = ext === 'py' ? 'python' : ext === 'js' ? 'javascript' : ext;
 
-  // Strip extension, then strip optional _backend suffix
   let basename = filename.replace(/\.(js|html|css|py|txt)$/, '');
   if (basename.endsWith('_backend')) {
     basename = basename.slice(0, -'_backend'.length);
@@ -74,10 +67,6 @@ function parseFilePath(filePath) {
   return { model, prompt_id, tier, language };
 }
 
-/**
- * Extract the first CWE ID string (e.g. "CWE-79") from Semgrep metadata.
- * Semgrep returns CWE as an array of strings like ["CWE-79: Improper Neutralization..."]
- */
 function extractCwe(metadata) {
   const cwes = metadata?.cwe ?? metadata?.['cwe-id'] ?? [];
   const list  = Array.isArray(cwes) ? cwes : [cwes];
@@ -88,14 +77,10 @@ function extractCwe(metadata) {
   return 'unknown';
 }
 
-// Parser
-
 function parseSemgrepFindings(semgrepData) {
   const findings = [];
-
   for (const result of semgrepData.results ?? []) {
     const { model, prompt_id, tier, language } = parseFilePath(result.path);
-
     findings.push({
       model,
       prompt_id,
@@ -109,8 +94,17 @@ function parseSemgrepFindings(semgrepData) {
       file:     result.path,
     });
   }
-
   return findings;
+}
+
+function deduplicate(findings) {
+  const seen = new Set();
+  return findings.filter(f => {
+    const key = `${f.file}|${f.rule}|${f.line}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 // Summary
@@ -122,39 +116,53 @@ function printSummary(findings) {
   const byLangCwe  = {};
   const byTier     = {};
   const byTierCwe  = {};
+  const byModelTier = {};
 
   for (const f of findings) {
     byModel[f.model]       = (byModel[f.model]       ?? 0) + 1;
     byCwe[f.cwe_id]        = (byCwe[f.cwe_id]        ?? 0) + 1;
     byLanguage[f.language] = (byLanguage[f.language] ?? 0) + 1;
+    byTier[f.tier]         = (byTier[f.tier]         ?? 0) + 1;
 
-    const langCweKey = `${f.language}|${f.cwe_id}`;
+    const langCweKey  = `${f.language}|${f.cwe_id}`;
     byLangCwe[langCweKey] = (byLangCwe[langCweKey] ?? 0) + 1;
 
-    byTier[f.tier] = (byTier[f.tier] ?? 0) + 1;
-    const tierCweKey = `${f.tier}|${f.cwe_id}`;
+    const tierCweKey  = `${f.tier}|${f.cwe_id}`;
     byTierCwe[tierCweKey] = (byTierCwe[tierCweKey] ?? 0) + 1;
+
+    const modelTierKey = `${f.model}|${f.tier}`;
+    byModelTier[modelTierKey] = (byModelTier[modelTierKey] ?? 0) + 1;
   }
 
+  // By model (with naive/SA split)
   console.log('\nFindings by model');
-  for (const [model, count] of Object.entries(byModel)) {
-    console.log(`  ${model.padEnd(20)} ${count}`);
+  console.log(`  ${'Model'.padEnd(25)} ${'Naive'.padEnd(8)} ${'SA'.padEnd(8)} Total`);
+  const modelsSorted = Object.entries(byModel).sort((a, b) => b[1] - a[1]);
+  for (const [model, total] of modelsSorted) {
+    const naive = byModelTier[`${model}|naive`]          ?? 0;
+    const sa    = byModelTier[`${model}|security_aware`] ?? 0;
+    console.log(`  ${model.padEnd(25)} ${String(naive).padEnd(8)} ${String(sa).padEnd(8)} ${total}`);
   }
 
+  // By CWE
   console.log('\nFindings by CWE');
+  console.log(`  ${'CWE'.padEnd(12)} ${'Count'.padEnd(8)} %`);
+  const total = findings.length;
   for (const [cwe, count] of Object.entries(byCwe).sort((a, b) => b[1] - a[1])) {
-    console.log(`  ${cwe.padEnd(12)} ${count}`);
+    console.log(`  ${cwe.padEnd(12)} ${String(count).padEnd(8)} ${(count / total * 100).toFixed(1)}%`);
   }
 
+  // By language
   console.log('\nFindings by language');
   for (const [lang, count] of Object.entries(byLanguage).sort((a, b) => b[1] - a[1])) {
-    console.log(`  ${lang.padEnd(12)} ${count}`);
+    console.log(`  ${lang.padEnd(12)} ${count}  (${(count / total * 100).toFixed(1)}%)`);
   }
 
+  // Language × CWE table
   console.log('\nFindings by language x CWE');
   const languages = [...new Set(findings.map(f => f.language))].sort();
   const cwes      = [...new Set(findings.map(f => f.cwe_id))].sort();
-  const colW = 10;
+  const colW = 12;
   const header = 'CWE'.padEnd(12) + languages.map(l => l.padEnd(colW)).join('');
   console.log('  ' + header);
   for (const cwe of cwes) {
@@ -165,23 +173,34 @@ function printSummary(findings) {
     console.log('  ' + row);
   }
 
+  // By tier
   console.log('\nFindings by prompt tier');
   for (const [tier, count] of Object.entries(byTier).sort((a, b) => b[1] - a[1])) {
-    console.log(`  ${tier.padEnd(20)} ${count}`);
+    console.log(`  ${tier.padEnd(20)} ${count}  (${(count / total * 100).toFixed(1)}%)`);
   }
 
+  // Tier × CWE table
   console.log('\nFindings by tier x CWE');
-  const tiers    = ['naive', 'security_aware'].filter(t => byTier[t] !== undefined);
-  const tierCwes = [...new Set(findings.map(f => f.cwe_id))].sort();
+  const tiers    = ['naive', 'security_aware'].filter(t => byTier[t]);
   const tierColW = 16;
   const tierHeader = 'CWE'.padEnd(12) + tiers.map(t => t.padEnd(tierColW)).join('');
   console.log('  ' + tierHeader);
-  for (const cwe of tierCwes) {
+  for (const cwe of cwes) {
     const row = cwe.padEnd(12) + tiers.map(t => {
       const count = byTierCwe[`${t}|${cwe}`] ?? 0;
       return (count === 0 ? '-' : String(count)).padEnd(tierColW);
     }).join('');
     console.log('  ' + row);
+  }
+
+  // Severity breakdown
+  console.log('\nFindings by severity');
+  const bySeverity = {};
+  for (const f of findings) {
+    bySeverity[f.severity] = (bySeverity[f.severity] ?? 0) + 1;
+  }
+  for (const [sev, count] of Object.entries(bySeverity).sort((a, b) => b[1] - a[1])) {
+    console.log(`  ${sev.padEnd(12)} ${count}  (${(count / total * 100).toFixed(1)}%)`);
   }
 
   console.log(`\n  Total findings: ${findings.length}`);
@@ -190,27 +209,36 @@ function printSummary(findings) {
 // Main
 
 async function main() {
-  const cweTop25Data = runSemgrep('p/cwe-top-25',    'CWE Top 25');
-  const customData   = runSemgrep('./custom_rules/', 'custom innerHTML/eval');
+  const baseDir = new URL('.', import.meta.url).pathname;
+  const entries = await fs.readdir(baseDir, { withFileTypes: true });
 
-  const findings = [
-    ...parseSemgrepFindings(cweTop25Data),
-    ...parseSemgrepFindings(customData),
-  ];
+  const modelDirs = entries
+    .filter(e => e.isDirectory() && !SKIP_DIRS.has(e.name))
+    .map(e => path.join(baseDir, e.name));
 
-  // Deduplicate: same file + rule + line
-  const seen    = new Set();
-  const unique  = findings.filter(f => {
-    const key = `${f.file}|${f.rule}|${f.line}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
+  const allFindings = [];
 
-  await fs.writeFile(FINDINGS_FILE, JSON.stringify(unique, null, 2), 'utf-8');
+  for (const dir of modelDirs) {
+    const name = path.basename(dir);
+    console.log(`\nScanning ${name}...`);
 
-  printSummary(unique);
-  console.log(`\nSaved → ${FINDINGS_FILE}`);
+    const cweData    = runSemgrep('p/cwe-top-25',    dir, `${name} CWE Top 25`);
+    const customData = runSemgrep('./custom_rules/',  dir, `${name} custom rules`);
+
+    const findings = deduplicate([
+      ...parseSemgrepFindings(cweData),
+      ...parseSemgrepFindings(customData),
+    ]);
+
+    const outFile = path.join(dir, 'findings.json');
+    await fs.writeFile(outFile, JSON.stringify(findings, null, 2), 'utf-8');
+    console.log(`  ${findings.length} findings → ${outFile}`);
+
+    allFindings.push(...findings);
+  }
+
+  printSummary(allFindings);
+  console.log(`\nDone. Total across all folders: ${allFindings.length}`);
 }
 
 main().catch(err => {

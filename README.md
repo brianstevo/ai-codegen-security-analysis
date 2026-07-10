@@ -85,7 +85,12 @@ node pipeline.js --dry-run
 ### Run static analysis
 
 ```bash
+# Scan latest_ran_output/ and write findings.json there
 node analyze.js
+
+# Scan all model output folders (devstral-glm/, gemma4-31b/, etc.)
+# Writes findings.json inside each folder and prints a combined summary
+node analyze_all.js
 ```
 
 ## Output Structure

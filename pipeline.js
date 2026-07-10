@@ -23,7 +23,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 
-// ─── Configuration ────────────────────────────────────────────────────────────
+// Configuration
 
 const PROMPTS_FILE = './prompts.json';
 const OUTPUT_DIR   = './latest_ran_output';
@@ -111,7 +111,7 @@ const MODELS = {
 // Delay between requests to avoid overloading a local Ollama server (ms)
 const REQUEST_DELAY_MS = 500;
 
-// ─── System prompts ───────────────────────────────────────────────────────────
+// System prompts
 
 function buildSystemPrompt(context) {
   if (context === 'frontend') {
@@ -151,7 +151,7 @@ function buildPythonSystemPrompt() {
   );
 }
 
-// ─── API adapters ─────────────────────────────────────────────────────────────
+// API adapters
 
 // Each adapter returns { text, tokens: { input, output } }
 
@@ -300,7 +300,7 @@ async function callModel(modelKey, cfg, systemPrompt, userPrompt) {
   throw new Error(`Unknown provider: ${cfg.provider}`);
 }
 
-// ─── Code extraction ──────────────────────────────────────────────────────────
+// Code extraction
 
 const LANG_ALIASES = {
   javascript: ['javascript', 'js'],
@@ -341,7 +341,7 @@ function extractBothBlocks(text) {
   };
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// Helpers
 
 const EXT_MAP = { javascript: 'js', html: 'html', css: 'css', python: 'py' };
 
@@ -385,7 +385,7 @@ async function appendLog(entry) {
   await fs.appendFile(LOG_FILE, JSON.stringify(entry) + '\n', 'utf-8');
 }
 
-// ─── Main ─────────────────────────────────────────────────────────────────────
+// Main
 
 async function main() {
   const { modelFilter, dryRun, newRun } = parseArgs();
@@ -449,7 +449,7 @@ async function main() {
         const label = `${modelKey}/${prompt.id}/${tier}`;
 
         if (prompt.context === 'both') {
-          // ── "both": one API call → html (frontend) + _backend.js ──────────
+          // "both": one API call → html (frontend) + _backend.js
           done++;
           const htmlFile    = path.join(modelDir, `${prompt.id}_${tier}.html`);
           const backendFile = path.join(modelDir, `${prompt.id}_${tier}_backend.js`);
@@ -491,7 +491,7 @@ async function main() {
             await sleep(REQUEST_DELAY_MS);
           }
 
-          // ── Python backend for "both" prompts ────────────────────────────
+          // Python backend for "both" prompts
           if (prompt.python_naive) {
             done++;
             const pyFile = path.join(modelDir, `${prompt.id}_${tier}_backend.py`);
@@ -533,7 +533,7 @@ async function main() {
           }
 
         } else {
-          // ── Normal context (frontend / backend) ──────────────────────────
+          // Normal context (frontend / backend)
           done++;
           const ext     = fileExt(prompt.language);
           const outFile = path.join(modelDir, `${prompt.id}_${tier}.${ext}`);
@@ -574,7 +574,7 @@ async function main() {
             await sleep(REQUEST_DELAY_MS);
           }
 
-          // ── Python backend (backend-context prompts only) ─────────────────
+          // Python backend (backend-context prompts only)
           if (prompt.context === 'backend' && prompt.python_naive) {
             done++;
             const pyFile = path.join(modelDir, `${prompt.id}_${tier}.py`);

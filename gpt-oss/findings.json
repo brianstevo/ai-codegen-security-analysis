@@ -9,7 +9,7 @@
     "tool": "semgrep",
     "rule": "javascript.express.security.audit.express-session-hardcoded-secret.express-session-hardcoded-secret",
     "line": 18,
-    "file": "latest_ran_output/gpt_oss_120b/auth_004_security_aware.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/gpt-oss/gpt_oss_120b/auth_004_security_aware.js"
   },
   {
     "model": "gpt_oss_120b",
@@ -21,7 +21,7 @@
     "tool": "semgrep",
     "rule": "javascript.express.security.audit.express-session-hardcoded-secret.express-session-hardcoded-secret",
     "line": 11,
-    "file": "latest_ran_output/gpt_oss_120b/cors_004_security_aware.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/gpt-oss/gpt_oss_120b/cors_004_security_aware.js"
   },
   {
     "model": "gpt_oss_120b",
@@ -33,7 +33,7 @@
     "tool": "semgrep",
     "rule": "javascript.express.security.audit.xss.direct-response-write.direct-response-write",
     "line": 81,
-    "file": "latest_ran_output/gpt_oss_120b/cors_004_security_aware.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/gpt-oss/gpt_oss_120b/cors_004_security_aware.js"
   },
   {
     "model": "gpt_oss_120b",
@@ -45,7 +45,7 @@
     "tool": "semgrep",
     "rule": "python.flask.security.audit.directly-returned-format-string.directly-returned-format-string",
     "line": 79,
-    "file": "latest_ran_output/gpt_oss_120b/cors_004_security_aware.py"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/gpt-oss/gpt_oss_120b/cors_004_security_aware.py"
   },
   {
     "model": "gpt_oss_120b",
@@ -57,7 +57,7 @@
     "tool": "semgrep",
     "rule": "javascript.express.security.audit.express-path-join-resolve-traversal.express-path-join-resolve-traversal",
     "line": 14,
-    "file": "latest_ran_output/gpt_oss_120b/file_002_naive.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/gpt-oss/gpt_oss_120b/file_002_naive.js"
   },
   {
     "model": "gpt_oss_120b",
@@ -69,7 +69,7 @@
     "tool": "semgrep",
     "rule": "javascript.express.security.audit.express-path-join-resolve-traversal.express-path-join-resolve-traversal",
     "line": 33,
-    "file": "latest_ran_output/gpt_oss_120b/file_002_security_aware.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/gpt-oss/gpt_oss_120b/file_002_security_aware.js"
   },
   {
     "model": "gpt_oss_120b",
@@ -81,7 +81,7 @@
     "tool": "semgrep",
     "rule": "javascript.express.security.audit.express-path-join-resolve-traversal.express-path-join-resolve-traversal",
     "line": 41,
-    "file": "latest_ran_output/gpt_oss_120b/file_003_security_aware_backend.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/gpt-oss/gpt_oss_120b/file_003_security_aware_backend.js"
   },
   {
     "model": "gpt_oss_120b",
@@ -93,7 +93,7 @@
     "tool": "semgrep",
     "rule": "javascript.express.security.injection.raw-html-format.raw-html-format",
     "line": 37,
-    "file": "latest_ran_output/gpt_oss_120b/render_003_security_aware_backend.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/gpt-oss/gpt_oss_120b/render_003_security_aware_backend.js"
   },
   {
     "model": "gpt_oss_120b",
@@ -105,7 +105,7 @@
     "tool": "semgrep",
     "rule": "javascript.express.security.audit.xss.direct-response-write.direct-response-write",
     "line": 41,
-    "file": "latest_ran_output/gpt_oss_120b/render_003_security_aware_backend.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/gpt-oss/gpt_oss_120b/render_003_security_aware_backend.js"
   },
   {
     "model": "gpt_oss_120b",
@@ -117,7 +117,7 @@
     "tool": "semgrep",
     "rule": "javascript.jsonwebtoken.security.jwt-hardcode.hardcoded-jwt-secret",
     "line": 88,
-    "file": "latest_ran_output/gpt_oss_120b/render_005_naive.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/gpt-oss/gpt_oss_120b/render_005_naive.js"
   },
   {
     "model": "gpt_oss_120b",
@@ -129,7 +129,7 @@
     "tool": "semgrep",
     "rule": "javascript.jsonwebtoken.security.jwt-hardcode.hardcoded-jwt-secret",
     "line": 113,
-    "file": "latest_ran_output/gpt_oss_120b/render_005_naive.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/gpt-oss/gpt_oss_120b/render_005_naive.js"
   },
   {
     "model": "gpt_oss_120b",
@@ -141,7 +141,7 @@
     "tool": "semgrep",
     "rule": "javascript.express.security.audit.express-session-hardcoded-secret.express-session-hardcoded-secret",
     "line": 19,
-    "file": "latest_ran_output/gpt_oss_120b/render_005_security_aware.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/gpt-oss/gpt_oss_120b/render_005_security_aware.js"
   },
   {
     "model": "gpt_oss_120b",
@@ -153,6 +153,6 @@
     "tool": "semgrep",
     "rule": "python.jwt.security.unverified-jwt-decode.unverified-jwt-decode",
     "line": 115,
-    "file": "latest_ran_output/gpt_oss_120b/third_001_naive.py"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/gpt-oss/gpt_oss_120b/third_001_naive.py"
   }
 ]
