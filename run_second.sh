@@ -14,6 +14,21 @@ exec > >(tee -a "$LOG") 2>&1
 
 log() { echo "[$(date '+%H:%M:%S')] $*"; }
 
+setup_node() {
+  if ! command -v node &>/dev/null; then
+    log "Node.js not found — installing v20..."
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+    apt-get install -y nodejs
+    if ! command -v node &>/dev/null; then
+      log "ERROR: Node.js install failed — aborting"
+      exit 1
+    fi
+    log "Node.js installed: $(node --version)"
+  else
+    log "Node.js already installed: $(node --version)"
+  fi
+}
+
 setup_ollama() {
   # Install ollama if missing
   if ! command -v ollama &>/dev/null; then
@@ -60,6 +75,7 @@ run_ollama_model() {
 }
 
 log "====== Second run started (open-weight models only) ======"
+setup_node
 setup_ollama
 
 # --- Ollama models (pull → run → delete) ---
