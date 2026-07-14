@@ -3,37 +3,25 @@ import sqlite3
 
 app = Flask(__name__)
 
-def get_db_connection():
-    conn = sqlite3.connect('database.db')
-    conn.row_factory = sqlite3.Row
-    return conn
-
 @app.route('/products', methods=['GET'])
-def filter_products():
+def get_products():
     category = request.args.get('category')
-    min_price = request.args.get('min_price', type=float)
-    max_price = request.args.get('max_price', type=float)
+    min_price = float(request.args.get('min_price'))
+    max_price = float(request.args.get('max_price'))
 
-    conn = get_db_connection()
-    query = "SELECT * FROM products WHERE 1=1"
-    params = []
-
-    if category:
-        query += " AND category = ?"
-        params.append(category)
-
-    if min_price is not None:
-        query += " AND price >= ?"
-        params.append(min_price)
-
-    if max_price is not None:
-        query += " AND price <= ?"
-        params.append(max_price)
-
-    products = conn.execute(query, params).fetchall()
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    
+    query = "SELECT * FROM products WHERE category=? AND price BETWEEN ? AND ?"
+    cursor.execute(query, (category, min_price, max_price))
+    
+    results = cursor.fetchall()
+    columns = [description[0] for description in cursor.description]
+    products = [dict(zip(columns, row)) for row in results]
+    
     conn.close()
-
-    return jsonify([dict(product) for product in products])
+    
+    return jsonify(products)
 
 if __name__ == '__main__':
     app.run(debug=True)

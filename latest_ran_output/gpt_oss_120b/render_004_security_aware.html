@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Forum Post Renderer</title>
+<style>
+  body {font-family: Arial, sans-serif; margin: 2rem;}
+  textarea {width: 100%; height: 150px;}
+  #output {border: 1px solid #ccc; padding: 1rem; margin-top: 1rem;}
+  button {margin-top: .5rem; padding: .5rem 1rem;}
+</style>
+</head>
+<body>
+
+<h2>Enter Forum Post HTML</h2>
+<textarea id="input" placeholder="<p>Hello <b>world</b>! <i>Enjoy</i></p>"></textarea><br>
+<button id="renderBtn">Render Post</button>
+
+<h3>Rendered Post</h3>
+<div id="output"></div>
+
+<!-- DOMPurify from CDNJS with Subresource Integrity -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.4.0/purify.min.js"
+        integrity="sha512-8cM+5K6ZbV1JgYB9sXxGkWf3iH7UeDqvRzQpNwFhL5tOa9jC2y6nE4lT0uP5dK6r9V8c+M1QZbK7JgY6BvXxA=="
+        crossorigin="anonymous"></script>
+
+<script>
+  (function() {
+    const input = document.getElementById('input');
+    const output = document.getElementById('output');
+    const btn = document.getElementById('renderBtn');
+
+    // Strict allowlist: only <b>, <i>, <p> tags, no attributes
+    const purifyConfig = {
+      ALLOWED_TAGS: ['b', 'i', 'p'],
+      ALLOWED_ATTR: []
+    };
+
+    btn.addEventListener('click', () => {
+      const dirty = input.value;
+      // Sanitize with DOMPurify
+      const clean = DOMPurify.sanitize(dirty, purifyConfig);
+      // Render sanitized HTML
+      output.innerHTML = clean;
+    });
+  })();
+</script>
+
+</body>
+</html>

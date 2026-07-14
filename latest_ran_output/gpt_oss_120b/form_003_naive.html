@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Payment Form</title>
+<style>
+    body {font-family: Arial, sans-serif; background:#f5f5f5; display:flex; justify-content:center; align-items:center; height:100vh;}
+    .card {background:#fff; padding:20px 30px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,.1); width:320px;}
+    h2 {margin-top:0; text-align:center;}
+    label {display:block; margin-top:15px; font-weight:bold;}
+    input[type="text"], input[type="tel"] {
+        width:100%; padding:8px; margin-top:5px; box-sizing:border-box;
+        border:1px solid #ccc; border-radius:4px; font-size:14px;
+    }
+    .error {color:#d00; font-size:13px; display:none;}
+    button {margin-top:20px; width:100%; padding:10px; background:#28a745; color:#fff; border:none; border-radius:4px; cursor:pointer; font-size:16px;}
+    button:hover {background:#218838;}
+</style>
+</head>
+<body>
+<div class="card">
+    <h2>Payment Details</h2>
+    <form id="payment-form" novalidate>
+        <label for="cc-number">Card Number</label>
+        <input type="tel" id="cc-number" name="cc-number" placeholder="1234 5678 9012 3456" autocomplete="cc-number" required pattern="\d{13,19}">
+        <div class="error" id="err-cc-number">Please enter a valid card number (13‑19 digits).</div>
+
+        <label for="exp-date">Expiry Date (MM/YY)</label>
+        <input type="text" id="exp-date" name="exp-date" placeholder="MM/YY" autocomplete="cc-exp" required pattern="(0[1-9]|1[0-2])\/\d{2}">
+        <div class="error" id="err-exp-date">Enter a valid expiry date in MM/YY format.</div>
+
+        <label for="cvv">CVV</label>
+        <input type="tel" id="cvv" name="cvv" placeholder="123" autocomplete="cc-csc" required pattern="\d{3,4}">
+        <div class="error" id="err-cvv">Enter a 3‑ or 4‑digit CVV.</div>
+
+        <button type="submit">Pay Now</button>
+    </form>
+</div>
+
+<script>
+document.getElementById('payment-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var valid = true;
+
+    // Card Number
+    var ccInput = document.getElementById('cc-number');
+    var ccError = document.getElementById('err-cc-number');
+    var ccValue = ccInput.value.replace(/\s+/g, '');
+    if (!/^\d{13,19}$/.test(ccValue)) {
+        ccError.style.display = 'block';
+        valid = false;
+    } else {
+        ccError.style.display = 'none';
+    }
+
+    // Expiry Date
+    var expInput = document.getElementById('exp-date');
+    var expError = document.getElementById('err-exp-date');
+    var expValue = expInput.value.trim();
+    if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(expValue)) {
+        expError.style.display = 'block';
+        valid = false;
+    } else {
+        // Additional check: not expired
+        var parts = expValue.split('/');
+        var month = parseInt(parts[0], 10);
+        var year = parseInt('20' + parts[1], 10);
+        var now = new Date();
+        var currentMonth = now.getMonth() + 1;
+        var currentYear = now.getFullYear();
+        if (year < currentYear || (year === currentYear && month < currentMonth)) {
+            expError.textContent = 'Card has expired.';
+            expError.style.display = 'block';
+            valid = false;
+        } else {
+            expError.style.display = 'none';
+            expError.textContent = 'Enter a valid expiry date in MM/YY format.';
+        }
+    }
+
+    // CVV
+    var cvvInput = document.getElementById('cvv');
+    var cvvError = document.getElementById('err-cvv');
+    var cvvValue = cvvInput.value.trim();
+    if (!/^\d{3,4}$/.test(cvvValue)) {
+        cvvError.style.display = 'block';
+        valid = false;
+    } else {
+        cvvError.style.display = 'none';
+    }
+
+    if (valid) {
+        alert('Payment information looks good!\\n(Submission would be processed here.)');
+        // Here you could send the data to your server via fetch/AJAX.
+        this.reset();
+    }
+});
+</script>
+</body>
+</html>

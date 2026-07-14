@@ -3,29 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Comment Fetcher</title>
+    <title>Comments</title>
 </head>
 <body>
     <div id="comments"></div>
 
     <script>
-        async function fetchComments() {
+        async function fetchAndRenderComments() {
             try {
-                const response = await fetch('https://jsonplaceholder.typicode.com/comments');
+                const response = await fetch('https://api.example.com/comments');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
                 const comments = await response.json();
+
                 const commentsContainer = document.getElementById('comments');
 
                 comments.forEach(comment => {
-                    const commentDiv = document.createElement('div');
-                    commentDiv.textContent = `User: ${comment.name}\nComment: ${comment.body}`;
-                    commentsContainer.appendChild(commentDiv);
+                    const commentElement = document.createElement('div');
+                    commentElement.textContent = comment.text;
+                    commentsContainer.appendChild(commentElement);
                 });
             } catch (error) {
-                console.error('Error fetching comments:', error);
+                console.error('There was a problem with the fetch operation:', error);
             }
         }
 
-        fetchComments();
+        fetchAndRenderComments();
     </script>
 </body>
 </html>

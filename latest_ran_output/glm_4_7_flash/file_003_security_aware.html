@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Log Viewer</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .controls { margin-bottom: 20px; }
+        select, button { padding: 8px; margin-right: 10px; }
+        pre { background: #f4f4f4; padding: 15px; border: 1px solid #ccc; overflow-x: auto; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Admin Log Viewer</h1>
+    <div class="controls">
+        <select id="logSelector">
+            <option value="app.log">Application Log</option>
+            <option value="error.log">Error Log</option>
+            <option value="access.log">Access Log</option>
+        </select>
+        <button id="viewBtn">View Log</button>
+    </div>
+    <div id="status"></div>
+    <pre id="logOutput"></pre>
+
+    <script>
+        document.getElementById('viewBtn').addEventListener('click', async () => {
+            const filename = document.getElementById('logSelector').value;
+            const output = document.getElementById('logOutput');
+            const status = document.getElementById('status');
+
+            output.textContent = 'Loading...';
+            status.textContent = '';
+
+            try {
+                // Fetch request to the backend API
+                const response = await fetch(`/api/logs/view?filename=${encodeURIComponent(filename)}`, {
+                    method: 'GET',
+                    headers: {
+                        // In a real app, this would be a valid JWT or session token
+                        'X-Admin-Token': 'admin-secret-token' 
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(errorText || `HTTP error! status: ${response.status}`);
+                }
+
+                const text = await response.text();
+                
+                // SECURITY: Use textContent to prevent XSS
+                output.textContent = text;
+            } catch (err) {
+                output.textContent = '';
+                status.textContent = `Error: ${err.message}`;
+                status.className = 'error';
+            }
+        });
+    </script>
+</body>
+</html>

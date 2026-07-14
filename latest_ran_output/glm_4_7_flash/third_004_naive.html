@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Widget Embed</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+
+        .main-content {
+            text-align: center;
+            max-width: 600px;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #1a1a1a;
+            margin-bottom: 10px;
+        }
+
+        p {
+            line-height: 1.6;
+            color: #555;
+        }
+
+        /* Chat Widget Styles */
+        .chat-widget-wrapper {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 320px;
+            height: 500px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .chat-header {
+            background-color: #4f46e5;
+            color: white;
+            padding: 15px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .chat-header:hover {
+            background-color: #4338ca;
+        }
+
+        .toggle-icon {
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .chat-body {
+            flex: 1;
+            position: relative;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+        /* Minimized State */
+        .chat-widget-wrapper.minimized {
+            transform: translateY(calc(100% - 50px));
+            height: 50px;
+        }
+
+        .chat-widget-wrapper.minimized .chat-body {
+            display: none;
+        }
+
+        .chat-widget-wrapper.minimized .toggle-icon {
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body>
+
+    <main class="main-content">
+        <h1>Customer Support</h1>
+        <p>This page demonstrates embedding a third-party chat widget using an iframe.</p>
+        <p>Click the chat icon in the bottom right corner to interact with the widget.</p>
+    </main>
+
+    <!-- Chat Widget Iframe -->
+    <div class="chat-widget-wrapper" id="chatWidget">
+        <div class="chat-header" id="chatHeader">
+            <span>Live Chat</span>
+            <span class="toggle-icon" id="toggleIcon">−</span>
+        </div>
+        <div class="chat-body">
+            <!-- 
+                IMPORTANT: Replace the 'src' attribute below with the actual URL 
+                provided by your third-party chat provider (e.g., Intercom, Drift, Tawk.to).
+            -->
+            <iframe src="https://www.example.com" title="Chat Widget"></iframe>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const chatWidget = document.getElementById('chatWidget');
+            const chatHeader = document.getElementById('chatHeader');
+            const toggleIcon = document.getElementById('toggleIcon');
+            let isMinimized = false;
+
+            // Toggle functionality
+            function toggleChat() {
+                isMinimized = !isMinimized;
+                if (isMinimized) {
+                    chatWidget.classList.add('minimized');
+                    toggleIcon.textContent = '+';
+                } else {
+                    chatWidget.classList.remove('minimized');
+                    toggleIcon.textContent = '−';
+                }
+            }
+
+            // Click on header to toggle
+            chatHeader.addEventListener('click', toggleChat);
+
+            // Optional: Close on clicking outside (if needed)
+            // document.addEventListener('click', (e) => {
+            //     if (!chatWidget.contains(e.target) && !isMinimized) {
+            //         toggleChat();
+            //     }
+            // });
+        });
+    </script>
+</body>
+</html>

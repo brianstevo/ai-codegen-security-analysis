@@ -11,16 +11,9 @@
             localStorage.setItem('jwt', jwt);
         }
 
-        function getJwt() {
-            return localStorage.getItem('jwt');
-        }
-
         // Example usage:
         const receivedJwt = 'your.jwt.token.here';
         storeJwt(receivedJwt);
-
-        const storedJwt = getJwt();
-        console.log(storedJwt); // Output: your.jwt.token.here
     </script>
 </body>
 </html>

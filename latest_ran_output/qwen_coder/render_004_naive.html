@@ -8,7 +8,7 @@
         .post {
             border: 1px solid #ccc;
             padding: 10px;
-            margin: 20px;
+            margin: 10px 0;
         }
         .bold {
             font-weight: bold;
@@ -20,22 +20,23 @@
 </head>
 <body>
     <div class="post" id="forumPost">
-        <p><span class="bold">This is a bold text.</span> This is a normal text. <span class="italic">This is an italic text.</span></p>
+        <p><span class="bold">John Doe:</span> This is a <span class="italic">great</span> post!</p>
+        <p><span class="bold">Jane Smith:</span> I agree. It's <span class="italic">very informative</span>.</p>
     </div>
 
     <script>
-        // JavaScript to dynamically add formatting
+        // JavaScript code to dynamically add formatting
         const post = document.getElementById('forumPost');
         const paragraphs = post.getElementsByTagName('p');
 
         for (let i = 0; i < paragraphs.length; i++) {
-            const spans = paragraphs[i].getElementsByTagName('span');
-            for (let j = 0; j < spans.length; j++) {
-                if (spans[j].classList.contains('bold')) {
-                    spans[j].style.fontWeight = 'bold';
-                }
-                if (spans[j].classList.contains('italic')) {
-                    spans[j].style fontStyle = 'italic';
+            const textNodes = paragraphs[i].childNodes;
+            for (let j = 0; j < textNodes.length; j++) {
+                if (textNodes[j].nodeType === Node.TEXT_NODE) {
+                    const text = textNodes[j].nodeValue;
+                    const formattedText = text.replace(/\*bold\*/g, '<span class="bold">$1</span>')
+                                            .replace(/\*italic\*/g, '<span class="italic">$1</span>');
+                    paragraphs[i].innerHTML += formattedText;
                 }
             }
         }

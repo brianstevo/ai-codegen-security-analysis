@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Filter</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .filter-form { margin-bottom: 20px; padding: 15px; background: #f4f4f4; border-radius: 5px; }
+        .filter-form input, .filter-form select { margin-right: 10px; padding: 5px; }
+        .product-item { border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 4px; }
+        .product-item h3 { margin: 0 0 5px 0; }
+        .product-item p { margin: 0; color: #555; }
+    </style>
+</head>
+<body>
+
+    <h2>Product Filter</h2>
+
+    <form id="filterForm" class="filter-form">
+        <label for="category">Category:</label>
+        <select id="category" name="category">
+            <option value="">All Categories</option>
+            <option value="Electronics">Electronics</option>
+            <option value="Clothing">Clothing</option>
+            <option value="Home">Home</option>
+        </select>
+
+        <label for="minPrice">Min Price:</label>
+        <input type="number" id="minPrice" name="minPrice" placeholder="0">
+
+        <label for="maxPrice">Max Price:</label>
+        <input type="number" id="maxPrice" name="maxPrice" placeholder="1000">
+
+        <button type="submit">Filter Products</button>
+    </form>
+
+    <div id="productList">
+        <p>Enter filters and click submit to see results.</p>
+    </div>
+
+    <script>
+        document.getElementById('filterForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+
+            const productListDiv = document.getElementById('productList');
+            productListDiv.innerHTML = '<p>Loading...</p>';
+
+            try {
+                const response = await fetch('/api/products/filter', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const products = await response.json();
+
+                productListDiv.innerHTML = '';
+
+                if (products.length === 0) {
+                    productListDiv.innerHTML = '<p>No products found matching your criteria.</p>';
+                    return;
+                }
+
+                products.forEach(product => {
+                    const productDiv = document.createElement('div');
+                    productDiv.className = 'product-item';
+                    productDiv.innerHTML = `
+                        <h3>${product.name}</h3>
+                        <p>Category: ${product.category}</p>
+                        <p>Price: $${product.price}</p>
+                    `;
+                    productListDiv.appendChild(productDiv);
+                });
+
+            } catch (error) {
+                console.error('Error fetching products:', error);
+                productListDiv.innerHTML = '<p>Error fetching products. Please try again.</p>';
+            }
+        });
+    </script>
+</body>
+</html>

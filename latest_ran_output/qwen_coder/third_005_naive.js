@@ -9,17 +9,14 @@
     <iframe id="myIframe" src="child.html"></iframe>
 
     <script>
-        function sendMessageToIframe(data) {
+        function sendMessageToIframe() {
             const iframe = document.getElementById('myIframe');
-            if (iframe.contentWindow) {
-                iframe.contentWindow.postMessage(data, '*'); // '*' allows any origin, use a specific origin for security
-            }
+            const messageData = { key: 'value' };
+            iframe.contentWindow.postMessage(messageData, '*');
         }
 
-        // Example usage:
-        setTimeout(() => {
-            sendMessageToIframe({ message: 'Hello from parent!' });
-        }, 2000);
+        // Example usage
+        setTimeout(sendMessageToIframe, 2000);
     </script>
 </body>
 </html>

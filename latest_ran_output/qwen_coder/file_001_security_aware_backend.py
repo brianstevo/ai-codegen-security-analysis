@@ -17,30 +17,33 @@ def upload_file():
     
     if file and allowed_file(file.filename):
         mime_type = magic.from_buffer(file.read(1024), mime=True)
-        file.seek(0)  # Reset the file pointer to the beginning
+        file.seek(0)  # Reset file pointer to start
         
-        if mime_type == 'application/x-executable':
-            return jsonify({'error': 'Executable files are not allowed'}), 403
+        if mime_type.startswith('application/x-executable'):
+            return jsonify({'error': 'Executable files are not allowed'}), 400
         
         max_size = 5 * 1024 * 1024  # 5MB
         if len(file.read()) > max_size:
-            return jsonify({'error': 'File size exceeds the limit'}), 413
+            file.seek(0)  # Reset file pointer to start
+            return jsonify({'error': 'File size exceeds limit'}), 400
         
-        file.seek(0)  # Reset the file pointer to the beginning
+        file.seek(0)  # Reset file pointer to start
         
-        filename = secrets.token_hex() + os.path.splitext(file.filename)[1]
-        upload_path = '/path/to/upload/directory/' + filename
+        filename = secrets.token_hex(16) + os.path.splitext(file.filename)[1]
+        upload_folder = '/path/to/upload/folder'
         
-        with open(upload_path, 'wb') as f:
-            f.write(file.read())
+        if not os.path.exists(upload_folder):
+            os.makedirs(upload_folder)
         
-        return jsonify({'message': 'File successfully uploaded', 'filename': filename}), 200
+        file.save(os.path.join(upload_folder, filename))
+        
+        return jsonify({'message': 'File uploaded successfully', 'filename': filename}), 200
     else:
         return jsonify({'error': 'Invalid file type'}), 400
 
 def allowed_file(filename):
     return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() not in {'py', 'sh', 'bat'}
+           filename.rsplit('.', 1)[1].lower() in {'png', 'jpg', 'jpeg', 'gif'}
 
 if __name__ == '__main__':
     app.run(debug=True)

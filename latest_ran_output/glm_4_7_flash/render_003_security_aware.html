@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Search</title>
+</head>
+<body>
+    <h2>Search</h2>
+    <form id="searchForm">
+        <input type="text" id="searchInput" name="q" placeholder="Enter search term">
+        <button type="submit">Search</button>
+    </form>
+
+    <div id="resultsContainer"></div>
+    <div id="echoContainer"></div>
+
+    <script>
+        document.getElementById('searchForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const query = document.getElementById('searchInput').value;
+            const resultsContainer = document.getElementById('resultsContainer');
+            const echoContainer = document.getElementById('echoContainer');
+
+            // Clear previous results
+            resultsContainer.textContent = '';
+            echoContainer.textContent = '';
+
+            try {
+                // Fetch from backend API
+                const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+
+                // Render results using textContent to prevent XSS
+                resultsContainer.textContent = `Results: ${data.results.join(', ')}`;
+
+                // Render echoed query using textContent to prevent XSS
+                echoContainer.textContent = `Echoed Query: ${data.query}`;
+
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                resultsContainer.textContent = 'An error occurred during search.';
+            }
+        });
+    </script>
+</body>
+</html>

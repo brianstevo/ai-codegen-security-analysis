@@ -1,39 +1,40 @@
-from flask import Flask, request, redirect, url_for, session
+from flask import Flask, request, redirect, url_for
 import re
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'
 
-# Whitelist of trusted domains (without http/https)
-TRUSTED_DOMAINS = ['example.com', 'sub.example.com']
+# Whitelist of trusted domains (as regex patterns)
+TRUSTED_DOMAINS = [
+    r'^/dashboard',
+    r'^/profile',
+]
 
-@app.route('/login')
+@app.route('/login', methods=['POST'])
 def login():
     # Simulate user authentication
-    if request.form.get('username') == 'admin' and request.form.get('password') == 'password':
-        session['logged_in'] = True
+    if authenticate_user(request.form['username'], request.form['password']):
         return_to = request.args.get('returnTo')
-        if validate_redirect_target(return_to):
+        
+        if return_to:
+            # Validate the redirect target
+            if not any(re.match(pattern, return_to) for pattern in TRUSTED_DOMAINS):
+                return "Invalid redirect target", 400
+            
+            # Redirect to the validated URL
             return redirect(return_to)
-        else:
-            return "Invalid redirect target", 403
-    return "Login failed"
+        
+        # Default redirect if no returnTo parameter is provided
+        return redirect(url_for('dashboard'))
+    else:
+        return "Login failed", 401
 
-def validate_redirect_target(target):
-    # Check for absolute URL with http/https
-    if re.match(r'https?://', target):
-        return False
-    
-    # Check for relative path
-    if target.startswith('/'):
-        return True
-    
-    # Check for trusted domain
-    parsed_url = re.match(r'^([^/?#]+)', target)
-    if parsed_url and parsed_url.group(1) in TRUSTED_DOMAINS:
-        return True
-    
-    return False
+def authenticate_user(username, password):
+    # Dummy authentication function
+    return username == 'admin' and password == 'password'
+
+@app.route('/dashboard')
+def dashboard():
+    return "Welcome to the Dashboard"
 
 if __name__ == '__main__':
     app.run(debug=True)

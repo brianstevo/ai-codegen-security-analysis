@@ -2,12 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Bio</title>
-</head>
-<body>
-    <div id="bio"></div>
-
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
     <script>
         function escapeHtml(unsafe) {
             return unsafe
@@ -18,13 +15,22 @@
                 .replace(/'/g, "&#039;");
         }
 
-        fetch('https://api.example.com/user/bio')
-            .then(response => response.text())
-            .then(bio => {
-                const bioElement = document.getElementById('bio');
-                bioElement.textContent = escapeHtml(bio);
-            })
-            .catch(error => console.error('Error fetching user bio:', error));
+        async function fetchUserBio() {
+            try {
+                const response = await fetch('https://api.example.com/user/bio');
+                const bio = await response.text();
+                const escapedBio = escapeHtml(bio);
+                document.getElementById('bio').textContent = escapedBio;
+            } catch (error) {
+                console.error('Error fetching user bio:', error);
+            }
+        }
+
+        window.onload = fetchUserBio;
     </script>
+</head>
+<body>
+    <h1>User Bio</h1>
+    <p id="bio"></p>
 </body>
 </html>

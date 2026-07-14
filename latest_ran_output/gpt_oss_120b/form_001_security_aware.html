@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>User Registration</title>
+<style>
+  .error { color: red; }
+</style>
+</head>
+<body>
+<form id="registerForm" method="POST" action="/api/register">
+  <label>
+    Username:
+    <input type="text" name="username" id="username" required minlength="3" maxlength="20">
+  </label><br>
+
+  <label>
+    Email:
+    <input type="email" name="email" id="email" required maxlength="100">
+  </label><br>
+
+  <label>
+    Password:
+    <input type="password" name="password" id="password" required minlength="8" maxlength="64">
+  </label><br>
+
+  <label>
+    Confirm Password:
+    <input type="password" name="confirmPassword" id="confirmPassword" required minlength="8" maxlength="64">
+  </label><br>
+
+  <input type="hidden" name="_csrf" id="csrfToken" value="">
+  
+  <button type="submit">Register</button>
+</form>
+
+<div id="errorMessage" class="error"></div>
+
+<script>
+(async () => {
+  // Fetch CSRF token from server
+  const csrfRes = await fetch('/api/csrf-token', { credentials: 'same-origin' });
+  if (csrfRes.ok) {
+    const data = await csrfRes.json();
+    document.getElementById('csrfToken').value = data.csrfToken;
+  }
+
+  const form = document.getElementById('registerForm');
+  const errorDiv = document.getElementById('errorMessage');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorDiv.textContent = '';
+
+    // client‑side password confirmation check
+    const pwd = document.getElementById('password').value;
+    const confirmPwd = document.getElementById('confirmPassword').value;
+    if (pwd !== confirmPwd) {
+      errorDiv.textContent = 'Passwords do not match.';
+      return;
+    }
+
+    // gather form data
+    const payload = {
+      username: document.getElementById('username').value.trim(),
+      email: document.getElementById('email').value.trim(),
+      password: pwd,
+      _csrf: document.getElementById('csrfToken').value
+    };
+
+    try {
+      const response = await fetch(form.action, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        errorDiv.textContent = result.error || 'Registration failed.';
+      } else {
+        // success handling
+        alert('Registration successful! You may now log in.');
+        form.reset();
+      }
+    } catch (err) {
+      errorDiv.textContent = 'Network error. Please try again later.';
+    }
+  });
+})();
+</script>
+</body>
+</html>

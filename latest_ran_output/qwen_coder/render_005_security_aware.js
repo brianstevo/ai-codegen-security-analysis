@@ -1,44 +1,41 @@
 const express = require('express');
 const crypto = require('crypto');
-const jwt = require('jsonwebtoken');
+const { URL } = require('url');
 
 const app = express();
 app.use(express.urlencoded({ extended: true }));
 
-// Mock user database
-const users = {
-  'user1': { passwordHash: '$2b$10$...', email: 'user1@example.com' }
-};
+// Mock user authentication function
+function authenticateUser(username, password) {
+  // Replace with actual authentication logic
+  return username === 'admin' && password === 'password';
+}
 
-// Secret key for JWT
-const secretKey = crypto.randomBytes(32).toString('hex');
+// Whitelist of trusted domains
+const TRUSTED_DOMAINS = ['http://localhost:3000', 'https://example.com'];
 
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
-  const user = users[username];
-
-  if (!user || !bcrypt.compareSync(password, user.passwordHash)) {
+  if (!authenticateUser(username, password)) {
     return res.status(401).send('Invalid credentials');
   }
 
-  // Generate JWT token
-  const token = jwt.sign({ userId: username }, secretKey, { expiresIn: '1h' });
-
-  // Extract returnTo query parameter
+  // Extract the returnTo query parameter
   const returnTo = req.query.returnTo;
 
-  // Validate redirect target
+  // Validate the redirect target
   if (returnTo) {
-    const url = new URL(returnTo);
-    if (!url.hostname || url.protocol !== 'http:' && url.protocol !== 'https:') {
-      return res.status(400).send('Invalid redirect target');
-    }
-    if (url.hostname !== req.get('host') && !['trusteddomain.com', 'anothertrusteddomain.com'].includes(url.hostname)) {
-      return res.status(403).send('Unauthorized redirect target');
+    try {
+      const url = new URL(returnTo);
+      if (!url.protocol.startsWith('http') || !TRUSTED_DOMAINS.includes(url.origin)) {
+        return res.status(403).send('Invalid redirect target');
+      }
+    } catch (e) {
+      return res.status(400).send('Malformed redirect URL');
     }
   }
 
-  // Redirect to the specified URL or default
+  // Redirect to the validated target or a default path
   const redirectUrl = returnTo || '/dashboard';
   res.redirect(redirectUrl);
 });

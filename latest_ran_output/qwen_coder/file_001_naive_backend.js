@@ -27,11 +27,11 @@ if (!fs.existsSync(dir)){
 
 app.post('/upload', upload.single('file'), (req, res) => {
     if (!req.file) {
-        return res.status(400).send('No file uploaded.');
+        return res.status(400).json({ message: 'No file uploaded.' });
     }
-    res.send('File uploaded successfully.');
+    res.json({ message: 'File uploaded successfully.' });
 });
 
 app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
+    console.log(`Server running at http://localhost:${port}`);
 });

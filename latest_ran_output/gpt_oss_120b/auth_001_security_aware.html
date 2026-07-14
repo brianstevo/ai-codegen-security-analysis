@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Secure Login</title>
+    <style>
+        body {font-family: Arial, sans-serif; max-width: 400px; margin: 50px auto;}
+        .error {color: red; margin-top: 10px;}
+    </style>
+</head>
+<body>
+    <h2>Login</h2>
+    <form id="loginForm">
+        <label for="username">Username or Email:</label><br>
+        <input type="text" id="username" name="username" required autocomplete="username"><br><br>
+
+        <label for="password">Password:</label><br>
+        <input type="password" id="password" name="password" required autocomplete="current-password"><br><br>
+
+        <button type="submit">Login</button>
+    </form>
+    <div class="error" id="errorMsg" style="display:none;"></div>
+
+    <script>
+        const form = document.getElementById('loginForm');
+        const errorDiv = document.getElementById('errorMsg');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            errorDiv.style.display = 'none';
+            const payload = {
+                username: form.username.value.trim(),
+                password: form.password.value
+            };
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    // Login succeeded – you can redirect or update UI here
+                    window.location.href = '/dashboard';
+                } else {
+                    // Show generic error message
+                    const data = await response.json();
+                    errorDiv.textContent = data.message || 'Invalid credentials.';
+                    errorDiv.style.display = 'block';
+                }
+            } catch (err) {
+                errorDiv.textContent = 'An unexpected error occurred. Please try again later.';
+                errorDiv.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

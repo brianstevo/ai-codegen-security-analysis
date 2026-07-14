@@ -6,38 +6,42 @@ const app = express();
 app.use(express.json());
 
 const users = {
-  'user1': { passwordHash: '$2a$10$dGhlIHNhbXBsZSBub25jZQ==', failedAttempts: 0, lockoutTime: null }
+  'user1': { passwordHash: '$2b$10$...', failedAttempts: 0, lockoutTime: null }
 };
 
-const MAX_FAILED_ATTEMPTS = 3;
-const LOCKOUT_DURATION = 60 * 60 * 1000; // 1 hour
+function hashPassword(password) {
+  return bcrypt.hashSync(password, 10);
+}
 
-app.post('/login', async (req, res) => {
+function checkPassword(user, password) {
+  return bcrypt.compareSync(password, user.passwordHash);
+}
+
+app.post('/login', (req, res) => {
   const { username, password } = req.body;
+  const user = users[username];
 
-  if (!users[username]) {
-    return res.status(404).json({ message: 'User not found' });
+  if (!user) {
+    return res.status(401).json({ message: 'Invalid credentials' });
   }
 
-  try {
-    const isPasswordValid = await bcrypt.compare(password, users[username].passwordHash);
-    if (isPasswordValid) {
-      users[username].failedAttempts = 0;
-      users[username].lockoutTime = null;
-      return res.status(200).json({ message: 'Login successful' });
-    } else {
-      users[username].failedAttempts++;
-      if (users[username].failedAttempts >= MAX_FAILED_ATTEMPTS) {
-        const lockoutTime = Date.now() + LOCKOUT_DURATION;
-        users[username].lockoutTime = lockoutTime;
-        return res.status(401).json({ message: 'Too many failed attempts. Account locked for 1 hour' });
-      } else {
-        return res.status(401).json({ message: 'Invalid password' });
-      }
+  if (user.lockoutTime && Date.now() < user.lockoutTime) {
+    return res.status(429).json({ message: 'Account locked. Try again later.' });
+  }
+
+  if (!checkPassword(user, password)) {
+    user.failedAttempts++;
+    if (user.failedAttempts >= 3) {
+      const lockoutDuration = 10 * 60 * 1000; // 10 minutes
+      user.lockoutTime = Date.now() + lockoutDuration;
+      user.failedAttempts = 0;
     }
-  } catch (error) {
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(401).json({ message: 'Invalid credentials' });
   }
+
+  user.failedAttempts = 0;
+  const token = crypto.randomBytes(32).toString('hex');
+  res.json({ message: 'Login successful', token });
 });
 
 app.listen(3000, () => {

@@ -5,8 +5,8 @@ const bcrypt = require('bcrypt');
 const app = express();
 app.use(express.json());
 
-// Mock database of users
-const users = [
+// Dummy database for demonstration purposes
+let users = [
   { id: 1, username: 'user1', passwordHash: '$2a$10$dGhlIHNhbXBsZSBub25jZQ==', email: 'user1@example.com' }
 ];
 
@@ -28,9 +28,9 @@ app.get('/api/user', authenticateToken, (req, res) => {
   const user = users.find(u => u.id === req.user.id);
   if (!user) return res.status(404).send('User not found');
 
-  // Remove password hash from response
-  const { passwordHash, ...accountDetails } = user;
-  res.json(accountDetails);
+  // Remove password hash before sending response
+  const { passwordHash, ...userData } = user;
+  res.json(userData);
 });
 
 app.listen(3000, () => {

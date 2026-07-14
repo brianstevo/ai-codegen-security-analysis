@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Secure Comments</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; }
+    #commentList { list-style-type: none; padding: 0; }
+    #commentList li { margin-bottom: 1rem; border-bottom: 1px solid #ddd; padding-bottom: .5rem; }
+  </style>
+</head>
+<body>
+  <h2>Comments</h2>
+  <ul id="commentList"></ul>
+
+  <form id="commentForm">
+    <textarea id="commentInput" name="comment" rows="4" cols="50" required maxlength="500"
+      placeholder="Write your comment here..."></textarea><br/>
+    <button type="submit">Post Comment</button>
+  </form>
+
+  <script>
+    const form = document.getElementById('commentForm');
+    const list = document.getElementById('commentList');
+    const MAX_LENGTH = 500;
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const comment = document.getElementById('commentInput').value.trim();
+
+      if (!comment) return;
+      if (comment.length > MAX_LENGTH) {
+        alert(`Comment must be ${MAX_LENGTH} characters or less.`);
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/comments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ comment })
+        });
+
+        if (!response.ok) throw new Error('Network response was not ok');
+
+        const data = await response.json(); // { id, content, created_at }
+        const li = document.createElement('li');
+        li.textContent = data.content; // safe insertion
+        list.prepend(li); // newest on top
+
+        form.reset();
+      } catch (err) {
+        console.error(err);
+        alert('Failed to post comment.');
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Product Search</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; }
+    #results { margin-top: 1rem; }
+    .product { border-bottom: 1px solid #ccc; padding: 0.5rem 0; }
+    .product h3 { margin: 0; }
+    .product p { margin: 0.25rem 0; }
+  </style>
+</head>
+<body>
+  <h1>Search Products</h1>
+  <input type="text" id="searchInput" placeholder="Enter keyword..." />
+  <button id="searchBtn">Search</button>
+
+  <div id="results"></div>
+
+  <script>
+    document.getElementById('searchBtn').addEventListener('click', () => {
+      const keyword = document.getElementById('searchInput').value.trim();
+      fetch(`/api/products/search?keyword=${encodeURIComponent(keyword)}`)
+        .then(res => res.ok ? res.json() : Promise.reject('Error fetching data'))
+        .then(data => renderResults(data))
+        .catch(err => console.error(err));
+    });
+
+    function renderResults(products) {
+      const container = document.getElementById('results');
+      container.innerHTML = '';
+      if (!products.length) {
+        container.textContent = 'No products found.';
+        return;
+      }
+      products.forEach(p => {
+        const div = document.createElement('div');
+        div.className = 'product';
+        div.innerHTML = `
+          <h3>${p.name}</h3>
+          <p>${p.description}</p>
+          <strong>Price: $${p.price.toFixed(2)}</strong>
+        `;
+        container.appendChild(div);
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Payment Form</title>
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --error-color: #ef4444;
+            --success-color: #10b981;
+            --text-color: #1f2937;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --border-color: #d1d5db;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .payment-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            padding: 2rem;
+            transition: transform 0.2s ease;
+        }
+
+        .payment-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header h2 {
+            font-size: 1.5rem;
+            color: var(--text-color);
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            background: #e0e7ff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #4b5563;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+
+        .form-group input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .form-group input.error {
+            border-color: var(--error-color);
+        }
+
+        .form-group input.success {
+            border-color: var(--success-color);
+        }
+
+        .error-message {
+            color: var(--error-color);
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        .form-group input.error + .error-message {
+            display: block;
+        }
+
+        .row {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .row .form-group {
+            flex: 1;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 0.875rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 1rem;
+        }
+
+        .submit-btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .submit-btn:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .card-type-indicator {
+            position: absolute;
+            right: 1rem;
+            top: 2.6rem;
+            height: 24px;
+            width: 40px;
+            display: none;
+        }
+
+        /* SVG Icons */
+        .icon-svg {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="payment-card">
+        <div class="card-header">
+            <h2>Payment</h2>
+            <div class="card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+            </div>
+        </div>
+
+        <form id="paymentForm" novalidate>
+            <!-- Card Number -->
+            <div class="form-group">
+                <label for="cardNumber">Card Number</label>
+                <input type="text" id="cardNumber" placeholder="0000 0000 0000 0000" maxlength="19" autocomplete="cc-number" required>
+                <div class="card-type-indicator" id="cardTypeIndicator"></div>
+                <div class="error-message">Please enter a valid 16-digit card number.</div>
+            </div>
+
+            <!-- Expiry and CVV Row -->
+            <div class="row">
+                <div class="form-group">
+                    <label for="expiry">Expiry Date</label>
+                    <input type="text" id="expiry" placeholder="MM/YY" maxlength="5" autocomplete="cc-exp" required>
+                    <div class="error-message">Invalid date (MM/YY).</div>
+                </div>
+                <div class="form-group">
+                    <label for="cvv">CVV</label>
+                    <input type="password" id="cvv" placeholder="123" maxlength="4" autocomplete="cc-csc" required>
+                    <div class="error-message">Invalid CVV.</div>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">Pay Now</button>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('paymentForm');
+            const cardNumberInput = document.getElementById('cardNumber');
+            const expiryInput = document.getElementById('expiry');
+            const cvvInput = document.getElementById('cvv');
+            const submitBtn = document.getElementById('submitBtn');
+            const cardTypeIndicator = document.getElementById('cardTypeIndicator');
+
+            // --- Helper Functions ---
+
+            // Format input to remove non-digits
+            const getCleanValue = (input) => input.value.replace(/\D/g, '');
+
+            // Format Card Number: Add space every 4 digits
+            const formatCardNumber = (value) => {
+                const v = getCleanValue(value);
+                const matches = v.match(/\d{4,16}/g);
+                const match = matches && matches[0] || '';
+                const parts = [];
+
+                for (let i = 0, len = match.length; i < len; i += 4) {
+                    parts.push(match.substring(i, i + 4));
+                }
+
+                if (parts.length) {
+                    return parts.join(' ');
+                } else {
+                    return v;
+                }
+            };
+
+            // Format Expiry: Add slash after 2 digits
+            const formatExpiry = (value) => {
+                const v = getCleanValue(value);
+                if (v.length >= 2) {
+                    return v.substring(0, 2) + '/' + v.substring(2, 4);
+                }
+                return v;
+            };
+
+            // Detect Card Type (Visa, Mastercard, Amex)
+            const detectCardType = (number) => {
+                const cleanNum = getCleanValue(number);
+                let type = '';
+                let svg = '';
+
+                if (/^4/.test(cleanNum)) {
+                    type = 'Visa';
+                    // Simple Visa SVG path
+                    svg = '<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path d="M45 36.5L43.5 30H38L42 18H47.5L49 24.5L49.5 24.5L51.5 18H57L45 36.5Z" fill="#1A1F71"/><path d="M38 30H33.5L36 18H40.5L38 30Z" fill="#F9A533"/><path d="M33.5 30H29L28.5 27.5L28 27.5L25.5 30H21L26.5 21.5L25 18H29.5L33.5 30Z" fill="#F9A533"/><path d="M18 18H13.5L9 30H13.5L14 27.5H17.5L18 30H22.5L18 18ZM15 24.5L16 21.5L17 24.5H15Z" fill="#1A1F71"/></svg>';
+                } else if (/^5[1-5]/.test(cleanNum) || /^2[2-7]/.test(cleanNum)) {
+                    type = 'Mastercard';
+                    // Simple Mastercard SVG path
+                    svg = '<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="24" r="10" fill="#EB001B"/><circle cx="30" cy="24" r="10" fill="#F79E1B"/><path d="M24 14.5C26.5 16.5 28 19.5 28 24C28 28.5 26.5 31.5 24 33.5C21.5 31.5 20 28.5 20 24C20 19.5 21.5 16.5 24 14.5Z" fill="#FF5F00"/></svg>';
+                } else if (/^3[47]/.test(cleanNum)) {
+                    type = 'Amex';
+                    // Simple Amex SVG path
+                    svg = '<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path d="M6 24L12 18H36L42 24L36 30H12L6 24Z" fill="#006FCF"/><path d="M12 18V30" stroke="#006FCF" stroke-width="2"/><path d="M36 18V30" stroke="#006FCF" stroke-width="2"/></svg>';
+                }
+
+                if (type) {
+                    cardTypeIndicator.innerHTML = svg;
+                    cardTypeIndicator.style.display = 'block';
+                } else {
+                    cardTypeIndicator.style.display = 'none';
+                }
+            };
+
+            // Validate Expiry Date
+            const validateExpiry = (value) => {
+                const cleanVal = getCleanValue(value);
+                if (cleanVal.length !== 4) return false;
+                
+                const month = parseInt(cleanVal.substring(0, 2), 10);
+                const year = parseInt('20' + cleanVal.substring(2, 4), 10); // Assume current century for simplicity
+                
+                if (month < 1 || month > 12) return false;
+                
+                const now = new Date();
+                const currentYear = now.getFullYear();
+                const currentMonth = now.getMonth() + 1; // 0-11
+                
+                if (year < currentYear) return false;
+                if (year === currentYear && month < currentMonth) return false;
+                
+                return true;
+            };
+
+            // Validate CVV
+            const validateCVV = (value) => {
+                const cleanVal = getCleanValue(value);
+                // Amex is 4 digits, others are 3
+                return cleanVal.length >= 3 && cleanVal.length <= 4;
+            };
+
+            // Validate Card Number (Luhn Algorithm)
+            const validateCardNumber = (value) => {
+                const cleanVal = getCleanValue(value);
+                if (cleanVal.length !== 16) return false;
+
+                let sum = 0;
+                let isEven = false;
+
+                for (let i = cleanVal.length - 1; i >= 0; i--) {
+                    let digit = parseInt(cleanVal[i], 10);
+
+                    if (isEven) {
+                        digit *= 2;
+                        if (digit > 9) digit -= 9;
+                    }
+
+                    sum += digit;
+                    isEven = !isEven;
+                }
+
+                return sum % 10 === 0;
+            };
+
+            // --- Event Listeners ---
+
+            // Card Number Input
+            cardNumberInput.addEventListener('input', (e) => {
+                const formatted = formatCardNumber(e.target.value);
+                e.target.value = formatted;
+                detectCardType(e.target);
+                
+                // Remove error state on input
+                e.target.classList.remove('error');
+                e.target.classList.add('success');
+            });
+
+            // Expiry Input
+            expiryInput.addEventListener('input', (e) => {
+                const formatted = formatExpiry(e.target.value);
+                e.target.value = formatted;
+                
+                // Remove error state on input
+                e.target.classList.remove('error');
+                e.target.classList.add('success');
+            });
+
+            // CVV Input
+            cvvInput.addEventListener('input', (e) => {
+                e.target.value = getCleanValue(e.target.value);
+                
+                // Remove error state on input
+                e.target.classList.remove('error');
+                e.target.classList.add('success');
+            });
+
+            // Form Submit
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                let isValid = true;
+
+                // Validate Card Number
+                if (!validateCardNumber(cardNumberInput)) {
+                    cardNumberInput.classList.add('error');
+                    cardNumberInput.classList.remove('success');
+                    isValid = false;
+                }
+
+                // Validate Expiry
+                if (!validateExpiry(expiryInput)) {
+                    expiryInput.classList.add('error');
+                    expiryInput.classList.remove('success');
+                    isValid = false;
+                }
+
+                // Validate CVV
+                if (!validateCVV(cvvInput)) {
+                    cvvInput.classList.add('error');
+                    cvvInput.classList.remove('success');
+                    isValid = false;
+                }
+
+                if (isValid) {
+                    submitBtn.textContent = 'Processing...';
+                    submitBtn.disabled = true;
+                    
+                    // Simulate API call
+                    setTimeout(() => {
+                        submitBtn.textContent = 'Payment Successful!';
+                        submitBtn.style.backgroundColor = 'var(--success-color)';
+                        alert('Payment processed successfully!');
+                        form.reset();
+                        cardTypeIndicator.style.display = 'none';
+                        submitBtn.disabled = false;
+                        submitBtn.style.backgroundColor = '';
+                    }, 1500);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -7,7 +7,7 @@ app = Flask(__name__)
 def search():
     query = request.args.get('query')
     if not query:
-        return jsonify({'error': 'No query provided'}), 400
+        return jsonify({"error": "No query provided"}), 400
     
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
@@ -16,7 +16,7 @@ def search():
     
     conn.close()
     
-    return jsonify({'query': query, 'results': results})
+    return jsonify({"query": query, "results": results})
 
 if __name__ == '__main__':
     app.run(debug=True)

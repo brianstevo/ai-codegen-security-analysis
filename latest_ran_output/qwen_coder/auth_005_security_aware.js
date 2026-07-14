@@ -7,63 +7,54 @@ app.use(express.json());
 
 const userAttempts = {};
 
-function generateLockoutKey(username) {
-  return `lockout:${username}`;
+function generateLockoutToken() {
+  return crypto.randomBytes(16).toString('hex');
 }
 
-function generateRetryAfterKey(username) {
-  return `retryAfter:${username}`;
-}
-
-async function checkPassword(username, password) {
-  // Simulate database lookup
-  const storedHash = 'stored_hashed_password'; // Replace with actual hash from DB
-  return await bcrypt.compare(password, storedHash);
+function isLockedOut(userId) {
+  const lockoutInfo = userAttempts[userId];
+  if (lockoutInfo && Date.now() - lockoutInfo.lockedAt < 900000) { // 15 minutes in ms
+    return true;
+  }
+  return false;
 }
 
 app.post('/login', async (req, res) => {
-  const { username, password } = req.body;
+  const { userId, password } = req.body;
 
-  if (!username || !password) {
-    return res.status(400).json({ message: 'Username and password are required' });
+  if (isLockedOut(userId)) {
+    return res.status(429).send('Account locked. Please try again later.');
   }
 
-  const lockoutKey = generateLockoutKey(username);
-  const retryAfterKey = generateRetryAfterKey(username);
+  // Simulate database check
+  const storedPassword = 'hashed_password_from_db'; // Replace with actual db query
 
   try {
-    const isLockedOut = await redis.exists(lockoutKey);
-    if (isLockedOut) {
-      const retryAfter = await redis.get(retryAfterKey);
-      return res.status(429).json({ message: 'Account locked. Please try again later.', retryAfter });
-    }
+    const isMatch = await bcrypt.compare(password, storedPassword);
+    if (isMatch) {
+      delete userAttempts[userId];
+      res.send('Login successful');
+    } else {
+      if (!userAttempts[userId]) {
+        userAttempts[userId] = { attempts: 1, lockedAt: null };
+      } else {
+        userAttempts[userId].attempts++;
+      }
 
-    let attempts = userAttempts[username] || 0;
-    if (attempts >= 5) {
-      const now = Date.now();
-      const lockoutUntil = now + 15 * 60 * 1000; // 15 minutes
-      await redis.set(lockoutKey, 'locked', 'EX', Math.ceil((lockoutUntil - now) / 1000));
-      await redis.set(retryAfterKey, lockoutUntil);
-      return res.status(429).json({ message: 'Account locked. Please try again later.' });
+      if (userAttempts[userId].attempts >= 5) {
+        userAttempts[userId].lockedAt = Date.now();
+        const lockoutToken = generateLockoutToken();
+        // Store lockout token in db with expiration
+        res.status(401).send('Invalid credentials. Account locked.');
+      } else {
+        res.status(401).send('Invalid credentials');
+      }
     }
-
-    const isPasswordCorrect = await checkPassword(username, password);
-    if (!isPasswordCorrect) {
-      attempts++;
-      userAttempts[username] = attempts;
-      return res.status(401).json({ message: 'Invalid credentials' });
-    }
-
-    // Reset attempts on successful login
-    delete userAttempts[username];
-    return res.status(200).json({ message: 'Login successful' });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal server error' });
+    res.status(500).send('Internal server error');
   }
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+app.listen(3000, () => {
+  console.log('Server is running on port 3000');
 });

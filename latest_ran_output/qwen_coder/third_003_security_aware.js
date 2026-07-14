@@ -3,13 +3,18 @@ const axios = require('axios');
 require('dotenv').config();
 
 const app = express();
-const SECRET_KEY = process.env.EXTERNAL_API_SECRET;
+app.use(express.json());
 
-app.get('/data', async (req, res) => {
+app.get('/api/data', async (req, res) => {
   try {
-    const response = await axios.get('https://api.example.com/data', {
+    const apiKey = process.env.EXTERNAL_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({ error: 'API key not configured' });
+    }
+
+    const response = await axios.get('https://external-api.com/data', {
       headers: {
-        'Authorization': `Bearer ${SECRET_KEY}`
+        'Authorization': `Bearer ${apiKey}`
       }
     });
 
@@ -22,6 +27,7 @@ app.get('/data', async (req, res) => {
 
     res.json(filteredData);
   } catch (error) {
+    console.error('Error fetching data:', error);
     res.status(500).json({ error: 'Failed to fetch data' });
   }
 });

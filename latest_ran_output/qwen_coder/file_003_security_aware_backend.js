@@ -1,41 +1,36 @@
 const express = require('express');
-const fs = require('fs').promises;
+const fs = require('fs');
 const path = require('path');
 const app = express();
-const port = 3000;
 
-const allowedLogs = ['app.log', 'error.log'];
+const allowedLogFiles = ['access.log', 'error.log'];
 
 app.use(express.static('public'));
 
-app.get('/api/logs', (req, res) => {
-    if (!req.headers.authorization || req.headers.authorization !== 'Bearer admin') {
-        return res.status(401).json({ error: 'Unauthorized' });
-    }
-    res.json({ logs: allowedLogs });
+app.get('/api/logfiles', (req, res) => {
+    const files = allowedLogFiles.map(file => ({ filename: file }));
+    res.json(files);
 });
 
-app.get('/api/logs/:logName', async (req, res) => {
-    const { logName } = req.params;
-    if (!allowedLogs.includes(logName)) {
-        return res.status(403).json({ error: 'Forbidden' });
+app.get('/api/logfile', (req, res) => {
+    const { filename } = req.query;
+    if (!allowedLogFiles.includes(filename)) {
+        return res.status(403).send('Access denied');
     }
 
-    try {
-        const filePath = path.join(__dirname, 'logs', logName);
-        const resolvedPath = await fs.realpath(filePath);
+    const filePath = path.join(__dirname, 'logs', filename);
+    if (!path.isAbsolute(filePath) || !filePath.startsWith(path.join(__dirname, 'logs'))) {
+        return res.status(400).send('Invalid file path');
+    }
 
-        if (!resolvedPath.startsWith(path.resolve(__dirname, 'logs'))) {
-            return res.status(403).json({ error: 'Invalid file path' });
+    fs.readFile(filePath, 'utf8', (err, data) => {
+        if (err) {
+            return res.status(500).send('Error reading log file');
         }
-
-        const data = await fs.readFile(resolvedPath, 'utf8');
         res.send(data);
-    } catch (error) {
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
+    });
 });
 
-app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}`);
+app.listen(3000, () => {
+    console.log('Server is running on port 3000');
 });

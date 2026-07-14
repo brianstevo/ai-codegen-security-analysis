@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forum Post Display</title>
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+            --hover-bg: #f9fafb;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .forum-header {
+            margin-bottom: 20px;
+        }
+
+        .breadcrumb {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .breadcrumb a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .post-card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .post-header {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            background-color: #fafafa;
+        }
+
+        .avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 12px;
+            border: 2px solid var(--border-color);
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .username {
+            font-weight: 600;
+            font-size: 1rem;
+            margin: 0;
+            color: var(--text-main);
+        }
+
+        .user-meta {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .post-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            background: white;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background-color: var(--hover-bg);
+            color: var(--text-main);
+            border-color: #d1d5db;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background-color: #2563eb;
+            color: white;
+        }
+
+        .post-content {
+            padding: 20px;
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #374151;
+        }
+
+        /* Formatting Styles */
+        .text-bold {
+            font-weight: 700;
+        }
+
+        .text-italic {
+            font-style: italic;
+        }
+
+        .text-link {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .text-link:hover {
+            text-decoration: underline;
+        }
+
+        .post-footer {
+            padding: 12px 20px;
+            background-color: #fafafa;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #333;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 4px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s, transform 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="forum-header">
+            <div class="breadcrumb">
+                <a href="#">General Discussion</a> &gt; <a href="#">Web Development</a>
+            </div>
+            <h1>Best practices for formatting text in forums</h1>
+        </div>
+
+        <div id="post-container">
+            <!-- Post will be rendered here by JavaScript -->
+        </div>
+    </div>
+
+    <div id="toast" class="toast">Action completed</div>
+
+    <script>
+        // Data representing the forum post
+        const postData = {
+            id: 1024,
+            author: {
+                name: "DevMaster_99",
+                avatar: "https://picsum.photos/seed/dev/100/100.jpg",
+                role: "Senior Member",
+                joined: "Jan 2021"
+            },
+            timestamp: "2 hours ago",
+            contentRaw: "Hey everyone! I'm working on a new forum project and I want to make sure the text formatting is handled correctly. \n\nI've seen that **bold** and *italic* text are very common. Does anyone have a preference between using HTML tags or BBCode? I think HTML is more standard, but BBCode is easier for non-technical users to understand.\n\nCheck out this [link](https://example.com) for more info!",
+            likes: 45
+        };
+
+        // Simple BBCode to HTML parser
+        function parseFormatting(text) {
+            // Escape HTML to prevent XSS (basic implementation)
+            let safeText = text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+
+            // Convert BBCode to HTML
+            // Bold: [b]text[/b]
+            safeText = safeText.replace(/\[b\](.*?)\[\/b\]/g, '<span class="text-bold">$1</span>');
+            
+            // Italic: [i]text[/i]
+            safeText = safeText.replace(/\[i\](.*?)\[\/i\]/g, '<span class="text-italic">$1</span>');
+            
+            // Links: [link](url)
+            safeText = safeText.replace(/\[link\]\((.*?)\)\[\/link\]/g, '<a href="$1" target="_blank" class="text-link">$1</a>');
+
+            // Convert newlines to <br>
+            safeText = safeText.replace(/\n/g, '<br>');
+
+            return safeText;
+        }
+
+        // Render the post to the DOM
+        function renderPost() {
+            const container = document.getElementById('post-container');
+            
+            const formattedContent = parseFormatting(postData.contentRaw);
+
+            const postHTML = `
+                <article class="post-card">
+                    <div class="post-header">
+                        <img src="${postData.author.avatar}" alt="${postData.author.name}" class="avatar">
+                        <div class="user-info">
+                            <h3 class="username">${postData.author.name}</h3>
+                            <div class="user-meta">
+                                ${postData.author.role} • Joined ${postData.author.joined}
+                            </div>
+                        </div>
+                        <div class="post-actions">
+                            <button class="btn" onclick="showToast('Quote feature coming soon')">Quote</button>
+                            <button class="btn" onclick="showToast('Reported!')">Report</button>
+                        </div>
+                    </div>
+                    
+                    <div class="post-content">
+                        ${formattedContent}
+                    </div>
+                    
+                    <div class="post-footer">
+                        <span>${postData.timestamp}</span>
+                        <button class="btn btn-primary" onclick="showToast('Liked!')">Like (${postData.likes})</button>
+                    </div>
+                </article>
+            `;
+
+            container.innerHTML = postHTML;
+        }
+
+        // Toast notification logic
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', renderPost);
+    </script>
+</body>
+</html>

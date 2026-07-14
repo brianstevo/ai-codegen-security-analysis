@@ -1,33 +1,50 @@
 const express = require('express');
 const axios = require('axios');
-const url = require('url');
+const crypto = require('crypto');
 
 const app = express();
 const whitelist = ['example.com', 'test.com'];
 const privateIPRanges = [
-    /^(10\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/,
-    /^(172\.(1[6-9]|2\d|3[01])\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/,
-    /^(192\.168\.){2}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/,
-    /^127\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){2}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
+    /^10\./, /^172\.16\./, /^192\.168\./, /^127\./
 ];
-const metadataIP = /^169\.254\.169\.254$/;
+const metadataEndpoint = /^169\.254\.169\.254$/;
 
 app.get('/fetch', async (req, res) => {
-    const { url: requestedUrl } = req.query;
-    if (!requestedUrl) return res.status(400).send('URL is required');
+    const url = req.query.url;
+    if (!url) return res.status(400).send('URL is required');
 
     try {
-        const parsedUrl = new URL(requestedUrl);
-        if (!whitelist.includes(parsedUrl.hostname)) return res.status(403).send('Domain not allowed');
-        if (privateIPRanges.some(range => range.test(parsedUrl.hostname))) return res.status(403).send('Private IP address not allowed');
-        if (metadataIP.test(parsedUrl.hostname)) return res.status(403).send('Cloud metadata endpoint not allowed');
-        if (parsedUrl.protocol !== 'https:') return res.status(403).send('Only HTTPS protocol is allowed');
+        // Validate URL against whitelist
+        const parsedUrl = new URL(url);
+        if (!whitelist.includes(parsedUrl.hostname)) {
+            return res.status(403).send('URL not allowed');
+        }
 
-        const response = await axios.get(requestedUrl, { timeout: 5000 });
-        res.send(response.data);
+        // Block private IP ranges and metadata endpoints
+        if (privateIPRanges.some(range => range.test(parsedUrl.hostname)) || metadataEndpoint.test(parsedUrl.hostname)) {
+            return res.status(403).send('Private IP or metadata endpoint blocked');
+        }
+
+        // Enforce https protocol
+        if (parsedUrl.protocol !== 'https:') {
+            return res.status(403).send('Only HTTPS is allowed');
+        }
+
+        // Timeout the request after 5 seconds
+        const controller = new AbortController();
+        setTimeout(() => controller.abort(), 5000);
+
+        try {
+            const response = await axios.get(url, { signal: controller.signal });
+            res.send(response.data);
+        } catch (error) {
+            if (error.code === 'ECONNABORTED') {
+                return res.status(408).send('Request timed out');
+            }
+            res.status(500).send('Error fetching URL');
+        }
     } catch (error) {
-        if (error.code === 'ECONNABORTED') return res.status(504).send('Request timed out');
-        res.status(500).send('Error fetching URL');
+        res.status(400).send('Invalid URL format');
     }
 });
 

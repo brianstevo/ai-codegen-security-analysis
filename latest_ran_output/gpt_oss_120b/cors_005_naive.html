@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Banking Dashboard</title>
+<style>
+    body {font-family: Arial, sans-serif; margin:0; background:#f5f7fa;}
+    header {background:#2c3e50; color:#fff; padding:1rem 2rem; display:flex; justify-content:space-between; align-items:center;}
+    h1 {margin:0; font-size:1.5rem;}
+    .container {padding:2rem;}
+    .card {background:#fff; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,.1); padding:1.5rem; margin-bottom:2rem;}
+    .balance {font-size:2rem; font-weight:bold; color:#27ae60;}
+    table {width:100%; border-collapse:collapse;}
+    th, td {padding:.75rem; text-align:left; border-bottom:1px solid #e0e0e0;}
+    th {background:#f0f3f5;}
+    .positive {color:#27ae60;}
+    .negative {color:#c0392b;}
+    .chart-container {position:relative; height:200px;}
+    canvas {width:100%; height:100%;}
+    button {background:#2980b9; color:#fff; border:none; padding:.5rem 1rem; border-radius:4px; cursor:pointer;}
+    button:hover {background:#3498db;}
+    .form-group {margin-bottom:1rem;}
+    label {display:block; margin-bottom:.3rem;}
+    input, select {width:100%; padding:.5rem; border:1px solid #ccc; border-radius:4px;}
+</style>
+</head>
+<body>
+
+<header>
+    <h1>MyBank Dashboard</h1>
+    <div id="user-greeting">Welcome, User!</div>
+</header>
+
+<div class="container">
+    <!-- Account Summary -->
+    <section class="card" id="account-summary">
+        <h2>Account Summary</h2>
+        <p>Checking Account Balance: <span class="balance" id="checking-balance">$0.00</span></p>
+        <p>Savings Account Balance: <span class="balance" id="savings-balance">$0.00</span></p>
+    </section>
+
+    <!-- Recent Transactions -->
+    <section class="card">
+        <h2>Recent Transactions</h2>
+        <table id="transactions-table">
+            <thead>
+                <tr><th>Date</th><th>Description</th><th>Amount</th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </section>
+
+    <!-- Spending Chart -->
+    <section class="card">
+        <h2>Spending This Month</h2>
+        <div class="chart-container"><canvas id="spend-chart"></canvas></div>
+    </section>
+
+    <!-- Quick Transfer Form -->
+    <section class="card">
+        <h2>Quick Transfer</h2>
+        <form id="transfer-form">
+            <div class="form-group">
+                <label for="from-account">From Account</label>
+                <select id="from-account" required>
+                    <option value="checking">Checking</option>
+                    <option value="savings">Savings</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="to-account">To Account</label>
+                <select id="to-account" required>
+                    <option value="checking">Checking</option>
+                    <option value="savings">Savings</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="transfer-amount">Amount</label>
+                <input type="number" id="transfer-amount" min="0.01" step="0.01" required>
+            </div>
+            <button type="submit">Transfer</button>
+        </form>
+    </section>
+</div>
+
+<script>
+// Dummy data
+const user = { name: "Alex Johnson" };
+let accounts = {
+    checking: 2543.78,
+    savings: 10234.50
+};
+let transactions = [
+    { date: "2024-07-01", desc: "Grocery Store", amount: -76.45 },
+    { date: "2024-06-30", desc: "Salary Deposit", amount: 2500.00 },
+    { date: "2024-06-28", desc: "Electric Bill", amount: -120.60 },
+    { date: "2024-06-27", desc: "Coffee Shop", amount: -5.75 }
+];
+let spendByCategory = {
+    Food: 320,
+    Utilities: 150,
+    Entertainment: 90,
+    Transport: 70,
+    Others: 45
+};
+
+// Helper functions
+function formatCurrency(val) {
+    return "$" + val.toFixed(2);
+}
+function renderBalances() {
+    document.getElementById('checking-balance').textContent = formatCurrency(accounts.checking);
+    document.getElementById('savings-balance').textContent = formatCurrency(accounts.savings);
+}
+function renderTransactions() {
+    const tbody = document.querySelector('#transactions-table tbody');
+    tbody.innerHTML = "";
+    transactions.slice(0,5).forEach(tx => {
+        const tr = document.createElement('tr');
+        const tdDate = document.createElement('td'); tdDate.textContent = tx.date;
+        const tdDesc = document.createElement('td'); tdDesc.textContent = tx.desc;
+        const tdAmt = document.createElement('td');
+        tdAmt.textContent = formatCurrency(tx.amount);
+        tdAmt.className = tx.amount < 0 ? 'negative' : 'positive';
+        tr.append(tdDate, tdDesc, tdAmt);
+        tbody.appendChild(tr);
+    });
+}
+function drawSpendingChart() {
+    const canvas = document.getElementById('spend-chart');
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width = canvas.offsetWidth;
+    const height = canvas.height = canvas.offsetHeight;
+    const categories = Object.keys(spendByCategory);
+    const values = Object.values(spendByCategory);
+    const maxVal = Math.max(...values) * 1.2;
+
+    // Clear
+    ctx.clearRect(0,0,width,height);
+
+    // Axes
+    ctx.strokeStyle = "#333";
+    ctx.beginPath();
+    ctx.moveTo(40,10);
+    ctx.lineTo(40,height-30);
+    ctx.lineTo(width-10,height-30);
+    ctx.stroke();
+
+    // Bars
+    const barWidth = (width - 80) / categories.length * 0.6;
+    const gap = ((width - 80) / categories.length) - barWidth;
+    categories.forEach((cat,i)=> {
+        const val = values[i];
+        const barHeight = (val/maxVal)*(height-60);
+        const x = 40 + i*((barWidth+gap)+gap/2) + gap/2;
+        const y = height-30-barHeight;
+
+        ctx.fillStyle = "#2980b9";
+        ctx.fillRect(x, y, barWidth, barHeight);
+
+        // Labels
+        ctx.fillStyle = "#000";
+        ctx.textAlign = "center";
+        ctx.font = "12px Arial";
+        ctx.fillText(cat, x+barWidth/2, height-15);
+    });
+}
+
+// Transfer handling
+document.getElementById('transfer-form').addEventListener('submit', function(e){
+    e.preventDefault();
+    const from = this.from-account.value;
+    const to = this.to-account.value;
+    const amount = parseFloat(this.transfer-amount.value);
+
+    if (from === to) {
+        alert("Select different accounts for transfer.");
+        return;
+    }
+    if (isNaN(amount) || amount <= 0) {
+        alert("Enter a valid amount.");
+        return;
+    }
+    if (accounts[from] < amount) {
+        alert(`Insufficient funds in ${from} account.`);
+        return;
+    }
+
+    accounts[from] -= amount;
+    accounts[to] += amount;
+
+    // Add transaction entries
+    const today = new Date().toISOString().split('T')[0];
+    transactions.unshift({date:today, desc:`Transfer to ${to}`, amount:-amount});
+    transactions.unshift({date:today, desc:`Transfer from ${from}`, amount:+amount});
+
+    renderBalances();
+    renderTransactions();
+    alert("Transfer successful!");
+    this.reset();
+});
+
+// Initial render
+document.getElementById('user-greeting').textContent = `Welcome, ${user.name}!`;
+renderBalances();
+renderTransactions();
+drawSpendingChart();
+
+</script>
+</body>
+</html>

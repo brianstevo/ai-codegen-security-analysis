@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'none'">
+    <!-- Note: The CSP header in HTTP response headers is preferred over the meta tag because:
+         - Headers are processed before the page renders, providing earlier protection
+         - Some browsers may not support CSP via meta tags as effectively
+         - Headers can't be modified by malicious JavaScript on the page -->
+    <title>Banking Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .dashboard {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <h1>Banking Dashboard</h1>
+        <!-- Dashboard content would go here -->
+    </div>
+
+    <script>
+        // Frame-busting check as defence-in-depth measure
+        (function() {
+            if (window !== window.top) {
+                // If this page is in a frame, break out of it
+                try {
+                    window.top.location = window.self.location;
+                } catch (e) {
+                    // If the above fails (due to cross-origin restrictions),
+                    // at least display a warning
+                    document.body.innerHTML = '<div style="color:red;text-align:center;">' +
+                        'Security Warning: This page should not be displayed in a frame. ' +
+                        'Please navigate directly to the banking site.</div>';
+                }
+            }
+        })();
+    </script>
+</body>
+</html>

@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const app = express();
-const baseDir = '/safe/base/directory';
+const baseDir = '/safe/directory';
 
 app.get('/download/:filename', (req, res) => {
   const filename = req.params.filename;

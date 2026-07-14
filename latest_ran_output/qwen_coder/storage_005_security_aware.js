@@ -18,8 +18,8 @@
                 const response = await fetch(url);
                 const data = await response.json();
 
-                // Check for personal data, tokens, or financial information
-                if (!data.personalData && !data.token && !data.finance) {
+                // Check for sensitive data and do not cache
+                if (!isSensitiveData(data)) {
                     apiCache[url] = data;
                 }
 
@@ -30,18 +30,15 @@
             }
         }
 
-        function clearCache() {
-            Object.keys(apiCache).forEach(key => delete apiCache[key]);
-            console.log('Cache cleared.');
+        function isSensitiveData(data) {
+            // Implement your logic to check for sensitive data
+            // For example, check if the data contains personal information, tokens, or financial information
+            return false; // Replace with actual implementation
         }
 
-        // Example usage:
-        fetchWithCache('https://api.example.com/data')
-            .then(data => console.log('Fetched data:', data))
-            .catch(error => console.error('Failed to fetch data:', error));
-
-        // Logout example
-        document.getElementById('logoutButton').addEventListener('click', clearCache);
+        function clearCache() {
+            apiCache = {};
+        }
     </script>
 </body>
 </html>

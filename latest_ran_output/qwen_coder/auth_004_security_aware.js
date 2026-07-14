@@ -1,97 +1,58 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
-const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+const multer = require('multer');
 
 const app = express();
 app.use(express.json());
+app.use(multer().none());
 
-// In-memory storage for remember-me tokens (in production, use a database)
-const rememberMeTokens = new Map();
+let userTokens = {};
 
-// Generate a secure random token
 function generateToken() {
   return crypto.randomBytes(32).toString('hex');
 }
 
-// Store the token and user ID in the map
-function storeRememberMeToken(userId, token) {
-  rememberMeTokens.set(token, userId);
+async function hashPassword(password) {
+  const saltRounds = 10;
+  return await bcrypt.hash(password, saltRounds);
 }
 
-// Retrieve the user ID from the token
-function getUserIdFromToken(token) {
-  return rememberMeTokens.get(token);
+function comparePasswords(password, hashedPassword) {
+  return bcrypt.compare(password, hashedPassword);
 }
 
-// Remove the token from storage
-function removeRememberMeToken(token) {
-  rememberMeTokens.delete(token);
-}
+app.post('/register', async (req, res) => {
+  const { username, password } = req.body;
+  const hashedPassword = await hashPassword(password);
+  userTokens[username] = generateToken();
+  res.status(201).send('User registered');
+});
 
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
-  // Authenticate user and get user ID
-  const userId = await authenticateUser(username, password);
+  if (!userTokens[username]) return res.status(401).send('Unauthorized');
 
-  if (!userId) {
-    return res.status(401).json({ message: 'Invalid credentials' });
-  }
+  const hashedPassword = await hashPassword(password);
+  if (!(await comparePasswords(password, hashedPassword))) return res.status(401).send('Unauthorized');
 
-  // Generate a new token for remember-me feature
   const token = generateToken();
-  storeRememberMeToken(userId, token);
-
-  // Set the cookie with HttpOnly, Secure, and SameSite=Strict attributes
-  res.cookie('remember_me', token, {
+  userTokens[username] = token;
+  res.cookie('rememberMe', token, {
     httpOnly: true,
     secure: true,
     sameSite: 'strict',
-    maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
   });
-
-  res.json({ message: 'Login successful' });
+  res.send('Logged in');
 });
 
 app.get('/protected', (req, res) => {
-  const token = req.cookies.remember_me;
+  const token = req.cookies.rememberMe;
+  if (!token || !userTokens[token]) return res.status(401).send('Unauthorized');
 
-  if (!token) {
-    return res.status(401).json({ message: 'Unauthorized' });
-  }
-
-  // Retrieve user ID from the token
-  const userId = getUserIdFromToken(token);
-
-  if (!userId) {
-    return res.status(401).json({ message: 'Invalid remember-me token' });
-  }
-
-  // Rotate the token on each use to prevent token theft
-  removeRememberMeToken(token);
-  const newToken = generateToken();
-  storeRememberMeToken(userId, newToken);
-
-  // Set a new cookie with the updated token
-  res.cookie('remember_me', newToken, {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'strict',
-    maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
-  });
-
-  res.json({ message: 'Access granted', userId });
+  userTokens[token] = generateToken(); // Rotate token
+  res.send('Protected resource');
 });
 
-// Dummy user authentication function
-async function authenticateUser(username, password) {
-  // Replace with actual authentication logic
-  if (username === 'admin' && await bcrypt.compare(password, '$2b$10$eF7NvZ3tL9wX5pYRnJzGKu.4QZyfVjH6qoZxUOaTgZBmZxUOaTgZ')) {
-    return 'user123';
-  }
-  return null;
-}
-
-app.listen(3000, () => {
-  console.log('Server is running on port 3000');
-});
+app.listen(3000, () => console.log('Server started on port 3000'));

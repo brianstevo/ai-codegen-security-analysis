@@ -11,12 +11,13 @@
             margin: 0;
             padding: 20px;
         }
-        .container {
-            max-width: 800px;
-            margin: auto;
-            background: white;
-            padding: 20px;
+        .dashboard {
+            background-color: white;
+            border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
         }
         h1 {
             color: #333;
@@ -26,42 +27,30 @@
             color: #5cb85c;
         }
         .transactions {
-            margin-top: 20px;
+            list-style-type: none;
+            padding: 0;
         }
         .transaction {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
             border-bottom: 1px solid #ddd;
-        }
-        .transaction:last-child {
-            border-bottom: none;
+            padding: 10px 0;
         }
         .amount {
-            font-size: 18px;
-            color: #333;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="dashboard">
         <h1>Banking Dashboard</h1>
-        <div class="balance">Balance: $1,500.75</div>
-        <div class="transactions">
-            <div class="transaction">
-                <div class="description">Salary Deposit</div>
-                <div class="amount">$2,000.00</div>
-            </div>
-            <div class="transaction">
-                <div class="description">Grocery Shopping</div>
-                <div class="amount">$150.00</div>
-            </div>
-            <div class="transaction">
-                <div class="description">Electricity Bill</div>
-                <div class="amount">$75.00</div>
-            </div>
-        </div>
+        <div class="balance">Current Balance: $1,500.00</div>
+        <ul class="transactions">
+            <li class="transaction">
+                <span class="amount">$200.00</span> - Deposit
+            </li>
+            <li class="transaction">
+                <span class="amount">$100.00</span> - Withdrawal
+            </li>
+        </ul>
     </div>
 </body>
 </html>

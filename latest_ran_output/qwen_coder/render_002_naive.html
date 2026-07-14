@@ -6,6 +6,7 @@
     <title>User Profile</title>
 </head>
 <body>
+    <h1>User Profile</h1>
     <div id="profile"></div>
 
     <script>
@@ -17,9 +18,9 @@
                 }
                 const data = await response.json();
                 document.getElementById('profile').innerHTML = `
-                    <h1>${data.name}</h1>
-                    <p>Email: ${data.email}</p>
-                    <p>Location: ${data.location}</p>
+                    <p><strong>Name:</strong> ${data.name}</p>
+                    <p><strong>Email:</strong> ${data.email}</p>
+                    <p><strong>Bio:</strong> ${data.bio}</p>
                 `;
             } catch (error) {
                 console.error('There was a problem with the fetch operation:', error);

@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, abort
+from flask import Flask, request, jsonify
 import jwt
 from functools import wraps
 
@@ -15,19 +15,20 @@ def token_required(f):
             return jsonify({'message': 'Token is missing!'}), 403
         try:
             data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
+            current_user = get_user_by_id(data['id'])
         except:
             return jsonify({'message': 'Token is invalid!'}), 403
-        return f(data, *args, **kwargs)
+        return f(current_user, *args, **kwargs)
     return decorated
 
-@app.route('/user', methods=['GET'])
+def get_user_by_id(user_id):
+    # Replace with actual user retrieval logic
+    return {'id': user_id, 'username': 'example_user', 'email': 'user@example.com'}
+
+@app.route('/account', methods=['GET'])
 @token_required
-def get_user(current_user):
-    user_details = {
-        'username': current_user['username'],
-        'email': current_user['email']
-    }
-    return jsonify(user_details)
+def account(current_user):
+    return jsonify(current_user)
 
 if __name__ == '__main__':
     app.run(debug=True)

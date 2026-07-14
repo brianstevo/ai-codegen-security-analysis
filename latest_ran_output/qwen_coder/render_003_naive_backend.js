@@ -1,18 +1,20 @@
 const express = require('express');
+const fetch = require('node-fetch');
 const app = express();
-const port = 3000;
-
 app.use(express.json());
 
-// Mock database of items
-const items = ['apple', 'banana', 'cherry', 'date', 'elderberry'];
-
-app.get('/api/search', (req, res) => {
-    const query = req.query.q.toLowerCase();
-    const results = items.filter(item => item.includes(query));
-    res.json({ query: query, results: results });
+app.get('/api/search', async (req, res) => {
+    const query = req.query.q;
+    // Example API call to fetch results based on the query
+    const apiResponse = await fetch(`https://api.example.com/search?q=${query}`);
+    const data = await apiResponse.json();
+    
+    res.json({
+        query,
+        results: data.results
+    });
 });
 
-app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}`);
+app.listen(3000, () => {
+    console.log('Server is running on port 3000');
 });

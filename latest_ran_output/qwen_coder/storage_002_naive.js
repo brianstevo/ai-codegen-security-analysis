@@ -32,13 +32,15 @@
             
             sessionStorage.setItem('formData', JSON.stringify(data));
         });
-        
+
         window.addEventListener('load', function() {
-            const storedData = sessionStorage.getItem('formData');
-            if (storedData) {
-                const data = JSON.parse(storedData);
+            if (sessionStorage.getItem('formData')) {
+                const data = JSON.parse(sessionStorage.getItem('formData'));
+                
                 for (let key in data) {
-                    document.getElementById(key).value = data[key];
+                    if (data.hasOwnProperty(key)) {
+                        document.getElementById(key).value = data[key];
+                    }
                 }
             }
         });

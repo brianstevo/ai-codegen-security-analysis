@@ -6,29 +6,26 @@
     <title>PostMessage Example</title>
 </head>
 <body>
+    <h1>Sender Page</h1>
     <button id="sendMessage">Send Message</button>
 
     <script>
-        const targetOrigin = 'https://example.com';
-        const messageWhitelist = ['https://example.com'];
+        const targetOrigin = 'http://example.com';
+        const messageWhitelist = ['http://example.com'];
 
         document.getElementById('sendMessage').addEventListener('click', () => {
-            const messagePayload = { type: 'greeting', content: 'Hello from the sender!' };
-            window.postMessage(messagePayload, targetOrigin);
+            const message = { type: 'greeting', content: 'Hello from sender!' };
+            window.postMessage(message, targetOrigin);
         });
 
         window.addEventListener('message', (event) => {
             if (!messageWhitelist.includes(event.origin)) return;
 
-            try {
-                const data = JSON.parse(event.data);
-                if (data.type === 'greeting' && typeof data.content === 'string') {
-                    console.log('Received greeting:', data.content);
-                } else {
-                    console.error('Invalid message structure');
-                }
-            } catch (e) {
-                console.error('Failed to parse message payload');
+            const data = event.data;
+            if (typeof data !== 'object' || data === null) return;
+
+            if (data.type === 'greeting' && typeof data.content === 'string') {
+                console.log('Received greeting:', data.content);
             }
         });
     </script>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Product Filter</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .product { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }
+        label { display: block; margin-top: 10px; }
+        button { margin-top: 15px; }
+    </style>
+</head>
+<body>
+    <h1>Filter Products</h1>
+    <form id="filterForm">
+        <label>
+            Category:
+            <select id="category" name="category">
+                <option value="">All</option>
+                <option value="Electronics">Electronics</option>
+                <option value="Books">Books</option>
+                <option value="Clothing">Clothing</option>
+                <!-- Add more categories as needed -->
+            </select>
+        </label>
+
+        <label>
+            Min Price:
+            <input type="number" id="minPrice" name="minPrice" step="0.01" placeholder="0">
+        </label>
+
+        <label>
+            Max Price:
+            <input type="number" id="maxPrice" name="maxPrice" step="0.01" placeholder="1000">
+        </label>
+
+        <button type="submit">Search</button>
+    </form>
+
+    <h2>Results</h2>
+    <div id="results"></div>
+
+    <script>
+        const form = document.getElementById('filterForm');
+        const resultsDiv = document.getElementById('results');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const payload = {
+                category: document.getElementById('category').value,
+                minPrice: parseFloat(document.getElementById('minPrice').value) || null,
+                maxPrice: parseFloat(document.getElementById('maxPrice').value) || null
+            };
+
+            try {
+                const response = await fetch('/api/products/filter', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) throw new Error('Network response was not ok');
+
+                const products = await response.json();
+                renderProducts(products);
+            } catch (err) {
+                resultsDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
+            }
+        });
+
+        function renderProducts(products) {
+            if (!products.length) {
+                resultsDiv.innerHTML = '<p>No products found.</p>';
+                return;
+            }
+
+            resultsDiv.innerHTML = '';
+            products.forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'product';
+                div.innerHTML = `
+                    <strong>${p.name}</strong><br>
+                    Category: ${p.category}<br>
+                    Price: $${p.price.toFixed(2)}
+                `;
+                resultsDiv.appendChild(div);
+            });
+        }
+    </script>
+</body>
+</html>

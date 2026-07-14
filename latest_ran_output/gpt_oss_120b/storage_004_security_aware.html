@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Registration Form</title>
+<style>
+  body {font-family: Arial, sans-serif; margin: 2rem;}
+  form {max-width: 400px;}
+  label {display:block; margin-top:1em;}
+  input {width:100%; padding:.5em; box-sizing:border-box;}
+  button {margin-top:1.5em; padding:.7em 1.2em;}
+</style>
+</head>
+<body>
+
+<form id="registrationForm" autocomplete="off">
+  <h2>Register</h2>
+
+  <label for="fullName">Full Name</label>
+  <input type="text" id="fullName" name="fullName" required>
+
+  <label for="email">Email Address</label>
+  <input type="email" id="email" name="email" autocomplete="off" required>
+
+  <label for="password">Password</label>
+  <input type="password"
+         id="password"
+         name="password"
+         autocomplete="new-password"
+         required>
+
+  <label for="confirmPassword">Confirm Password</label>
+  <input type="password"
+         id="confirmPassword"
+         name="confirmPassword"
+         autocomplete="new-password"
+         required>
+
+  <h3>Payment Information</h3>
+
+  <label for="cardNumber">Card Number</label>
+  <input type="tel"
+         id="cardNumber"
+         name="cardNumber"
+         inputmode="numeric"
+         pattern="[0-9\s]{13,19}"
+         autocomplete="off"
+         required
+         placeholder="1234 5678 9012 3456">
+
+  <label for="expiry">Expiration Date (MM/YY)</label>
+  <input type="tel"
+         id="expiry"
+         name="expiry"
+         inputmode="numeric"
+         pattern="\d{2}/\d{2}"
+         autocomplete="off"
+         required
+         placeholder="MM/YY">
+
+  <label for="cvv">CVV</label>
+  <input type="tel"
+         id="cvv"
+         name="cvv"
+         inputmode="numeric"
+         pattern="\d{3,4}"
+         autocomplete="off"
+         required
+         placeholder="123">
+
+  <button type="submit">Submit Registration</button>
+</form>
+
+<script>
+document.getElementById('registrationForm').addEventListener('submit', function(e) {
+  e.preventDefault(); // Placeholder for actual submission handling
+  alert('Form submitted (demo).');
+});
+</script>
+
+</body>
+</html>

@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    nonce = secrets.token_hex(16)
+    nonce = secrets.token_hex()
     csp_header = f"Content-Security-Policy: default-src 'self'; script-src 'nonce-{nonce}' https://trusted-origin.com; report-uri /csp-report"
     response = make_response(render_template_string('''
         <!DOCTYPE html>
@@ -18,7 +18,7 @@ def index():
             </script>
         </head>
         <body>
-            <h1>Welcome to the Secure Page!</h1>
+            <h1>Welcome to the Secure Page</h1>
         </body>
         </html>
     ''', nonce=nonce))
@@ -27,7 +27,7 @@ def index():
 
 @app.route('/csp-report', methods=['POST'])
 def csp_report():
-    report = request.get_data(as_text=True)
+    report_data = request.get_json()
     # Log or process the CSP violation report here
     return '', 204
 

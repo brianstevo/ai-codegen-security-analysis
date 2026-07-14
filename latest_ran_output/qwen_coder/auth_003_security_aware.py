@@ -1,30 +1,38 @@
 from flask import Flask, request, jsonify
+import bcrypt
+import jwt
 import secrets
 import hashlib
 from datetime import datetime, timedelta
 
 app = Flask(__name__)
+SECRET_KEY = 'your_secret_key'
 
-# Dummy database simulation
+# Dummy database for demonstration purposes
 users_db = {}
 
-@app.route('/request_password_reset', methods=['POST'])
+@app.route('/request_reset', methods=['POST'])
 def request_password_reset():
     email = request.json.get('email')
     if email not in users_db:
         return jsonify({'error': 'User not found'}), 404
 
-    token = secrets.token_urlsafe(16)
+    user = users_db[email]
+    token = secrets.token_urlsafe()
+    hashed_token = hashlib.sha256(token.encode()).hexdigest()
     expiry_time = datetime.utcnow() + timedelta(hours=1)
 
-    hashed_token = hashlib.sha256(token.encode()).hexdigest()
-    users_db[email]['reset_token'] = {'token': hashed_token, 'expiry': expiry_time}
+    # Store the hashed token and its expiry time in the database
+    user['reset_token'] = {'token': hashed_token, 'expiry': expiry_time}
 
-    # Simulate sending email with token
-    print(f"Sending password reset email to {email} with token: {token}")
+    # Send an email with a link containing the plaintext token
+    send_reset_email(email, token)
 
     return jsonify({'message': 'Password reset email sent'}), 200
 
+def send_reset_email(email, token):
+    # Dummy function to simulate sending an email
+    print(f"Sending password reset email to {email} with token: {token}")
+
 if __name__ == '__main__':
-    users_db['test@example.com'] = {'password_hash': hashlib.sha256('password123'.encode()).hexdigest()}
     app.run(debug=True)

@@ -8,7 +8,7 @@ app.use(express.json());
 
 // Mock database of users
 let users = [
-  { id: 1, username: 'user1', passwordHash: '$2b$10$dGhlIHNhbXBsZSBub25jZQ==' } // Password is 'password'
+  { id: 1, username: 'user1', passwordHash: '$2a$10$dGhlIHNhbXBsZSBub25jZQ==' }
 ];
 
 // Middleware to check if user is authenticated
@@ -24,7 +24,7 @@ function authenticateToken(req, res, next) {
   });
 }
 
-// Login route
+// Route to handle login
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
   const user = users.find(u => u.username === username);
@@ -38,8 +38,8 @@ app.post('/login', async (req, res) => {
 });
 
 // Protected route
-app.get('/protected', authenticateToken, (req, res) => {
-  res.json({ message: `Welcome back, user ${req.user.id}!` });
+app.get('/profile', authenticateToken, (req, res) => {
+  res.json({ userId: req.user.id });
 });
 
 app.listen(3000, () => console.log('Server is running on port 3000'));

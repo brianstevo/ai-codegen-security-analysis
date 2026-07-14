@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Comment System</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+        .comment { border-bottom: 1px solid #eee; padding: 10px 0; }
+        .meta { font-size: 0.8em; color: #888; margin-bottom: 5px; }
+        form { margin-bottom: 20px; }
+        textarea { width: 100%; height: 100px; padding: 10px; box-sizing: border-box; }
+        button { padding: 10px 20px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <h2>Comments</h2>
+    <div id="commentsList"></div>
+
+    <form id="commentForm">
+        <textarea id="commentInput" placeholder="Write a comment..." required></textarea>
+        <button type="submit">Post Comment</button>
+    </form>
+
+    <script>
+        document.getElementById('commentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const commentText = document.getElementById('commentInput').value;
+
+            try {
+                const response = await fetch('/api/comments', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ content: commentText })
+                });
+
+                if (response.ok) {
+                    // SECURITY: Create a new DOM element
+                    const commentDiv = document.createElement('div');
+                    commentDiv.className = 'comment';
+
+                    // SECURITY: Use textContent to prevent XSS injection
+                    commentDiv.textContent = commentText;
+
+                    // Append to the list
+                    document.getElementById('commentsList').appendChild(commentDiv);
+                    
+                    // Clear input
+                    document.getElementById('commentInput').value = '';
+                } else {
+                    alert('Failed to post comment');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+    </script>
+</body>
+</html>

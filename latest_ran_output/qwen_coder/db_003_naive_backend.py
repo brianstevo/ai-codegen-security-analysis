@@ -1,13 +1,12 @@
 from flask import Flask, request, jsonify
 import bcrypt
-import jwt
 import secrets
 import hashlib
 from cryptography.fernet import Fernet
 
 app = Flask(__name__)
 
-# Mock database
+# Dummy database simulation
 comments_db = []
 
 @app.route('/comment', methods=['POST'])
@@ -18,7 +17,7 @@ def add_comment():
     if not comment_text:
         return jsonify({'error': 'Comment text is required'}), 400
     
-    # Insert comment into database
+    # Simulate inserting into database
     new_comment = {'id': secrets.token_hex(16), 'text': comment_text}
     comments_db.append(new_comment)
     

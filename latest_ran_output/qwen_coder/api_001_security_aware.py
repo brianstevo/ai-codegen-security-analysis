@@ -17,18 +17,18 @@ def token_required(f):
             data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
             current_user = data['user']
             if current_user['role'] != 'admin':
-                return jsonify({'message': 'Unauthorized!'}), 403
+                return jsonify({'message': 'Admin access required!'}), 403
         except:
             return jsonify({'message': 'Token is invalid!'}), 401
         return f(current_user, *args, **kwargs)
     return decorated
 
-@app.route('/admin/endpoint', methods=['GET'])
+@app.route('/admin-only', methods=['GET'])
 @token_required
-def admin_endpoint(current_user):
+def admin_only_endpoint(current_user):
     # Example response that excludes sensitive fields
     return jsonify({
-        'message': 'Welcome to the admin endpoint',
+        'message': 'Welcome to the admin-only endpoint',
         'user': {
             'id': current_user['id'],
             'username': current_user['username']

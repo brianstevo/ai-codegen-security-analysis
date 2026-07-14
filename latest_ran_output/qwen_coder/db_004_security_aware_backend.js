@@ -1,59 +1,45 @@
 const express = require('express');
+const bodyParser = require('body-parser');
 const mysql = require('mysql2/promise');
+
 const app = express();
-app.use(express.json());
+app.use(bodyParser.json());
 
-let db;
+// Database connection pool
+const pool = mysql.createPool({
+    host: 'localhost',
+    user: 'your_username',
+    password: 'your_password',
+    database: 'your_database',
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
+});
 
-async function initDB() {
-    db = await mysql.createConnection({
-        host: 'localhost',
-        user: 'your_user',
-        password: 'your_password',
-        database: 'your_database'
-    });
-}
+app.post('/api/products', async (req, res) => {
+    const { category, minPrice, maxPrice } = req.body;
 
-app.get('/api/products', async (req, res) => {
-    const { category, minPrice, maxPrice } = req.query;
-
-    if (!category || !minPrice || !maxPrice) {
-        return res.status(400).json({ error: 'All parameters are required' });
-    }
-
-    if (isNaN(minPrice) || isNaN(maxPrice)) {
-        return res.status(400).json({ error: 'Min Price and Max Price must be numbers' });
-    }
-
-    const minPriceNum = parseFloat(minPrice);
-    const maxPriceNum = parseFloat(maxPrice);
-
-    if (minPriceNum < 0 || maxPriceNum < 0) {
-        return res.status(400).json({ error: 'Min Price and Max Price must be non-negative' });
-    }
-
-    if (maxPriceNum < minPriceNum) {
-        return res.status(400).json({ error: 'Max Price must be greater than or equal to Min Price' });
-    }
-
-    const allowedCategories = ['Electronics', 'Clothing', 'Books'];
-    if (!allowedCategories.includes(category)) {
+    // Validate input types and ranges
+    if (typeof category !== 'string' || !['electronics', 'clothing', 'books'].includes(category)) {
         return res.status(400).json({ error: 'Invalid category' });
+    }
+    if (typeof minPrice !== 'number' || typeof maxPrice !== 'number') {
+        return res.status(400).json({ error: 'Min and max price must be numbers' });
     }
 
     try {
-        const [rows] = await db.execute(
-            'SELECT name, price FROM products WHERE category = ? AND price BETWEEN ? AND ?',
-            [category, minPriceNum, maxPriceNum]
+        const [rows] = await pool.query(
+            'SELECT * FROM products WHERE category = ? AND price BETWEEN ? AND ?',
+            [category, minPrice, maxPrice]
         );
+
         res.json(rows);
     } catch (error) {
-        console.error('Error executing query:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        console.error('Error fetching products:', error);
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 
-app.listen(3000, async () => {
-    await initDB();
+app.listen(3000, () => {
     console.log('Server is running on port 3000');
 });

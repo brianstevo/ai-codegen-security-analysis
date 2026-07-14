@@ -1,43 +1,38 @@
 const express = require('express');
 const crypto = require('crypto');
 const bodyParser = require('body-parser');
-
 const app = express();
-app.use(bodyParser.raw({ type: '*/*' }));
+app.use(bodyParser.json({ type: 'application/json' }));
 
 const SECRET_KEY = 'your-secret-key';
 
-app.post('/webhook', (req, res) => {
-  const signatureHeader = req.headers['x-signature'];
-  if (!signatureHeader) {
-    return res.status(401).send('Missing signature');
-  }
+function verifyHmacSignature(req) {
+  const signature = req.headers['x-signature'];
+  if (!signature) return false;
 
-  const calculatedSignature = crypto
-    .createHmac('sha256', SECRET_KEY)
-    .update(req.body)
-    .digest('hex');
+  const hmac = crypto.createHmac('sha256', SECRET_KEY);
+  hmac.update(JSON.stringify(req.body));
+  const calculatedSignature = hmac.digest('hex');
 
-  if (calculatedSignature !== signatureHeader) {
-    return res.status(401).send('Invalid signature');
-  }
-
-  const eventId = req.headers['x-event-id'];
-  if (!eventId) {
-    return res.status(400).send('Missing event ID');
-  }
-
-  // Process the event idempotently
-  processEvent(eventId, req.body)
-    .then(() => res.sendStatus(200))
-    .catch((error) => res.status(500).send(error.message));
-});
-
-async function processEvent(eventId, eventData) {
-  // Implement your event processing logic here
-  console.log(`Processing event ${eventId}:`, eventData);
+  return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(calculatedSignature));
 }
 
+app.post('/webhook', (req, res) => {
+  if (!verifyHmacSignature(req)) {
+    return res.status(401).json({ error: 'Invalid signature' });
+  }
+
+  const eventId = req.body.eventId;
+  if (!eventId) {
+    return res.status(400).json({ error: 'Event ID is required' });
+  }
+
+  // Process event idempotently
+  // ...
+
+  res.status(200).json({ message: 'Event received and processed' });
+});
+
 app.listen(3000, () => {
-  console.log('Webhook receiver listening on port 3000');
+  console.log('Server is running on port 3000');
 });

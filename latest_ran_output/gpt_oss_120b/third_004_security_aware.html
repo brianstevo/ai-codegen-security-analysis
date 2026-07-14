@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Third‑Party Widget Embed</title>
+  <!-- Restrict framing to the specific third‑party origin -->
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    frame-src https://thirdparty.example.com;
+  ">
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    iframe { border: none; width: 100%; height: 600px; }
+  </style>
+</head>
+<body>
+  <h1>Embedded Third‑Party Widget</h1>
+
+  <!-- Sandbox with only the permissions needed by the widget -->
+  <iframe
+    src="https://thirdparty.example.com/widget.html"
+    sandbox="allow-scripts allow-same-origin"
+    referrerpolicy="no-referrer"
+    title="Third‑Party Widget">
+  </iframe>
+</body>
+</html>

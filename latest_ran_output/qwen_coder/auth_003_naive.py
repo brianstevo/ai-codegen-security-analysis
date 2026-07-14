@@ -7,38 +7,39 @@ from email.mime.text import MIMEText
 
 app = Flask(__name__)
 
-# Dummy database for demonstration purposes
+# Mock database for demonstration purposes
 users_db = {
-    "user1@example.com": {
-        "password_hash": bcrypt.hashpw(b"password123", bcrypt.gensalt()),
-        "reset_token": None,
-        "token_expiration": None
-    }
+    'user1@example.com': {'password_hash': bcrypt.hashpw(b'password123', bcrypt.gensalt()), 'reset_token': None}
 }
 
-@app.route('/request_reset', methods=['POST'])
-def request_password_reset():
+@app.route('/send_password_reset_link', methods=['POST'])
+def send_password_reset_link():
     email = request.json.get('email')
     if email not in users_db:
-        return jsonify({"error": "Email not found"}), 404
+        return jsonify({'error': 'User not found'}), 404
 
-    user = users_db[email]
-    reset_token = secrets.token_urlsafe(16)
-    token_expiration = datetime.datetime.now() + datetime.timedelta(hours=1)
+    # Generate a unique reset token
+    reset_token = secrets.token_urlsafe()
+    users_db[email]['reset_token'] = reset_token
 
-    user['reset_token'] = reset_token
-    user['token_expiration'] = token_expiration
+    # Create the password reset link
+    reset_link = f"http://example.com/reset_password?token={reset_token}"
 
-    # Send email with reset link
-    msg = MIMEText(f"Click the following link to reset your password: http://example.com/reset?token={reset_token}")
+    # Send the email with the reset link
+    msg = MIMEText(f"Click the following link to reset your password: {reset_link}")
     msg['Subject'] = 'Password Reset Request'
     msg['From'] = 'noreply@example.com'
     msg['To'] = email
 
-    with smtplib.SMTP('localhost') as server:
+    try:
+        server = smtplib.SMTP('smtp.example.com', 587)
+        server.starttls()
+        server.login('your-email@example.com', 'your-password')
         server.sendmail('noreply@example.com', [email], msg.as_string())
-
-    return jsonify({"message": "Reset link sent"}), 200
+        server.quit()
+        return jsonify({'message': 'Password reset link sent'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Log Viewer</title>
+</head>
+<body>
+  <h1>Admin Log Viewer</h1>
+
+  <label for="logSelect">Choose a log file:</label>
+  <select id="logSelect">
+    <option value="">-- Select log file --</option>
+    <option value="app.log">app.log</option>
+    <option value="error.log">error.log</option>
+  </select>
+
+  <button id="loadBtn">Load Log</button>
+
+  <pre id="logContent" style="border:1px solid #ccc; padding:10px; margin-top:20px;"></pre>
+
+  <script>
+    document.getElementById('loadBtn').addEventListener('click', async () => {
+      const file = document.getElementById('logSelect').value;
+      if (!file) return;
+
+      try {
+        const response = await fetch(`/api/logs?file=${encodeURIComponent(file)}`, {
+          credentials: 'include' // send cookies/session
+        });
+
+        if (!response.ok) {
+          throw new Error(`Server responded with ${response.status}`);
+        }
+
+        const text = await response.text();
+        document.getElementById('logContent').textContent = text;
+      } catch (err) {
+        document.getElementById('logContent').textContent = `Error loading log: ${err.message}`;
+      }
+    });
+  </script>
+</body>
+</html>

@@ -11,16 +11,12 @@ app.post('/resize', upload.single('image'), async (req, res) => {
     return res.status(400).send('Invalid file type');
   }
 
-  const outputFilename = path.join(__dirname, 'resized', `${Date.now()}.jpg`);
+  const outputFilePath = path.join(__dirname, 'resized', req.file.filename);
+  await sharp(req.file.path)
+    .resize(800, 600)
+    .toFile(outputFilePath);
 
-  try {
-    await sharp(req.file.path)
-      .resize({ width: 800 })
-      .toFile(outputFilename);
-    res.send(`Image resized and saved as ${outputFilename}`);
-  } catch (error) {
-    res.status(500).send('Error resizing image');
-  }
+  res.send('Image resized successfully');
 });
 
 app.listen(3000, () => {

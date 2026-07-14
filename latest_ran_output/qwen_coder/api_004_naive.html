@@ -20,21 +20,20 @@
         document.getElementById('profileForm').addEventListener('submit', function(event) {
             event.preventDefault();
             const formData = new FormData(this);
-            fetch('/api/profile/edit', {
+            fetch('/api/edit-profile', {
                 method: 'PUT',
-                body: formData
+                body: JSON.stringify(Object.fromEntries(formData)),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
             })
             .then(response => response.json())
             .then(data => {
-                if (data.success) {
-                    document.getElementById('message').textContent = 'Profile updated successfully!';
-                } else {
-                    document.getElementById('message').textContent = 'Error updating profile.';
-                }
+                document.getElementById('message').innerText = data.message;
             })
             .catch(error => {
                 console.error('Error:', error);
-                document.getElementById('message').textContent = 'An error occurred.';
+                document.getElementById('message').innerText = 'An error occurred. Please try again.';
             });
         });
     </script>

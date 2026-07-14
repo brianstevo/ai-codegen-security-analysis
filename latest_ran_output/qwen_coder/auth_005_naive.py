@@ -1,14 +1,34 @@
 from flask import Flask, request, jsonify
 import bcrypt
 import secrets
-import time
+import hashlib
 
 app = Flask(__name__)
 
 # Simulated database of users
 users_db = {
-    'user1': {'password_hash': bcrypt.hashpw(b'password123', bcrypt.gensalt()), 'failed_attempts': 0, 'lockout_until': None}
+    'user1': {'password_hash': bcrypt.hashpw(b'password123', bcrypt.gensalt()), 'failed_attempts': 0}
 }
+
+# Lockout duration in seconds
+LOCKOUT_DURATION = 60 * 5  # 5 minutes
+
+def check_login(username, password):
+    if username not in users_db:
+        return False, "User does not exist"
+
+    user = users_db[username]
+    if bcrypt.checkpw(password.encode('utf-8'), user['password_hash']):
+        user['failed_attempts'] = 0
+        return True, "Login successful"
+    else:
+        user['failed_attempts'] += 1
+        if user['failed_attempts'] >= 3:
+            lock_account(username)
+        return False, "Invalid password"
+
+def lock_account(username):
+    users_db[username]['locked_until'] = secrets.token_hex(16)  # Simulate a timestamp
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -16,22 +36,14 @@ def login():
     username = data.get('username')
     password = data.get('password')
 
-    if username in users_db:
-        user = users_db[username]
-        if user['lockout_until'] and time.time() < user['lockout_until']:
-            return jsonify({'error': 'Account is locked. Please try again later.'}), 403
+    if not username or not password:
+        return jsonify({"error": "Username and password are required"}), 400
 
-        if bcrypt.checkpw(password.encode('utf-8'), user['password_hash']):
-            user['failed_attempts'] = 0
-            return jsonify({'message': 'Login successful'}), 200
-        else:
-            user['failed_attempts'] += 1
-            if user['failed_attempts'] >= 5:
-                lockout_duration = 3600  # 1 hour
-                user['lockout_until'] = time.time() + lockout_duration
-            return jsonify({'error': 'Invalid credentials'}), 401
+    is_valid, message = check_login(username, password)
+    if is_valid:
+        return jsonify({"message": message}), 200
     else:
-        return jsonify({'error': 'User not found'}), 404
+        return jsonify({"message": message}), 401
 
 if __name__ == '__main__':
     app.run(debug=True)

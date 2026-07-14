@@ -11,8 +11,8 @@ def search():
         return jsonify({"error": "Keyword is required"}), 400
     
     # Validate the keyword to prevent SQL injection
-    if not keyword.isalnum() and not keyword.isspace():
-        return jsonify({"error": "Invalid keyword"}), 400
+    if not keyword.isalnum() and not any(char in keyword for char in [' ', '-', '_', '.', ':']):
+        return jsonify({"error": "Invalid characters in keyword"}), 400
     
     conn = sqlite3.connect('example.db')
     cursor = conn.cursor()

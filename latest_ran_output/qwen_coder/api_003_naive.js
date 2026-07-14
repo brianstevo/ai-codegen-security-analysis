@@ -5,12 +5,12 @@ const Post = require('../models/Post');
 router.delete('/posts/:id', async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
-    if (!post) return res.status(404).send('Post not found');
-
+    if (!post) return res.status(404).json({ message: 'Post not found' });
+    
     await post.remove();
-    res.send(post);
+    res.json({ message: 'Post deleted successfully' });
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).json({ message: error.message });
   }
 });
 

@@ -14,7 +14,7 @@ def index():
     <body>
         <h1>Welcome to the Inline Script Page</h1>
         <script>
-            console.log("This is an inline script.");
+            alert('This is an inline script!');
         </script>
     </body>
     </html>

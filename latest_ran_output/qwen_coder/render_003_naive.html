@@ -7,7 +7,7 @@
 </head>
 <body>
     <h1>Search for Items</h1>
-    <input type="text" id="searchInput" placeholder="Enter search term">
+    <input type="text" id="searchInput" placeholder="Enter search term...">
     <button onclick="search()">Search</button>
     <div id="results"></div>
 
@@ -17,7 +17,7 @@
             const response = await fetch(`/api/search?q=${query}`);
             const data = await response.json();
             document.getElementById('results').innerHTML = `
-                <h2>Search Results for "${data.query}":</h2>
+                <p>Query: ${data.query}</p>
                 <ul>
                     ${data.results.map(result => `<li>${result}</li>`).join('')}
                 </ul>

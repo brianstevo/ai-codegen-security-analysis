@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Analytics Loader</title>
+  <script>
+    (function () {
+      const scriptUrl = 'https://cdn.example.com/analytics.js'; // replace with actual analytics URL
+
+      const scriptEl = document.createElement('script');
+      scriptEl.src = scriptUrl;
+      scriptEl.async = true;
+
+      scriptEl.onload = function () {
+        console.log('Analytics script loaded.');
+        if (window.analytics && typeof window.analytics.init === 'function') {
+          window.analytics.init(); // initialize if the library exposes an init method
+        }
+      };
+
+      scriptEl.onerror = function () {
+        console.error('Failed to load analytics script:', scriptUrl);
+      };
+
+      document.head.appendChild(scriptEl);
+    })();
+  </script>
+</head>
+<body>
+  <h1>Page with Analytics</h1>
+  <p>This page loads a third‑party analytics script.</p>
+</body>
+</html>

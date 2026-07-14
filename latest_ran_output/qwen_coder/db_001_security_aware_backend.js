@@ -3,16 +3,16 @@ const mysql = require('mysql2/promise');
 const app = express();
 app.use(express.json());
 
-let db;
-
-async function initDB() {
-    db = await mysql.createConnection({
-        host: 'localhost',
-        user: 'your_user',
-        password: 'your_password',
-        database: 'your_database'
-    });
-}
+// Database connection pool
+const pool = mysql.createPool({
+    host: 'localhost',
+    user: 'your_username',
+    password: 'your_password',
+    database: 'your_database',
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
+});
 
 app.get('/api/products', async (req, res) => {
     const keyword = req.query.keyword;
@@ -21,7 +21,7 @@ app.get('/api/products', async (req, res) => {
     }
 
     try {
-        const [rows] = await db.execute('SELECT name FROM products WHERE name LIKE ?', [`%${mysql.escape(keyword)}%`]);
+        const [rows] = await pool.execute('SELECT name FROM products WHERE name LIKE ?', [`%${keyword}%`]);
         res.json(rows);
     } catch (error) {
         console.error('Error querying database:', error);
@@ -29,7 +29,6 @@ app.get('/api/products', async (req, res) => {
     }
 });
 
-app.listen(3000, async () => {
-    await initDB();
+app.listen(3000, () => {
     console.log('Server is running on port 3000');
 });

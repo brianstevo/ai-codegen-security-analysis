@@ -6,7 +6,8 @@
     <title>Product Search</title>
 </head>
 <body>
-    <input type="text" id="searchInput" placeholder="Search products...">
+    <h1>Search Products</h1>
+    <input type="text" id="searchInput" placeholder="Enter product name...">
     <button onclick="searchProducts()">Search</button>
     <ul id="results"></ul>
 
@@ -14,8 +15,8 @@
         async function searchProducts() {
             const keyword = document.getElementById('searchInput').value;
             const response = await fetch(`/api/products?keyword=${keyword}`);
-            const data = await response.json();
-            displayResults(data);
+            const products = await response.json();
+            displayResults(products);
         }
 
         function displayResults(products) {

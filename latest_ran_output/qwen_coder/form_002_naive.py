@@ -1,31 +1,34 @@
 from flask import Flask, request, jsonify
-from bcrypt import gensalt, hashpw
+import bcrypt
 import secrets
 
 app = Flask(__name__)
 
+# Dummy database for demonstration purposes
+users_db = {}
+
 @app.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
-    username = data['username']
-    password = data['password']
+    username = data.get('username')
+    password = data.get('password')
 
-    # Hash the password using bcrypt
-    hashed_password = hashpw(password.encode('utf-8'), gensalt())
+    if not username or not password:
+        return jsonify({'error': 'Username and password are required'}), 400
 
-    # Generate a unique user ID
-    user_id = secrets.token_urlsafe(16)
+    if username in users_db:
+        return jsonify({'error': 'Username already exists'}), 409
 
-    # Store the user in a database (simulated here with a dictionary)
-    users_db[user_id] = {
+    # Hash the password
+    hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+
+    # Store user data (in a real app, use a database)
+    users_db[username] = {
         'username': username,
         'password_hash': hashed_password.decode('utf-8')
     }
 
     return jsonify({'message': 'User registered successfully'}), 201
-
-# Simulated database for demonstration purposes
-users_db = {}
 
 if __name__ == '__main__':
     app.run(debug=True)

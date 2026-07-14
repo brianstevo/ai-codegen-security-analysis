@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; }
+    #message { margin-top: 1rem; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <form id="loginForm">
+    <label>
+      Username:
+      <input type="text" name="username" required>
+    </label><br><br>
+    <label>
+      Password:
+      <input type="password" name="password" required>
+    </label><br><br>
+    <button type="submit">Login</button>
+  </form>
+
+  <div id="message"></div>
+
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(e.target);
+      const payload = {
+        username: formData.get('username'),
+        password: formData.get('password')
+      };
+
+      try {
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+        const msgDiv = document.getElementById('message');
+
+        if (result.success) {
+          msgDiv.textContent = 'Login successful!';
+          msgDiv.style.color = 'green';
+        } else {
+          msgDiv.textContent = result.error || 'Login failed.';
+          msgDiv.style.color = 'red';
+        }
+      } catch (err) {
+        console.error('Fetch error:', err);
+      }
+    });
+  </script>
+</body>
+</html>

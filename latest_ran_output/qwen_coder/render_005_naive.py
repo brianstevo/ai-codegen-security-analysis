@@ -6,10 +6,10 @@ app = Flask(__name__)
 def login():
     next_url = request.args.get('next')
     if not next_url:
-        return "No 'next' URL provided", 400
+        return "No next URL provided", 400
     
-    # Simulate successful login
-    # In a real application, you would check credentials here
+    # Simulate a successful login
+    # In real application, you would validate user credentials here
 
     # Redirect to the URL provided in the query string
     return redirect(next_url)

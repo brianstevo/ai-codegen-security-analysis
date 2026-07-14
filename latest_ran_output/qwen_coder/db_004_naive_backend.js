@@ -1,40 +1,37 @@
 const express = require('express');
-const bodyParser = require('body-parser');
-const mysql = require('mysql');
-
 const app = express();
-app.use(bodyParser.urlencoded({ extended: true }));
-app.set('view engine', 'ejs');
+const port = 3000;
 
-// Database connection setup
-const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: 'password',
-    database: 'products_db'
-});
+app.use(express.json());
 
-db.connect((err) => {
-    if (err) throw err;
-    console.log('Connected to the database');
-});
+let products = [
+    { id: 1, name: 'Laptop', category: 'Electronics', price: 999 },
+    { id: 2, name: 'T-shirt', category: 'Clothing', price: 15 },
+    { id: 3, name: 'Book', category: 'Books', price: 20 }
+];
 
 app.get('/api/products', (req, res) => {
-    const category = req.query.category || '';
-    const minPrice = req.query.minPrice || 0;
-    const maxPrice = req.query.maxPrice || Infinity;
+    const category = req.query.category;
+    const minPrice = parseFloat(req.query.minPrice);
+    const maxPrice = parseFloat(req.query.maxPrice);
 
-    let query = 'SELECT * FROM products WHERE price BETWEEN ? AND ?';
+    let filteredProducts = products;
+
     if (category) {
-        query += ' AND category = ?';
+        filteredProducts = filteredProducts.filter(product => product.category === category);
     }
 
-    db.query(query, [minPrice, maxPrice, category], (err, results) => {
-        if (err) throw err;
-        res.json(results);
-    });
+    if (!isNaN(minPrice)) {
+        filteredProducts = filteredProducts.filter(product => product.price >= minPrice);
+    }
+
+    if (!isNaN(maxPrice)) {
+        filteredProducts = filteredProducts.filter(product => product.price <= maxPrice);
+    }
+
+    res.json(filteredProducts);
 });
 
-app.listen(3000, () => {
-    console.log('Server is running on port 3000');
+app.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}`);
 });

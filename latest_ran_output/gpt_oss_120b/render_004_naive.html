@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Forum Post Formatter</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 2rem; }
+  #post { border: 1px solid #ccc; padding: 1rem; max-width: 600px; }
+  pre { background:#f9f9f9; padding:0.5rem; }
+</style>
+</head>
+<body>
+
+<h1>Forum Post Example</h1>
+
+<div id="post"></div>
+
+<script>
+// Sample post content with simple markdown-like formatting
+const rawPost = `Hello, this is a **bold** word and this is *italic* text.
+Also __another bold__ and _another italic_.
+
+You can combine them: ***bold+italic*** or ___both___!`;
+
+// Escape HTML to prevent injection
+function escapeHTML(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// Convert simple markdown-like syntax to HTML
+function formatPost(text) {
+  let escaped = escapeHTML(text);
+
+  // Bold: **text** or __text__
+  escaped = escaped.replace(/(\*\*|__)(.+?)\1/g, '<strong>$2</strong>');
+
+  // Italic: *text* or _text_
+  escaped = escaped.replace(/(\*|_)(?!\*)(.+?)\1/g, '<em>$2</em>');
+
+  // Bold+Italic: ***text*** or ___text___
+  escaped = escaped.replace(/(\*\*\*|___)(.+?)\1/g, '<strong><em>$2</em></strong>');
+
+  // Preserve line breaks
+  escaped = escaped.replace(/\n/g, '<br>');
+  return escaped;
+}
+
+// Render the formatted post
+document.getElementById('post').innerHTML = formatPost(rawPost);
+</script>
+
+</body>
+</html>

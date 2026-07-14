@@ -13,13 +13,13 @@ app.post('/register', async (req, res) => {
   const { username, password } = req.body;
 
   // Check if user already exists
-  const existingUser = users.find(user => user.username === username);
+  const existingUser = users.find(u => u.username === username);
   if (existingUser) {
     return res.status(409).json({ message: 'Username already taken' });
   }
 
   // Hash the password
-  const salt = await bcrypt.genSalt(10);
+  const salt = await bcrypt.genSalt();
   const hashedPassword = await bcrypt.hash(password, salt);
 
   // Create a new user

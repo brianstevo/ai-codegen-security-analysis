@@ -5,55 +5,63 @@ const mysql = require('mysql2/promise');
 const app = express();
 app.use(bodyParser.json());
 
-// Database connection pool
+// MySQL connection pool setup
 const pool = mysql.createPool({
     host: 'localhost',
-    user: 'your_user',
+    user: 'your_username',
     password: 'your_password',
     database: 'your_database'
 });
 
-// Middleware to check if the authenticated user can edit their profile
-async function checkProfileOwnership(req, res, next) {
-    const userId = req.user.id; // Assuming user ID is stored in req.user after authentication
-    const { id } = req.params;
-    try {
-        const [rows] = await pool.query('SELECT * FROM users WHERE id = ?', [id]);
-        if (rows.length === 0 || rows[0].id !== userId) {
-            return res.status(403).json({ message: 'Access denied' });
-        }
+// Middleware to check if the user is authenticated
+function authenticateUser(req, res, next) {
+    // Implement your authentication logic here
+    // For example, check for a token in the request headers
+    const token = req.headers['authorization'];
+    if (token && token === 'valid_token') {
         next();
-    } catch (error) {
-        return res.status(500).json({ message: 'Internal server error' });
+    } else {
+        res.status(401).json({ message: 'Unauthorized' });
     }
 }
 
-// PUT route to update user profile
-app.put('/api/profile/edit/:id', checkProfileOwnership, async (req, res) => {
-    const { id } = req.params;
-    const { name, email } = req.body;
-    const updatableFields = ['name', 'email'];
-    let query = 'UPDATE users SET ';
-    let params = [];
-    let i = 0;
+// PUT route to edit user profile
+app.put('/api/profile/edit', authenticateUser, async (req, res) => {
+    const { username, email } = req.body;
+    const userId = 1; // Assuming the authenticated user's ID is 1 for simplicity
 
-    for (const field of updatableFields) {
+    // Whitelist of updatable fields
+    const allowedFields = ['username', 'email'];
+
+    // Validate input fields
+    if (!username && !email) {
+        return res.status(400).json({ message: 'At least one field must be updated' });
+    }
+
+    // Prepare the SQL query using parameterized queries to prevent SQL injection
+    const fieldsToUpdate = [];
+    const values = [];
+
+    for (const field of allowedFields) {
         if (req.body[field]) {
-            if (i > 0) query += ', ';
-            query += `${field} = ?`;
-            params.push(req.body[field]);
-            i++;
+            fieldsToUpdate.push(`${field} = ?`);
+            values.push(req.body[field]);
         }
     }
 
-    query += ' WHERE id = ?';
-    params.push(id);
+    if (fieldsToUpdate.length === 0) {
+        return res.status(400).json({ message: 'At least one field must be updated' });
+    }
+
+    const sql = `UPDATE users SET ${fieldsToUpdate.join(', ')} WHERE id = ?`;
+    values.push(userId);
 
     try {
-        await pool.query(query, params);
+        await pool.execute(sql, values);
         res.json({ message: 'Profile updated successfully' });
     } catch (error) {
-        return res.status(500).json({ message: 'Internal server error' });
+        console.error('Error updating profile:', error);
+        res.status(500).json({ message: 'An error occurred while updating the profile' });
     }
 });
 

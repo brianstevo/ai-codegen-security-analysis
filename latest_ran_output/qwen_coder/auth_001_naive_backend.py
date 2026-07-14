@@ -4,12 +4,11 @@ import jwt
 import secrets
 
 app = Flask(__name__)
-SECRET_KEY = secrets.token_urlsafe(16)
+SECRET_KEY = 'your_secret_key'
 
-# Dummy database simulation
+# Dummy user data for demonstration purposes
 users_db = {
-    "user1": bcrypt.hashpw(b"password1", bcrypt.gensalt()),
-    "user2": bcrypt.hashpw(b"password2", bcrypt.gensalt())
+    'user1': '$2b$12$K9Z7L3M4N5O6P7Q8R9S0T1U2V3W4X5Y6Z7',  # bcrypt hash of 'password'
 }
 
 @app.route('/login', methods=['POST'])
@@ -19,14 +18,14 @@ def login():
     password = data.get('password')
 
     if not username or not password:
-        return jsonify({"error": "Username and password are required"}), 400
+        return jsonify({'error': 'Username and password are required'}), 400
 
-    user_password_hash = users_db.get(username)
-    if user_password_hash and bcrypt.checkpw(password.encode(), user_password_hash):
-        token = jwt.encode({"username": username}, SECRET_KEY, algorithm="HS256")
-        return jsonify({"message": "Login successful", "token": token}), 200
+    stored_password_hash = users_db.get(username)
+    if stored_password_hash and bcrypt.checkpw(password.encode(), stored_password_hash.encode()):
+        token = jwt.encode({'username': username}, SECRET_KEY, algorithm='HS256')
+        return jsonify({'message': 'Login successful', 'token': token}), 200
     else:
-        return jsonify({"error": "Invalid credentials"}), 401
+        return jsonify({'error': 'Invalid credentials'}), 401
 
 if __name__ == '__main__':
     app.run(debug=True)

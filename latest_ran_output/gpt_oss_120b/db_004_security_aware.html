@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Product Filter</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2rem; }
+        .product { border: 1px solid #ccc; padding: .5rem; margin-bottom: .5rem; }
+        label { display: block; margin-top: .5rem; }
+    </style>
+</head>
+<body>
+    <h1>Filter Products</h1>
+    <form id="filterForm">
+        <label>
+            Category:
+            <select name="category" id="categorySelect">
+                <option value="">All</option>
+                <option value="electronics">Electronics</option>
+                <option value="books">Books</option>
+                <option value="clothing">Clothing</option>
+            </select>
+        </label>
+
+        <label>
+            Min Price:
+            <input type="number" name="minPrice" id="minPrice" step="0.01" min="0">
+        </label>
+
+        <label>
+            Max Price:
+            <input type="number" name="maxPrice" id="maxPrice" step="0.01" min="0">
+        </label>
+
+        <button type="submit">Search</button>
+    </form>
+
+    <h2>Results</h2>
+    <div id="results"></div>
+
+    <script>
+        const form = document.getElementById('filterForm');
+        const resultsDiv = document.getElementById('results');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Build query string safely
+            const params = new URLSearchParams();
+            const category = document.getElementById('categorySelect').value;
+            const minPrice = document.getElementById('minPrice').value;
+            const maxPrice = document.getElementById('maxPrice').value;
+
+            if (category) params.append('category', category);
+            if (minPrice) params.append('minPrice', minPrice);
+            if (maxPrice) params.append('maxPrice', maxPrice);
+
+            try {
+                const response = await fetch(`/api/products?${params.toString()}`, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                });
+
+                if (!response.ok) throw new Error(`Server error ${response.status}`);
+
+                const data = await response.json();
+                renderResults(data);
+            } catch (err) {
+                resultsDiv.textContent = `Error: ${err.message}`;
+            }
+        });
+
+        function renderResults(products) {
+            // Clear previous results
+            resultsDiv.innerHTML = '';
+
+            if (!products.length) {
+                resultsDiv.textContent = 'No products found.';
+                return;
+            }
+
+            products.forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'product';
+
+                const name = document.createElement('h3');
+                name.textContent = p.name; // textContent prevents XSS
+                div.appendChild(name);
+
+                const price = document.createElement('p');
+                price.textContent = `Price: $${p.price.toFixed(2)}`;
+                div.appendChild(price);
+
+                const cat = document.createElement('p');
+                cat.textContent = `Category: ${p.category}`;
+                div.appendChild(cat);
+
+                resultsDiv.appendChild(div);
+            });
+        }
+    </script>
+</body>
+</html>

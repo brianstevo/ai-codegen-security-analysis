@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Log File Viewer</title>
 </head>
 <body>
-    <h1>Log File Viewer</h1>
+    <h1>Select a Log File</h1>
     <select id="logFiles">
-        <!-- Log files will be populated here -->
+        <option value="">Choose a log file</option>
+        <!-- Options will be populated by JavaScript -->
     </select>
     <button id="fetchButton">Fetch Log</button>
     <pre id="logContent"></pre>
@@ -16,22 +16,22 @@
     <script>
         document.getElementById('fetchButton').addEventListener('click', async () => {
             const selectedFile = document.getElementById('logFiles').value;
-            if (selectedFile) {
-                try {
-                    const response = await fetch(`/api/logs/${selectedFile}`);
-                    const content = await response.text();
-                    document.getElementById('logContent').textContent = content;
-                } catch (error) {
-                    console.error('Error fetching log file:', error);
-                }
+            if (!selectedFile) return;
+
+            try {
+                const response = await fetch(`/api/log?file=${selectedFile}`);
+                const content = await response.text();
+                document.getElementById('logContent').textContent = content;
+            } catch (error) {
+                console.error('Error fetching log:', error);
+                document.getElementById('logContent').textContent = 'Failed to load log.';
             }
         });
 
         // Populate the dropdown with available log files
-        async function populateLogFiles() {
-            try {
-                const response = await fetch('/api/logs');
-                const files = await response.json();
+        fetch('/api/log/files')
+            .then(response => response.json())
+            .then(files => {
                 const selectElement = document.getElementById('logFiles');
                 files.forEach(file => {
                     const option = document.createElement('option');
@@ -39,12 +39,8 @@
                     option.textContent = file;
                     selectElement.appendChild(option);
                 });
-            } catch (error) {
-                console.error('Error fetching log files:', error);
-            }
-        }
-
-        populateLogFiles();
+            })
+            .catch(error => console.error('Error fetching log files:', error));
     </script>
 </body>
 </html>

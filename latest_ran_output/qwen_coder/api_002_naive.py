@@ -5,15 +5,17 @@ app = Flask(__name__)
 
 # Dummy database simulation
 users_db = {
-    '1': {'username': 'john_doe', 'email': 'john@example.com', 'password_hash': bcrypt.hashpw(b'password123', bcrypt.gensalt())},
-    '2': {'username': 'jane_smith', 'email': 'jane@example.com', 'password_hash': bcrypt.hashpw(b'secret456', bcrypt.gensalt())}
+    '1': {'username': 'john_doe', 'email': 'john@example.com', 'password_hash': bcrypt.hashpw(b'password123', bcrypt.gensalt())}
 }
 
 @app.route('/user/<user_id>', methods=['GET'])
 def get_user(user_id):
     user = users_db.get(user_id)
     if user:
-        return jsonify(user), 200
+        return jsonify({
+            'username': user['username'],
+            'email': user['email']
+        })
     else:
         return jsonify({'error': 'User not found'}), 404
 

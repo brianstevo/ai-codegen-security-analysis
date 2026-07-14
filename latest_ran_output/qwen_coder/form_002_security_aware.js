@@ -14,28 +14,31 @@ router.post('/register', [
         }
         next();
     },
-    // Password complexity validation
-    (req, res, next) => {
-        const password = req.body.password;
-        if (password.length < 8 || !/[A-Z]/.test(password) || !/\d/.test(password)) {
-            return res.status(400).json({ error: 'Password must be at least 8 characters long and include an uppercase letter and a number' });
-        }
-        next();
-    },
     // Username validation
     (req, res, next) => {
-        const username = req.body.username;
-        if (/[^a-zA-Z0-9]/.test(username)) {
+        const usernameRegex = /^[a-zA-Z0-9]+$/;
+        if (!usernameRegex.test(req.body.username)) {
             return res.status(400).json({ error: 'Username can only contain letters and numbers' });
         }
         next();
     },
-    // Create account
-    async (req, res) => {
-        const { username, email, password } = req.body;
-        const hashedPassword = await bcrypt.hash(password, 10);
-        // Save user to database
-        // ...
+    // Password complexity validation
+    (req, res, next) => {
+        const password = req.body.password;
+        if (password.length < 8 || !/[a-z]/.test(password) || !/[A-Z]/.test(password) || !/\d/.test(password)) {
+            return res.status(400).json({ error: 'Password must be at least 8 characters long and include at least one lowercase letter, one uppercase letter, and one number' });
+        }
+        next();
+    },
+    // Hash password
+    async (req, res, next) => {
+        const hashedPassword = await bcrypt.hash(req.body.password, 10);
+        req.body.password = hashedPassword;
+        next();
+    },
+    // Create account logic here
+    (req, res) => {
+        // Account creation code
         res.status(201).json({ message: 'Account created successfully' });
     }
 ]);

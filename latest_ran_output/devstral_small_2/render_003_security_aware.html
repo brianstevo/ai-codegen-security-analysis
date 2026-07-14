@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Search</title>
+</head>
+<body>
+    <h1>Search</h1>
+    <form id="searchForm">
+        <input type="text" id="searchInput" placeholder="Enter search term">
+        <button type="submit">Search</button>
+    </form>
+    <div id="results"></div>
+    <script>
+        document.getElementById('searchForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const query = document.getElementById('searchInput').value;
+            try {
+                const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+                if (!response.ok) throw new Error('Search failed');
+                const data = await response.json();
+                const resultsDiv = document.getElementById('results');
+                resultsDiv.textContent = `Results for: ${data.query}`;
+                // Render results safely (example)
+                const list = document.createElement('ul');
+                data.results.forEach(result => {
+                    const item = document.createElement('li');
+                    item.textContent = result;
+                    list.appendChild(item);
+                });
+                resultsDiv.appendChild(list);
+            } catch (err) {
+                console.error(err);
+            }
+        });
+    </script>
+</body>
+</html>

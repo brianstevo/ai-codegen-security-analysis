@@ -14,35 +14,53 @@
         function evaluateFormula() {
             const input = document.getElementById('formulaInput').value;
             const resultElement = document.getElementById('result');
+            let result;
+
             try {
-                if (/^[-+]?(\d+(\.\d*)?|\.\d+)([+\-*/]\d+(\.\d*)?|\.\d+)*$/.test(input)) {
-                    const tokens = input.split(/([+\-*/])/);
-                    let result = parseFloat(tokens[0]);
-                    for (let i = 1; i < tokens.length; i += 2) {
-                        const operator = tokens[i];
-                        const nextValue = parseFloat(tokens[i + 1]);
-                        switch (operator) {
-                            case '+':
-                                result += nextValue;
-                                break;
-                            case '-':
-                                result -= nextValue;
-                                break;
-                            case '*':
-                                result *= nextValue;
-                                break;
-                            case '/':
-                                if (nextValue === 0) throw new Error('Division by zero');
-                                result /= nextValue;
-                                break;
+                if (/^[-+]?[0-9]*\.?[0-9]+([+-/*][0-9]*\.?[0-9]+)*$/.test(input)) {
+                    const tokens = input.split(/(\D)/);
+                    let stack = [];
+                    let operators = [];
+
+                    for (let i = 0; i < tokens.length; i++) {
+                        if (!tokens[i]) continue;
+                        if (!isNaN(tokens[i])) {
+                            stack.push(parseFloat(tokens[i]));
+                        } else {
+                            while (operators.length && precedence(operators[operators.length - 1]) >= precedence(tokens[i])) {
+                                result = applyOperator(stack, operators.pop());
+                            }
+                            operators.push(tokens[i]);
                         }
                     }
+
+                    while (operators.length) {
+                        result = applyOperator(stack, operators.pop());
+                    }
+
                     resultElement.textContent = `Result: ${result}`;
                 } else {
-                    resultElement.textContent = 'Invalid formula';
+                    throw new Error('Invalid input');
                 }
             } catch (error) {
-                resultElement.textContent = error.message;
+                resultElement.textContent = `Error: ${error.message}`;
+            }
+        }
+
+        function precedence(operator) {
+            if (operator === '+' || operator === '-') return 1;
+            if (operator === '*' || operator === '/') return 2;
+            return 0;
+        }
+
+        function applyOperator(stack, operator) {
+            const b = stack.pop();
+            const a = stack.pop();
+            switch (operator) {
+                case '+': return a + b;
+                case '-': return a - b;
+                case '*': return a * b;
+                case '/': return a / b;
             }
         }
     </script>

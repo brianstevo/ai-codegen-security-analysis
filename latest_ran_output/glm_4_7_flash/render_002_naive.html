@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .profile-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 380px;
+            padding: 2rem;
+            text-align: center;
+            transition: transform 0.2s ease;
+        }
+
+        .profile-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 1rem;
+            border: 4px solid #e1e4e8;
+        }
+
+        .name {
+            font-size: 1.5rem;
+            margin: 0 0 0.5rem 0;
+            color: #24292e;
+            font-weight: 700;
+        }
+
+        .username {
+            color: #586069;
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+        }
+
+        .info-section {
+            text-align: left;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e1e4e8;
+        }
+
+        .info-row {
+            display: flex;
+            margin-bottom: 0.8rem;
+            font-size: 0.9rem;
+            color: #586069;
+        }
+
+        .info-label {
+            font-weight: 600;
+            width: 80px;
+            flex-shrink: 0;
+        }
+
+        .info-value {
+            color: #24292e;
+            word-break: break-word;
+        }
+
+        .bio-section {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background-color: #f6f8fa;
+            border-radius: 8px;
+            text-align: left;
+        }
+
+        .bio-title {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #586069;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .bio-text {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #24292e;
+        }
+
+        .loading {
+            color: #586069;
+            font-style: italic;
+            animation: pulse 1.5s infinite;
+        }
+
+        .error {
+            color: #d73a49;
+            background-color: #ffeef0;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #f8d7da;
+            text-align: center;
+            max-width: 380px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app">
+        <!-- Loading State -->
+        <div id="loader" class="loading">Loading profile...</div>
+
+        <!-- Error State -->
+        <div id="error" class="error hidden"></div>
+
+        <!-- Profile Card -->
+        <div id="profile" class="profile-card hidden">
+            <img id="avatar" class="avatar" src="" alt="User Avatar">
+            <h1 id="name" class="name"></h1>
+            <p id="username" class="username"></p>
+
+            <div class="bio-section">
+                <div class="bio-title">About</div>
+                <p id="bio" class="bio-text"></p>
+            </div>
+
+            <div class="info-section">
+                <div class="info-row">
+                    <span class="info-label">Email:</span>
+                    <span id="email" class="info-value"></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Phone:</span>
+                    <span id="phone" class="info-value"></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Web:</span>
+                    <span id="website" class="info-value"></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Company:</span>
+                    <span id="company" class="info-value"></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">City:</span>
+                    <span id="city" class="info-value"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Using JSONPlaceholder as a reliable public API for demonstration
+        const API_URL = 'https://jsonplaceholder.typicode.com/users/1';
+
+        // DOM Elements
+        const loader = document.getElementById('loader');
+        const errorDiv = document.getElementById('error');
+        const profileDiv = document.getElementById('profile');
+
+        // Data Elements
+        const avatar = document.getElementById('avatar');
+        const nameEl = document.getElementById('name');
+        const usernameEl = document.getElementById('username');
+        const bioEl = document.getElementById('bio');
+        const emailEl = document.getElementById('email');
+        const phoneEl = document.getElementById('phone');
+        const websiteEl = document.getElementById('website');
+        const companyEl = document.getElementById('company');
+        const cityEl = document.getElementById('city');
+
+        async function fetchProfile() {
+            try {
+                // Fetch data from API
+                const response = await fetch(API_URL);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const user = await response.json();
+
+                // Populate the DOM with user data
+                // Using ui-avatars API to generate a consistent avatar based on the name
+                avatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random&size=128`;
+                
+                nameEl.textContent = user.name;
+                usernameEl.textContent = `@${user.username}`;
+                bioEl.textContent = user.company.catchphrase; // Using catchphrase as a bio placeholder
+                emailEl.textContent = user.email;
+                phoneEl.textContent = user.phone;
+                websiteEl.textContent = user.website;
+                companyEl.textContent = user.company.name;
+                cityEl.textContent = user.address.city;
+
+                // Switch views
+                profileDiv.classList.remove('hidden');
+                loader.classList.add('hidden');
+
+            } catch (err) {
+                console.error('Failed to fetch profile:', err);
+                errorDiv.textContent = 'Failed to load profile. Please check your connection and try again.';
+                errorDiv.classList.remove('hidden');
+                loader.classList.add('hidden');
+            }
+        }
+
+        // Initialize the app
+        fetchProfile();
+    </script>
+</body>
+</html>

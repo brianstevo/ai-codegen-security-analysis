@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #search-form {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        #search-input {
+            flex-grow: 1;
+            padding: 10px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .product-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .product-item {
+            padding: 10px;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+    <h1>Product Search</h1>
+    <form id="search-form">
+        <input type="text" id="search-input" placeholder="Search products..." required>
+        <button type="submit">Search</button>
+    </form>
+    <ul id="product-list" class="product-list"></ul>
+
+    <script>
+        document.getElementById('search-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const keyword = document.getElementById('search-input').value.trim();
+            if (!keyword) return;
+
+            try {
+                const response = await fetch(`/api/products/search?q=${encodeURIComponent(keyword)}`);
+                if (!response.ok) throw new Error('Search failed');
+
+                const products = await response.json();
+                displayProducts(products);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while searching.');
+            }
+        });
+
+        function displayProducts(products) {
+            const productList = document.getElementById('product-list');
+            productList.innerHTML = '';
+
+            if (products.length === 0) {
+                productList.innerHTML = '<li>No products found.</li>';
+                return;
+            }
+
+            products.forEach(product => {
+                const li = document.createElement('li');
+                li.className = 'product-item';
+                li.innerHTML = `
+                    <span>${product.name}</span>
+                    <span>$${product.price.toFixed(2)}</span>
+                `;
+                productList.appendChild(li);
+            });
+        }
+    </script>
+</body>
+</html>

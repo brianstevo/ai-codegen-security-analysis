@@ -9,14 +9,14 @@
     <h2>Payment Information</h2>
     <form id="paymentForm">
         <label for="cardNumber">Credit Card Number:</label>
-        <input type="text" id="cardNumber" name="cardNumber" required>
-        <br><br>
+        <input type="text" id="cardNumber" name="cardNumber" required><br><br>
+
         <label for="expiryDate">Expiry Date (MM/YY):</label>
-        <input type="text" id="expiryDate" name="expiryDate" required>
-        <br><br>
+        <input type="text" id="expiryDate" name="expiryDate" pattern="[0-9]{2}/[0-9]{2}" required><br><br>
+
         <label for="cvv">CVV:</label>
-        <input type="text" id="cvv" name="cvv" required>
-        <br><br>
+        <input type="text" id="cvv" name="cvv" pattern="[0-9]{3}" required><br><br>
+
         <button type="submit">Submit Payment</button>
     </form>
 
@@ -27,10 +27,7 @@
             const expiryDate = document.getElementById('expiryDate').value;
             const cvv = document.getElementById('cvv').value;
 
-            // Here you can add code to process the payment information
-            console.log('Card Number:', cardNumber);
-            console.log('Expiry Date:', expiryDate);
-            console.log('CVV:', cvv);
+            alert(`Card Number: ${cardNumber}\nExpiry Date: ${expiryDate}\nCVV: ${cvv}`);
         });
     </script>
 </body>

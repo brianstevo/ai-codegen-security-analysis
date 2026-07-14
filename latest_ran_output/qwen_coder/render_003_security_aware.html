@@ -9,13 +9,13 @@
             const query = document.getElementById('searchInput').value;
             try {
                 const response = await fetch(`/search?q=${encodeURIComponent(query)}`);
-                const results = await response.json();
+                const data = await response.json();
                 const resultsContainer = document.getElementById('results');
-                resultsContainer.innerHTML = ''; // Clear previous results
-                if (results.length > 0) {
-                    results.forEach(result => {
+                resultsContainer.innerHTML = '';
+                if (data.results.length > 0) {
+                    data.results.forEach(result => {
                         const div = document.createElement('div');
-                        div.textContent = result.title; // Use textContent to prevent XSS
+                        div.textContent = result.title;
                         resultsContainer.appendChild(div);
                     });
                 } else {
@@ -31,7 +31,7 @@
 </head>
 <body>
     <h1>Search Results</h1>
-    <input type="text" id="searchInput" placeholder="Enter your search query">
+    <input type="text" id="searchInput" placeholder="Enter your query">
     <button onclick="search()">Search</button>
     <div id="results"></div>
 </body>

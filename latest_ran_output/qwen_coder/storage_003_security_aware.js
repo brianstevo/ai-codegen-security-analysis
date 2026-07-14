@@ -1,8 +1,7 @@
-function saveThemePreference(theme, days) {
+function saveThemePreference(theme) {
     const date = new Date();
-    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-    const expires = "expires=" + date.toUTCString();
-    document.cookie = `theme=${theme}; ${expires}; path=/; SameSite=Lax`;
+    date.setTime(date.getTime() + (30 * 24 * 60 * 60 * 1000)); // 30 days
+    document.cookie = `theme=${theme}; SameSite=Lax; Max-Age=2592000`;
 }
 
 // For a sensitive session cookie, the following attributes would be required:

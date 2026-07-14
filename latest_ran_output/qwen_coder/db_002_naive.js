@@ -1,19 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const User = require('../models/User'); // Assuming you have a User model
+const User = require('../models/User');
 
 router.get('/profile/:id', async (req, res) => {
   try {
-    const userId = req.params.id;
-    const user = await User.findById(userId);
-    
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).send('User not found');
     res.json(user);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).send(error.message);
   }
 });
 

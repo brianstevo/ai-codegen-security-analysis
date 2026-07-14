@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from psycopg2 import connect, sql
 from psycopg2.extras import RealDictCursor
-import secrets
+import bcrypt
 
 app = Flask(__name__)
 
@@ -16,21 +16,22 @@ def get_db_connection():
     conn.cursor_factory = RealDictCursor
     return conn
 
-@app.route('/user/<int:user_id>', methods=['GET'])
-def get_user_profile(user_id):
+@app.route('/profile/<int:user_id>', methods=['GET'])
+def get_profile(user_id):
     if user_id <= 0:
         return jsonify({'error': 'Invalid user ID'}), 400
     
     # Assuming the requesting user's ID is passed in a header for simplicity
-    requesting_user_id = request.headers.get('X-User-ID')
-    if not requesting_user_id or not requesting_user_id.isdigit() or int(requesting_user_id) <= 0:
-        return jsonify({'error': 'Invalid requesting user ID'}), 403
+    request_user_id = int(request.headers.get('X-User-ID', -1))
+    
+    if request_user_id != user_id and not is_admin(request_user_id):
+        return jsonify({'error': 'Unauthorized'}), 403
     
     conn = get_db_connection()
     try:
         cur = conn.cursor()
-        query = sql.SQL("SELECT * FROM users WHERE id = %s AND (id = %s OR is_public = TRUE)")
-        cur.execute(query, (user_id, requesting_user_id))
+        query = sql.SQL("SELECT * FROM users WHERE id = %s")
+        cur.execute(query, (user_id,))
         user_profile = cur.fetchone()
         
         if not user_profile:
@@ -40,6 +41,10 @@ def get_user_profile(user_id):
     finally:
         cur.close()
         conn.close()
+
+def is_admin(user_id):
+    # Implement your logic to check if the user is an admin
+    pass
 
 if __name__ == '__main__':
     app.run(debug=True)

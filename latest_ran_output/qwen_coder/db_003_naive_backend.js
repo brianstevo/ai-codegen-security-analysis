@@ -8,9 +8,9 @@ app.use(bodyParser.json());
 let comments = [];
 
 app.post('/api/comments', (req, res) => {
-    const newComment = req.body.comment;
-    comments.push(newComment);
-    res.json({ comment: newComment });
+    const comment = req.body;
+    comments.push(comment);
+    res.json(comment);
 });
 
 app.listen(port, () => {

@@ -9,4 +9,4 @@ async function getWeather(city, apiKey) {
   }
 }
 
-module.exports = { getWeather };
+module.exports = getWeather;

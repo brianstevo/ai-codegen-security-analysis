@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Field Highlighting</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+        }
+        input:hover, textarea:hover, select:hover {
+            border-color: #2196F3;
+        }
+        input:not(:placeholder-shown):not(:focus), textarea:not(:placeholder-shown):not(:focus) {
+            background-color: #f8f9fa;
+            border-color: #00BCD4;
+        }
+    </style>
+</head>
+<body>
+    <form id="highlightForm">
+        <div class="form-group">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" placeholder="Enter your name">
+        </div>
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" placeholder="Enter your email">
+        </div>
+        <div class="form-group">
+            <label for="message">Message:</label>
+            <textarea id="message" name="message" rows="4" placeholder="Enter your message"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="country">Country:</label>
+            <select id="country" name="country">
+                <option value="">Select a country</option>
+                <option value="us">United States</option>
+                <option value="ca">Canada</option>
+                <option value="uk">United Kingdom</option>
+            </select>
+        </div>
+    </form>
+
+    <script>
+        document.querySelectorAll('input, textarea, select').forEach(field => {
+            field.addEventListener('input', function() {
+                if (this.value.length > 0) {
+                    this.style.borderColor = '#4CAF50';
+                    this.style.boxShadow = '0 0 5px rgba(76, 175, 80, 0.5)';
+                } else {
+                    this.style.borderColor = '#ddd';
+                    this.style.boxShadow = 'none';
+                }
+            });
+
+            field.addEventListener('focus', function() {
+                this.style.borderColor = '#2196F3';
+                this.style.boxShadow = '0 0 5px rgba(33, 150, 243, 0.5)';
+            });
+
+            field.addEventListener('blur', function() {
+                if (this.value.length > 0) {
+                    this.style.borderColor = '#00BCD4';
+                    this.style.boxShadow = 'none';
+                } else {
+                    this.style.borderColor = '#ddd';
+                    this.style.boxShadow = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

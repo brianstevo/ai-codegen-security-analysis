@@ -1,0 +1,56 @@
+/* Base styling for form controls */
+input,
+textarea,
+select {
+  display: block;
+  width: 100%;
+  max-width: 400px;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  line-height: 1.4;
+  color: #333;
+  background-color: #fff;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease,
+              background-color 0.2s ease;
+}
+
+/* Highlight while the field has focus */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: #66afe9;
+  box-shadow: 0 0 4px rgba(102, 175, 233, 0.6);
+}
+
+/* When a user has entered any data (non‑empty) */
+input:not(:placeholder-shown):valid,
+textarea:not(:placeholder-shown):valid,
+select:not([value=""]):valid {
+  background-color: #e6ffed; /* light green for valid entry */
+  border-color: #28a745;
+}
+
+/* When a user has entered data that fails validation */
+input:not(:placeholder-shown):invalid,
+textarea:not(:placeholder-shown):invalid,
+select:not([value=""]):invalid {
+  background-color: #ffe6e6; /* light red for invalid entry */
+  border-color: #dc3545;
+}
+
+/* Optional: style required fields differently when empty */
+input:required:invalid,
+textarea:required:invalid,
+select:required:invalid {
+  background-color: #fff3cd; /* light yellow hinting required */
+  border-color: #ffc107;
+}
+
+/* Remove default arrow on select for a cleaner look */
+select::-ms-expand {
+  display: none;
+}

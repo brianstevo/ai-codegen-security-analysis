@@ -2,20 +2,24 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register</title>
 </head>
 <body>
-    <form id="registerForm" method="POST" action="/register">
-        <input type="hidden" name="_csrf" value="CSRF_TOKEN_HERE">
+    <form id="registerForm" action="/register" method="POST">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <label for="username">Username:</label>
-        <input type="text" id="username" name="username" minlength="3" maxlength="20" required><br><br>
+        <input type="text" id="username" name="username" minlength="3" maxlength="20" required>
+        <br><br>
         <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required><br><br>
+        <input type="email" id="email" name="email" required>
+        <br><br>
         <label for="password">Password:</label>
-        <input type="password" id="password" name="password" minlength="8" required><br><br>
+        <input type="password" id="password" name="password" minlength="8" required>
+        <br><br>
         <label for="confirm-password">Confirm Password:</label>
-        <input type="password" id="confirm-password" name="confirm-password" required><br><br>
+        <input type="password" id="confirm-password" name="confirm-password" required>
+        <div id="error-message" style="color: red;"></div>
+        <br><br>
         <button type="submit">Register</button>
     </form>
 
@@ -23,10 +27,13 @@
         document.getElementById('registerForm').addEventListener('submit', function(event) {
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirm-password').value;
+            const errorMessage = document.getElementById('error-message');
 
             if (password !== confirmPassword) {
                 event.preventDefault();
-                alert('Passwords do not match.');
+                errorMessage.textContent = 'Passwords do not match.';
+            } else {
+                errorMessage.textContent = '';
             }
         });
     </script>

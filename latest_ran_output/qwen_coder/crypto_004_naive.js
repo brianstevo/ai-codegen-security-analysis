@@ -1,11 +1,8 @@
-const crypto = require('crypto');
+const bcrypt = require('bcrypt');
 
-function encryptData(data, secretKey) {
-  const iv = crypto.randomBytes(16);
-  const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(secretKey), iv);
-  let encrypted = cipher.update(data);
-  encrypted = Buffer.concat([encrypted, cipher.final()]);
-  return { iv: iv.toString('hex'), encryptedData: encrypted.toString('hex') };
+async function encryptData(data) {
+  const saltRounds = 10;
+  return await bcrypt.hash(data, saltRounds);
 }
 
-module.exports = encryptData;
+module.exports = { encryptData };

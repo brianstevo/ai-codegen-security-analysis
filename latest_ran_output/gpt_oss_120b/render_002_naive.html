@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Profile Bio</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2rem; background:#f9f9f9;}
+        #profile { max-width: 600px; padding: 1.5rem; background:#fff; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,.1);}
+        .loading, .error { color:#555; font-style:italic;}
+        h2 { margin-top:0; }
+    </style>
+</head>
+<body>
+    <div id="profile">
+        <p class="loading">Loading profile...</p>
+    </div>
+
+    <script>
+        (function() {
+            const apiUrl = 'https://jsonplaceholder.typicode.com/users/1'; // Example API
+            const container = document.getElementById('profile');
+
+            function renderBio(data) {
+                container.innerHTML = `
+                    <h2>${data.name}</h2>
+                    <p><strong>Username:</strong> ${data.username}</p>
+                    <p><strong>Email:</strong> ${data.email}</p>
+                    <p><strong>Website:</strong> <a href="https://${data.website}" target="_blank">${data.website}</a></p>
+                    <h3>Bio</h3>
+                    <p>${data.company?.catchPhrase || 'No bio available.'}</p>
+                `;
+            }
+
+            function renderError(message) {
+                container.innerHTML = `<p class="error">Error: ${message}</p>`;
+            }
+
+            fetch(apiUrl)
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    return response.json();
+                })
+                .then(data => renderBio(data))
+                .catch(err => renderError(err.message));
+        })();
+    </script>
+</body>
+</html>

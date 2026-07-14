@@ -2,49 +2,57 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product Filter</title>
 </head>
 <body>
     <h1>Filter Products</h1>
     <form id="filterForm">
         <label for="category">Category:</label>
-        <select id="category">
-            <option value="">All</option>
-            <option value="Electronics">Electronics</option>
-            <option value="Clothing">Clothing</option>
-            <option value="Books">Books</option>
-        </select>
-        <br><br>
+        <select id="category" name="category">
+            <option value="electronics">Electronics</option>
+            <option value="clothing">Clothing</option>
+            <option value="books">Books</option>
+        </select><br><br>
         <label for="minPrice">Min Price:</label>
-        <input type="number" id="minPrice">
-        <br><br>
+        <input type="number" id="minPrice" name="minPrice"><br><br>
         <label for="maxPrice">Max Price:</label>
-        <input type="number" id="maxPrice">
-        <br><br>
+        <input type="number" id="maxPrice" name="maxPrice"><br><br>
         <button type="submit">Filter</button>
     </form>
     <div id="results"></div>
 
     <script>
-        document.getElementById('filterForm').addEventListener('submit', function(event) {
-            event.preventDefault();
+        document.getElementById('filterForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
             const category = document.getElementById('category').value;
             const minPrice = document.getElementById('minPrice').value;
             const maxPrice = document.getElementById('maxPrice').value;
 
-            fetch(`/api/products?category=${encodeURIComponent(category)}&minPrice=${encodeURIComponent(minPrice)}&maxPrice=${encodeURIComponent(maxPrice)}`)
-                .then(response => response.json())
-                .then(data => {
-                    const resultsDiv = document.getElementById('results');
-                    resultsDiv.innerHTML = '';
-                    data.forEach(product => {
-                        const productElement = document.createElement('div');
-                        productElement.textContent = `Name: ${product.name}, Price: $${product.price}`;
-                        resultsDiv.appendChild(productElement);
-                    });
-                })
-                .catch(error => console.error('Error:', error));
+            try {
+                const response = await fetch('/api/products', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ category, minPrice, maxPrice })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const products = await response.json();
+                const resultsDiv = document.getElementById('results');
+                resultsDiv.innerHTML = ''; // Clear previous results
+
+                products.forEach(product => {
+                    const productElement = document.createElement('div');
+                    productElement.textContent = `Name: ${product.name}, Price: $${product.price}`;
+                    resultsDiv.appendChild(productElement);
+                });
+            } catch (error) {
+                console.error('There was a problem with the fetch operation:', error);
+            }
         });
     </script>
 </body>

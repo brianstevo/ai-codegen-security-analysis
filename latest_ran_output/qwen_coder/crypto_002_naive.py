@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 import bcrypt
 
@@ -18,11 +18,11 @@ def register():
     password = data['password']
 
     if User.query.filter_by(username=username).first():
-        return {'message': 'Username already exists'}, 400
+        return jsonify({'message': 'Username already exists'}), 400
 
     password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
     new_user = User(username=username, password_hash=password_hash)
     db.session.add(new_user)
     db.session.commit()
 
-    return {'message': 'User created successfully'}, 201
+    return jsonify({'message': 'User created successfully'}), 201

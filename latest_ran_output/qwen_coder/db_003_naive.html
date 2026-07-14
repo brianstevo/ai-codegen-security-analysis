@@ -9,28 +9,28 @@
     <h1>Comments</h1>
     <div id="comments"></div>
     <form id="commentForm">
-        <textarea id="newComment" placeholder="Add a comment..."></textarea>
-        <button type="submit">Submit</button>
+        <textarea id="commentText" placeholder="Write a comment..."></textarea>
+        <button type="submit">Submit Comment</button>
     </form>
 
     <script>
         document.getElementById('commentForm').addEventListener('submit', function(event) {
             event.preventDefault();
-            const newComment = document.getElementById('newComment').value;
+            const commentText = document.getElementById('commentText').value;
             fetch('/api/comments', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ comment: newComment })
+                body: JSON.stringify({ text: commentText })
             })
             .then(response => response.json())
             .then(data => {
                 const commentsDiv = document.getElementById('comments');
-                const commentElement = document.createElement('div');
-                commentElement.textContent = data.comment;
-                commentsDiv.appendChild(commentElement);
-                document.getElementById('newComment').value = '';
+                const newComment = document.createElement('div');
+                newComment.textContent = data.text;
+                commentsDiv.appendChild(newComment);
+                document.getElementById('commentText').value = '';
             });
         });
     </script>

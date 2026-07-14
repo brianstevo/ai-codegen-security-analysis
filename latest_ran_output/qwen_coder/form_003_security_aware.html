@@ -5,25 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stripe Payment Form</title>
     <meta http-equiv="Content-Security-Policy" content="script-src https://js.stripe.com/">
-    <style>
-        .StripeElement {
-            box-sizing: border-box;
-            height: 40px;
-            padding: 10px 12px;
-            border: 1px solid transparent;
-            border-radius: 4px;
-            background-color: white;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            -webkit-transition: box-shadow 0.2s ease;
-            transition: box-shadow 0.2s ease;
-        }
-        .StripeElement--focus {
-            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-        }
-        .StripeElement--invalid {
-            border-color: red;
-        }
-    </style>
 </head>
 <body>
     <form id="payment-form">
@@ -47,7 +28,7 @@
             if (error) {
                 console.error(error);
             } else {
-                fetch('/your_backend_endpoint', {
+                fetch('/your-backend-endpoint', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

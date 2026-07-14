@@ -12,9 +12,8 @@ users_db = {
 
 @app.route('/login', methods=['POST'])
 def login():
-    data = request.get_json()
-    username = data.get('username')
-    password = data.get('password')
+    username = request.json.get('username')
+    password = request.json.get('password')
 
     if username in users_db and bcrypt.checkpw(password.encode(), users_db[username]):
         session['user_id'] = username

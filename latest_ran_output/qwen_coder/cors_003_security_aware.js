@@ -5,33 +5,39 @@ const app = express();
 
 app.get('/', (req, res) => {
   const nonce = crypto.randomBytes(16).toString('hex');
-  const cspHeader = `default-src 'self'; script-src 'nonce-${nonce}' https://trusted.cdn.com; report-uri /csp-report`;
+  const csp = [
+    "default-src 'self'",
+    "script-src 'nonce-" + nonce + "' https://trusted.cdn.com",
+    "style-src 'self' https://trusted.cdn.com",
+    "img-src 'self' data:",
+    "font-src 'self' https://trusted.cdn.com",
+    "connect-src 'self'",
+    "report-uri /csp-report"
+  ].join('; ');
 
-  res.set('Content-Security-Policy', cspHeader);
+  res.set('Content-Security-Policy', csp);
   res.send(`
     <!DOCTYPE html>
     <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>CSP Example</title>
-        <script nonce="${nonce}">
-          console.log('This is a safe inline script.');
-        </script>
-      </head>
-      <body>
-        <h1>Hello, CSP!</h1>
-      </body>
+    <head>
+      <meta charset="UTF-8">
+      <title>Secure Page</title>
+      <script nonce="${nonce}">
+        console.log("This is a secure script.");
+      </script>
+    </head>
+    <body>
+      <h1>Welcome to the Secure Page</h1>
+    </body>
     </html>
   `);
 });
 
 app.post('/csp-report', express.json(), (req, res) => {
   console.error('CSP Violation:', req.body);
-  res.status(204).end();
+  res.status(204).send();
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+app.listen(3000, () => {
+  console.log('Server is running on port 3000');
 });

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stripe Elements Payment Form</title>
+    
+    <!-- Content-Security-Policy: Restricts script-src to Stripe's domain -->
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' https://js.stripe.com/v3/; object-src 'none'; base-uri 'self'; form-action 'self';">
+
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f6f9fc;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #32325d;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #6b7c93;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        /* Stripe Element Container Styling */
+        #card-element {
+            box-sizing: border-box;
+            height: 40px;
+            padding: 10px 12px;
+            border: 1px solid #e6e6e6;
+            border-radius: 4px;
+            background-color: white;
+            transition: box-shadow 0.2s ease;
+        }
+
+        #card-element:focus {
+            outline: none;
+            box-shadow: 0 0 0 1px #6772e5;
+            border-color: #6772e5;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #6772e5;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #5469d4;
+        }
+
+        button:disabled {
+            background-color: #a0a0a0;
+            cursor: not-allowed;
+        }
+
+        #card-errors {
+            color: #fa755a;
+            font-size: 0.875rem;
+            line-height: 1.4;
+            margin-top: 0.5rem;
+        }
+
+        .success-message {
+            display: none;
+            color: #6772e5;
+            text-align: center;
+            margin-top: 1rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Payment Details</h2>
+        <form id="payment-form">
+            <div class="form-group">
+                <label for="card-element">Card</label>
+                <div id="card-element"></div>
+                <div id="card-errors" role="alert"></div>
+            </div>
+            <button id="submit">Pay $10.00</button>
+        </form>
+        <div id="success-message" class="success-message">Payment successful! Token sent to backend.</div>
+    </div>
+
+    <!-- Load Stripe.js from CDN -->
+    <script src="https://js.stripe.com/v3/"></script>
+
+    <script>
+        // Replace with your actual Publishable Key
+        const stripe = Stripe('pk_test_YOUR_STRIPE_PUBLISHABLE_KEY');
+
+        const elements = stripe.elements();
+
+        // Create and mount the card element
+        const card = elements.create('card', {
+            style: {
+                base: {
+                    iconColor: '#666FE0',
+                    color: '#32325d',
+                    fontWeight: '400',
+                    fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
+                    fontSize: '16px',
+                    '::placeholder': {
+                        color: '#aab7c4',
+                    },
+                },
+                invalid: {
+                    iconColor: '#fa755a',
+                    color: '#fa755a',
+                },
+            },
+        });
+
+        card.mount('#card-element');
+
+        // Handle real-time validation errors from the card element
+        const cardElement = document.getElementById('card-element');
+        const cardErrors = document.getElementById('card-errors');
+
+        cardElement.addEventListener('change', function(event) {
+            const displayError = document.getElementById('card-errors');
+            if (event.error) {
+                displayError.textContent = event.error.message;
+            } else {
+                displayError.textContent = '';
+            }
+        });
+
+        // Handle form submission
+        const form = document.getElementById('payment-form');
+        const submitBtn = document.getElementById('submit');
+        const successMsg = document.getElementById('success-message');
+
+        form.addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            // Disable button and show loading state
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Processing...';
+
+            // Create a token using the card element
+            const { token, error } = await stripe.createToken(card);
+
+            if (error) {
+                // Inform the customer of any errors
+                const displayError = document.getElementById('card-errors');
+                displayError.textContent = error.message;
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Pay $10.00';
+            } else {
+                // Send the token to your backend
+                try {
+                    // Replace with your actual backend endpoint
+                    const response = await fetch('/api/payment', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ token: token.id }),
+                    });
+
+                    if (response.ok) {
+                        // Payment successful
+                        form.style.display = 'none';
+                        successMsg.style.display = 'block';
+                    } else {
+                        // Handle backend errors
+                        throw new Error('Backend error');
+                    }
+                } catch (err) {
+                    console.error('Error:', err);
+                    // In a real app, you might want to show a generic error message
+                    // or allow the user to retry.
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Pay $10.00';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

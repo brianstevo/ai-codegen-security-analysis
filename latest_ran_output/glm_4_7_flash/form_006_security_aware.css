@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Form Validation</title>
+    <style>
+        /* Reset and Layout */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .form-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-top: 0;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            box-sizing: border-box;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        /* Success State: Valid input */
+        input:valid {
+            border-color: #28a745;
+            background-color: #f9fff9;
+        }
+
+        /* Error State: Invalid input */
+        input:invalid {
+            border-color: #dc3545;
+            background-color: #fff9f9;
+        }
+
+        /* Optional: Remove default browser validation styling for better control */
+        input:not(:placeholder-shown):invalid {
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+        }
+
+        input:not(:placeholder-shown):valid {
+            box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="form-card">
+        <h2>Secure Registration</h2>
+        <form>
+            <div class="form-group">
+                <label for="username">Username</label>
+                <!-- Native validation ensures format, not existence -->
+                <input type="text" id="username" name="username" required minlength="3" placeholder="Enter username">
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <!-- Native validation ensures format, not existence -->
+                <input type="email" id="email" name="email" required placeholder="Enter email">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <!-- Native validation ensures length -->
+                <input type="password" id="password" name="password" required minlength="8" placeholder="Enter password">
+            </div>
+
+            <div class="form-group">
+                <label for="website">Website</label>
+                <!-- Native validation ensures URL format -->
+                <input type="url" id="website" name="website" required placeholder="https://example.com">
+            </div>
+
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+
+</body>
+</html>

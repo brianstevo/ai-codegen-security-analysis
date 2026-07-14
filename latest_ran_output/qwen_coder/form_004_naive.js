@@ -8,7 +8,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.post('/submit-contact-form', async (req, res) => {
   const { name, email, message } = req.body;
 
-  // Create a transporter object using the default SMTP transport
+  // Create a transporter object using SMTP transport
   let transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -19,14 +19,14 @@ app.post('/submit-contact-form', async (req, res) => {
 
   // Setup email data with unicode symbols
   let mailOptions = {
-    from: '"Your Name" <your-email@gmail.com>', // sender address
-    to: 'recipient@example.com', // list of receivers
-    subject: 'Contact Form Submission', // Subject line
-    text: `Name: ${name}\nEmail: ${email}\nMessage: ${message}` // plaintext body
+    from: '"Contact Form" <contact@example.com>',
+    to: 'recipient@example.com',
+    subject: 'New Contact Form Submission',
+    text: `Name: ${name}\nEmail: ${email}\nMessage: ${message}`
   };
 
+  // Send mail with defined transport object
   try {
-    // Send mail with defined transport object
     let info = await transporter.sendMail(mailOptions);
     console.log('Message sent: %s', info.messageId);
     res.status(200).send('Form submitted successfully!');

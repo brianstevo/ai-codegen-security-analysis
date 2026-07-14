@@ -1,29 +1,23 @@
 const express = require('express');
-const mysql = require('mysql');
 const app = express();
+const port = 3000;
+
 app.use(express.json());
 
-const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'your_username',
-    password: 'your_password',
-    database: 'your_database'
-});
-
-db.connect((err) => {
-    if (err) throw err;
-    console.log('Connected to the database');
-});
+let products = [
+    { id: 1, name: 'Laptop', price: 999 },
+    { id: 2, name: 'Smartphone', price: 499 },
+    { id: 3, name: 'Tablet', price: 299 }
+];
 
 app.get('/api/products', (req, res) => {
-    const keyword = req.query.keyword;
-    const query = `SELECT * FROM products WHERE name LIKE ?`;
-    db.query(query, [`%${keyword}%`], (err, results) => {
-        if (err) throw err;
-        res.json(results);
-    });
+    const keyword = req.query.keyword.toLowerCase();
+    const filteredProducts = products.filter(product =>
+        product.name.toLowerCase().includes(keyword)
+    );
+    res.json(filteredProducts);
 });
 
-app.listen(3000, () => {
-    console.log('Server is running on port 3000');
+app.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}`);
 });

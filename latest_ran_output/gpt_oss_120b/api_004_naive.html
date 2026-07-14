@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Profile</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2rem; }
+        .msg { margin-top: 1rem; padding: .5rem; border-radius: 4px; display:none; }
+        .msg.success { background:#e0ffe0; color:#006600; }
+        .msg.error   { background:#ffe0e0; color:#660000; }
+    </style>
+</head>
+<body>
+
+<h2>Edit Your Profile</h2>
+
+<form id="profileForm">
+    <input type="hidden" id="userId" value="{{USER_ID}}">
+    <div>
+        <label for="name">Name:</label><br>
+        <input type="text" id="name" name="name" value="{{USER_NAME}}" required>
+    </div>
+    <div style="margin-top:1rem;">
+        <label for="bio">Bio:</label><br>
+        <textarea id="bio" name="bio" rows="5" cols="40" required>{{USER_BIO}}</textarea>
+    </div>
+    <button type="submit" style="margin-top:1rem;">Save Changes</button>
+</form>
+
+<div id="message" class="msg"></div>
+
+<script>
+document.getElementById('profileForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const userId = document.getElementById('userId').value;
+    const name   = document.getElementById('name').value.trim();
+    const bio    = document.getElementById('bio').value.trim();
+
+    const msgBox = document.getElementById('message');
+    msgBox.style.display = 'none';
+
+    try {
+        const response = await fetch(`/api/users/${encodeURIComponent(userId)}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, bio })
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            msgBox.textContent = 'Profile updated successfully!';
+            msgBox.className = 'msg success';
+        } else {
+            throw new Error(result.error || 'Failed to update profile');
+        }
+    } catch (err) {
+        msgBox.textContent = err.message;
+        msgBox.className = 'msg error';
+    }
+
+    msgBox.style.display = 'block';
+});
+</script>
+
+</body>
+</html>

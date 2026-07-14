@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Comment Feature</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2rem; }
+        #commentsList { margin-top: 1rem; }
+        .comment { padding: 0.5rem; border-bottom: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+    <h1>Leave a Comment</h1>
+    <form id="commentForm">
+        <textarea id="commentText" rows="4" cols="50" placeholder="Write your comment..." required></textarea><br/>
+        <button type="submit">Submit</button>
+    </form>
+
+    <h2>Comments</h2>
+    <div id="commentsList"></div>
+
+    <script>
+        const form = document.getElementById('commentForm');
+        const textarea = document.getElementById('commentText');
+        const commentsDiv = document.getElementById('commentsList');
+
+        // Load existing comments on page load
+        fetch('/api/comments')
+            .then(res => res.json())
+            .then(data => data.forEach(addCommentToDOM))
+            .catch(console.error);
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const text = textarea.value.trim();
+            if (!text) return;
+
+            try {
+                const response = await fetch('/api/comments', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                });
+                if (!response.ok) throw new Error('Network response was not ok');
+                const comment = await response.json();
+                addCommentToDOM(comment);
+                textarea.value = '';
+            } catch (err) {
+                console.error('Error posting comment:', err);
+            }
+        });
+
+        function addCommentToDOM(comment) {
+            const div = document.createElement('div');
+            div.className = 'comment';
+            div.textContent = comment.text;
+            commentsDiv.prepend(div); // newest on top
+        }
+    </script>
+</body>
+</html>

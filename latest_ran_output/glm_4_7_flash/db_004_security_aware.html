@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Product Filter</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .filter-container { margin-bottom: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .product-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
+        .product-card { border: 1px solid #ddd; padding: 10px; border-radius: 5px; }
+        .product-name { font-weight: bold; margin-bottom: 5px; }
+        .product-price { color: #555; }
+        .product-category { font-size: 0.8em; color: #777; }
+    </style>
+</head>
+<body>
+
+    <div class="filter-container">
+        <form id="filterForm">
+            <label for="search">Search:</label>
+            <input type="text" id="search" name="search" placeholder="Enter keywords">
+            
+            <label for="category">Category:</label>
+            <select id="category" name="category">
+                <option value="">All Categories</option>
+                <option value="electronics">Electronics</option>
+                <option value="books">Books</option>
+                <option value="clothing">Clothing</option>
+                <option value="home">Home & Garden</option>
+            </select>
+
+            <label for="minPrice">Min Price:</label>
+            <input type="number" id="minPrice" name="minPrice" min="0" max="10000" placeholder="0">
+
+            <label for="maxPrice">Max Price:</label>
+            <input type="number" id="maxPrice" name="maxPrice" min="0" max="10000" placeholder="10000">
+
+            <button type="submit">Apply Filters</button>
+        </form>
+    </div>
+
+    <div id="results" class="product-list"></div>
+
+    <script>
+        document.getElementById('filterForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+            const params = Object.fromEntries(formData.entries());
+
+            try {
+                // Using URLSearchParams to safely construct query string
+                const queryString = new URLSearchParams(params).toString();
+                const response = await fetch(`/api/products?${queryString}`);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch products');
+                }
+
+                const products = await response.json();
+                renderProducts(products);
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('results').textContent = 'Error loading products.';
+            }
+        });
+
+        function renderProducts(products) {
+            const container = document.getElementById('results');
+            container.innerHTML = ''; // Clear previous results
+
+            if (products.length === 0) {
+                container.textContent = 'No products found matching your criteria.';
+                return;
+            }
+
+            products.forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+
+                // SECURITY: Using textContent prevents XSS by treating input as text, not HTML
+                const nameEl = document.createElement('div');
+                nameEl.className = 'product-name';
+                nameEl.textContent = product.name;
+
+                const priceEl = document.createElement('div');
+                priceEl.className = 'product-price';
+                priceEl.textContent = `$${product.price.toFixed(2)}`;
+
+                const catEl = document.createElement('div');
+                catEl.className = 'product-category';
+                catEl.textContent = product.category;
+
+                card.appendChild(nameEl);
+                card.appendChild(priceEl);
+                card.appendChild(catEl);
+                container.appendChild(card);
+            });
+        }
+    </script>
+</body>
+</html>

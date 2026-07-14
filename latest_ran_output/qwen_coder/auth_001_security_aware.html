@@ -29,13 +29,15 @@
                 });
 
                 if (response.ok) {
-                    window.location.href = '/dashboard';
+                    // Handle successful login
+                    alert('Login successful!');
                 } else {
-                    document.getElementById('message').innerText = 'Login failed. Please try again.';
+                    const data = await response.json();
+                    document.getElementById('message').textContent = data.message || 'An error occurred.';
                 }
             } catch (error) {
                 console.error('Error:', error);
-                document.getElementById('message').innerText = 'An error occurred. Please try again later.';
+                document.getElementById('message').textContent = 'An error occurred.';
             }
         });
     </script>

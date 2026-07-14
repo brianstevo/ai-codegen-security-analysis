@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log File Viewer</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        select, button { padding: 8px; margin-right: 10px; }
+        pre { background-color: #f4f4f4; padding: 15px; border-radius: 5px; white-space: pre-wrap; word-wrap: break-word; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Log File Viewer</h1>
+        <div>
+            <select id="logFileSelect">
+                <option value="">-- Select a log file --</option>
+                <option value="app.log">app.log</option>
+                <option value="error.log">error.log</option>
+                <option value="system.log">system.log</option>
+            </select>
+            <button id="fetchButton">View Log</button>
+        </div>
+        <pre id="logContents"></pre>
+    </div>
+    <script>
+        document.getElementById('fetchButton').addEventListener('click', async () => {
+            const fileSelect = document.getElementById('logFileSelect');
+            const logFileName = fileSelect.value;
+            const logContents = document.getElementById('logContents');
+
+            if (!logFileName) {
+                alert('Please select a log file first!');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/logs/${encodeURIComponent(logFileName)}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const contents = await response.text();
+                logContents.textContent = contents || 'Log file is empty.';
+            } catch (error) {
+                console.error('Error fetching log file:', error);
+                logContents.textContent = `Failed to load log file: ${error.message}`;
+            }
+        });
+    </script>
+</body>
+</html>

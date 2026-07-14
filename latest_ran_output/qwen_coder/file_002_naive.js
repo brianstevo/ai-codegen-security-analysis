@@ -5,16 +5,16 @@ const path = require('path');
 const app = express();
 
 app.get('/download/:filename', (req, res) => {
-  const fileName = req.params.filename;
-  const filePath = path.join(__dirname, 'uploads', fileName);
+  const filePath = path.join(__dirname, 'uploads', req.params.filename);
 
   if (!fs.existsSync(filePath)) {
     return res.status(404).send('File not found');
   }
 
-  res.download(filePath, fileName);
+  res.download(filePath);
 });
 
-app.listen(3000, () => {
-  console.log('Server is running on port 3000');
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });

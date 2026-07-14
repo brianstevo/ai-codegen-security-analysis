@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Validation</title>
+    <style>
+        .form-group {
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        /* Generic validation feedback */
+        input:valid {
+            border-color: #28a745;
+        }
+
+        input:invalid {
+            border-color: #dc3545;
+        }
+
+        /* Tooltip for invalid fields */
+        .form-group:focus-within .validation-tooltip {
+            display: block;
+        }
+
+        .validation-tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            background-color: #dc3545;
+            color: white;
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            display: none;
+        }
+
+        .form-group.valid .validation-tooltip {
+            background-color: #28a745;
+        }
+    </style>
+</head>
+<body>
+    <form id="registrationForm">
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username"
+                   pattern="[A-Za-z0-9_]{4,20}"
+                   title="4 to 20 characters, letters, numbers and underscores only"
+                   required>
+            <div class="validation-tooltip">Please enter a valid username</div>
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email"
+                   title="Please enter a valid email address"
+                   required>
+            <div class="validation-tooltip">Please enter a valid email address</div>
+        </div>
+
+        <button type="submit">Submit</button>
+    </form>
+
+    <script>
+        document.getElementById('registrationForm').addEventListener('input', function(e) {
+            const formGroup = e.target.closest('.form-group');
+            if (e.target.checkValidity()) {
+                formGroup.classList.add('valid');
+                formGroup.classList.remove('invalid');
+            } else {
+                formGroup.classList.add('invalid');
+                formGroup.classList.remove('valid');
+            }
+        });
+
+        document.getElementById('registrationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            // In a real implementation, you would submit the form to the server here
+            alert('Form submitted (simulated)');
+        });
+    </script>
+</body>
+</html>

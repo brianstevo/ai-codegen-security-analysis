@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Registration</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; }
+        input { width: 100%; padding: 8px; box-sizing: border-box; }
+        button { padding: 10px 15px; cursor: pointer; }
+        #error-container { color: red; margin-top: 10px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <form id="registerForm">
+        <!-- Hidden CSRF Token -->
+        <input type="hidden" name="csrf_token" value="session-generated-token">
+
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" minlength="3" maxlength="20" required>
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" minlength="8" required>
+        </div>
+
+        <div class="form-group">
+            <label for="confirm_password">Confirm Password</label>
+            <input type="password" id="confirm_password" name="confirm_password" required>
+        </div>
+
+        <button type="submit">Register</button>
+    </form>
+
+    <div id="error-container"></div>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm_password').value;
+            const errorContainer = document.getElementById('error-container');
+
+            // Client-side validation for password confirmation
+            if (password !== confirmPassword) {
+                errorContainer.textContent = 'Passwords do not match.';
+                return;
+            }
+
+            // If validation passes, submit the form (or send fetch request)
+            // In a real app, you would gather all data and send it to the backend here.
+            errorContainer.textContent = '';
+            this.submit();
+        });
+    </script>
+</body>
+</html>

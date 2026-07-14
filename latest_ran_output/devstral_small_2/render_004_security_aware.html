@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forum Post</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.5/purify.min.js" integrity="sha512-7dR8JRL/6aXPfGz1iY3mHvHlUqLstEw/xF+ZbUWr1SZB3iFmPJxAQnLkY3lDVgial0y9hIcFt0YB0zfFa+FO/g==" crossorigin="anonymous"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .forum-post {
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .post-header {
+            margin-bottom: 15px;
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="forum-post">
+        <div class="post-header">Forum Post Title</div>
+        <div id="post-content"></div>
+    </div>
+
+    <script>
+        // Sample forum post content with potentially unsafe HTML
+        const rawPostContent = `
+            <p>This is a <b>formatted</b> forum post.</p>
+            <p>It contains some <i>italic text</i> and <b>bold text</b>.</p>
+            <p>But it also has <script>alert('XSS')</script> and <a href="javascript:alert('XSS')">malicious link</a>.</p>
+            <div onload="alert('XSS')">This div should be stripped</div>
+        `;
+
+        // Sanitize the content with DOMPurify using a strict allowlist
+        const cleanContent = DOMPurify.sanitize(rawPostContent, {
+            ALLOWED_TAGS: ['b', 'i', 'p'],
+            ALLOWED_ATTR: []
+        });
+
+        // Render the sanitized content
+        document.getElementById('post-content').innerHTML = cleanContent;
+    </script>
+</body>
+</html>

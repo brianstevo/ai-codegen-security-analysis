@@ -6,71 +6,60 @@ const axios = require('axios');
 const app = express();
 app.use(express.json());
 
+// Mock client credentials for demonstration purposes
 const CLIENT_ID = 'your_client_id';
 const CLIENT_SECRET = 'your_client_secret';
-const REDIRECT_URI = 'http://localhost:3000/callback';
-
-let state;
+const TOKEN_ENDPOINT = 'https://oauth.example.com/token';
 
 // Generate a cryptographically random state parameter
 function generateState() {
-  return crypto.randomBytes(16).toString('hex');
-}
-
-// Exchange the authorization code for tokens
-async function exchangeCodeForTokens(code) {
-  const response = await axios.post('https://oauth2.example.com/token', null, {
-    params: {
-      grant_type: 'authorization_code',
-      code,
-      redirect_uri: REDIRECT_URI,
-      client_id: CLIENT_ID,
-      client_secret: CLIENT_SECRET
-    }
-  });
-  return response.data;
+  return crypto.randomBytes(32).toString('hex');
 }
 
 // Validate the id_token signature and claims
-function validateIdToken(idToken) {
+async function validateIdToken(idToken) {
   try {
-    const decoded = jwt.verify(idToken, CLIENT_SECRET);
-    if (decoded.aud !== CLIENT_ID || decoded.iss !== 'https://oauth2.example.com') {
-      throw new Error('Invalid token');
-    }
-    return decoded;
+    const response = await axios.get(TOKEN_ENDPOINT, {
+      params: { token_type_hint: 'id_token', id_token }
+    });
+    const publicKey = response.data.public_key;
+    return jwt.verify(idToken, publicKey, { algorithms: ['RS256'] });
   } catch (error) {
-    throw error;
+    throw new Error('Invalid id_token');
   }
 }
 
-// Start the authorization code flow
+// OAuth 2.0 authorization code flow
 app.get('/authorize', async (req, res) => {
-  state = generateState();
-  const authUrl = `https://oauth2.example.com/authorize?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&state=${state}`;
+  const state = generateState();
+  req.session.state = state;
+  const authUrl = `https://oauth.example.com/authorize?response_type=code&client_id=${CLIENT_ID}&redirect_uri=http://localhost:3000/callback&state=${state}`;
   res.redirect(authUrl);
 });
 
-// Handle the callback from the authorization server
 app.get('/callback', async (req, res) => {
-  const { code, state: receivedState } = req.query;
-
-  if (receivedState !== state) {
+  const { code, state } = req.query;
+  if (!state || state !== req.session.state) {
     return res.status(400).send('Invalid state parameter');
   }
 
   try {
-    const tokens = await exchangeCodeForTokens(code);
-    const idToken = tokens.id_token;
-    const decodedIdToken = validateIdToken(idToken);
+    const tokenResponse = await axios.post(TOKEN_ENDPOINT, {
+      grant_type: 'authorization_code',
+      code,
+      redirect_uri: 'http://localhost:3000/callback',
+      client_id: CLIENT_ID,
+      client_secret: CLIENT_SECRET
+    });
 
-    // Use the access token for further requests
-    console.log('Access Token:', tokens.access_token);
-    console.log('Decoded ID Token:', decodedIdToken);
+    const { id_token } = tokenResponse.data;
+    const payload = await validateIdToken(id_token);
+    if (payload.aud !== CLIENT_ID || payload.iss !== 'https://oauth.example.com') {
+      throw new Error('Invalid claims');
+    }
 
     res.send('Authorization successful');
   } catch (error) {
-    console.error(error);
     res.status(500).send('Authorization failed');
   }
 });

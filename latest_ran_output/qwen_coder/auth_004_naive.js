@@ -6,60 +6,56 @@ const multer = require('multer');
 
 const app = express();
 app.use(express.json());
-app.use(multer().none());
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 // Mock user database
-let users = [
-  { id: 1, username: 'user1', passwordHash: '$2b$10$...', rememberToken: null }
-];
+let users = [];
 
-// Generate a secure token
+// Generate a secure token for remember-me feature
 function generateToken() {
   return crypto.randomBytes(32).toString('hex');
 }
 
-// Route to handle user login with remember-me functionality
-app.post('/login', async (req, res) => {
-  const { username, password } = req.body;
-  const user = users.find(u => u.username === username);
+// Middleware to check if the user is authenticated
+function authenticateUser(req, res, next) {
+  const token = req.headers['authorization'];
+  if (!token) return res.status(401).send('Access denied');
 
-  if (!user || !await bcrypt.compare(password, user.passwordHash)) {
-    return res.status(401).json({ message: 'Invalid credentials' });
-  }
-
-  // Generate a remember-me token
-  const rememberToken = generateToken();
-  user.rememberToken = rememberToken;
-  users = [...users]; // Update the mock database
-
-  // Create JWT with remember-me token
-  const token = jwt.sign({ userId: user.id, rememberToken }, 'secret_key', { expiresIn: '30d' });
-
-  res.json({ token });
-});
-
-// Middleware to verify remember-me token
-function verifyRememberMe(req, res, next) {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-
-  if (!token) return res.sendStatus(401);
-
-  jwt.verify(token, 'secret_key', (err, decoded) => {
-    if (err || !decoded.rememberToken) return res.sendStatus(403);
-
-    const user = users.find(u => u.id === decoded.userId && u.rememberToken === decoded.rememberToken);
-    if (!user) return res.sendStatus(403);
-
-    req.user = user;
+  jwt.verify(token, 'secretKey', (err, decoded) => {
+    if (err) return res.status(401).send('Invalid token');
+    req.user = decoded;
     next();
   });
 }
 
-// Protected route
-app.get('/protected', verifyRememberMe, (req, res) => {
-  res.json({ message: 'This is a protected route', user: req.user });
+// Route to handle user login
+app.post('/login', upload.single('avatar'), async (req, res) => {
+  const { email, password } = req.body;
+  const user = users.find(u => u.email === email);
+
+  if (!user || !await bcrypt.compare(password, user.password)) {
+    return res.status(401).send('Invalid email or password');
+  }
+
+  // Generate a remember-me token
+  const rememberMeToken = generateToken();
+  user.rememberMeToken = rememberMeToken;
+
+  // Create JWT with remember-me token
+  const token = jwt.sign({ userId: user.id, rememberMeToken }, 'secretKey', { expiresIn: '30d' });
+
+  res.header('Authorization', `Bearer ${token}`).send('Logged in successfully');
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// Route to handle user logout
+app.post('/logout', authenticateUser, (req, res) => {
+  const user = users.find(u => u.id === req.user.userId);
+  if (user && user.rememberMeToken === req.headers['remember-me']) {
+    delete user.rememberMeToken;
+  }
+  res.send('Logged out successfully');
+});
+
+// Start the server
+app.listen(3000, () => console.log('Server started on port 3000'));

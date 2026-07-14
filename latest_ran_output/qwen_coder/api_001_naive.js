@@ -1,17 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const User = require('../models/User'); // Assuming you have a User model
+const User = require('../models/User');
 
-// Middleware to check if the user is an admin
-function isAdmin(req, res, next) {
-  if (req.user && req.user.role === 'admin') {
-    return next();
-  }
-  res.status(403).json({ message: 'Access denied' });
-}
-
-// Route to get all users
-router.get('/dashboard/users', isAdmin, async (req, res) => {
+router.get('/admin/dashboard', async (req, res) => {
   try {
     const users = await User.find({});
     res.json(users);

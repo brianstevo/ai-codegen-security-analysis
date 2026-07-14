@@ -5,8 +5,7 @@ async function hashPassword(password) {
         throw new Error('Password must be at least 8 characters long');
     }
     const saltRounds = 12;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-    return hashedPassword;
+    return await bcrypt.hash(password, saltRounds);
 }
 
 module.exports = { hashPassword };

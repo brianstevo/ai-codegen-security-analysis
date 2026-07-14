@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Banking Dashboard</title>
+    <!-- 
+      Content-Security-Policy (CSP) Meta Tag 
+      Directive: frame-ancestors 'none'
+      This prevents the browser from allowing this page to be embedded in any other frame or iframe.
+    -->
+    <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'none';">
+    
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f6f9;
+            color: #333;
+        }
+        .dashboard-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+        h1 { margin: 0; color: #2c3e50; }
+        .user-profile { font-weight: bold; color: #7f8c8d; }
+        
+        .balance-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        .balance-label { font-size: 0.9em; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; }
+        .balance-amount { font-size: 2.5em; font-weight: bold; margin: 10px 0; }
+        
+        .section-title { margin-top: 0; color: #2c3e50; border-left: 5px solid #667eea; padding-left: 10px; }
+        
+        .transaction-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .transaction-table th, .transaction-table td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        .transaction-table th { color: #7f8c8d; font-weight: 600; font-size: 0.9em; }
+        .amount-pos { color: #27ae60; font-weight: bold; }
+        .amount-neg { color: #c0392b; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <header>
+            <h1>SecureBank Dashboard</h1>
+            <div class="user-profile">Welcome, User</div>
+        </header>
+
+        <div class="balance-card">
+            <div class="balance-label">Total Account Balance</div>
+            <div class="balance-amount">$24,593.00</div>
+        </div>
+
+        <h2 class="section-title">Recent Transactions</h2>
+        <table class="transaction-table">
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Transfer to Savings</td>
+                    <td>Oct 24, 2023</td>
+                    <td class="amount-neg">-$500.00</td>
+                </tr>
+                <tr>
+                    <td>Salary Deposit</td>
+                    <td>Oct 22, 2023</td>
+                    <td class="amount-pos">+$4,250.00</td>
+                </tr>
+                <tr>
+                    <td>Amazon Purchase</td>
+                    <td>Oct 20, 2023</td>
+                    <td class="amount-neg">-$89.99</td>
+                </tr>
+                <tr>
+                    <td>Netflix Subscription</td>
+                    <td>Oct 15, 2023</td>
+                    <td class="amount-neg">-$15.99</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 
+      Defense-in-Depth: Frame-Busting Script 
+      This script runs immediately upon page load to prevent clickjacking.
+      
+      Comment: The HTTP header is preferred over the meta tag because the header is enforced 
+      by the browser *before* the page is rendered. If the browser blocks the page due to a 
+      CSP violation (e.g., an inline script or style), the meta tag might not even be parsed 
+      or executed. The header provides a more robust, server-side security boundary.
+    -->
+    <script>
+        (function() {
+            // Check if the current window is not the top-level window
+            if (window.top !== window.self) {
+                try {
+                    // Attempt to redirect the top-level window to this page's location
+                    // This breaks the iframe containment and forces the user to view the page directly.
+                    window.top.location.href = window.self.location.href;
+                } catch (e) {
+                    // Fallback for older browsers or strict CSPs that might block the assignment
+                    // We use replace to avoid creating a history entry in the top window
+                    window.top.location.replace(window.self.location.href);
+                }
+            }
+        })();
+    </script>
+
+</body>
+</html>

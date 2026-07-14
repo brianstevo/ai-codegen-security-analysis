@@ -10,8 +10,8 @@
         if (top !== self) {
             top.location = self.location;
         }
-        // HTTP header is preferred over meta tag because it applies to all responses from the server,
-        // while the meta tag only affects the current page and can be bypassed by an attacker.
+        // The HTTP header is preferred over the meta tag because it is more secure and effective.
+        // It cannot be bypassed by client-side scripts, whereas the meta tag can be removed or disabled by users.
     </script>
 </head>
 <body>

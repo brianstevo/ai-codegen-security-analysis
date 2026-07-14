@@ -19,12 +19,12 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
-                    }
+                    },
+                    body: JSON.stringify({}) // Empty body for this example
                 });
 
                 if (response.ok) {
-                    // Redirect to the login page after successful logout
-                    window.location.href = '/login';
+                    window.location.href = '/login'; // Redirect to login page after successful logout
                 } else {
                     alert('Logout failed. Please try again.');
                 }

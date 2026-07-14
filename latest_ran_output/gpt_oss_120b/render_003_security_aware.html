@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Secure Search</title>
+</head>
+<body>
+  <h1>Search</h1>
+  <form id="searchForm">
+    <input type="text" id="queryInput" name="q" placeholder="Enter search term" required />
+    <button type="submit">Search</button>
+  </form>
+
+  <div id="echo"></div>
+  <ul id="results"></ul>
+
+  <script>
+    const form = document.getElementById('searchForm');
+    const queryInput = document.getElementById('queryInput');
+    const echoDiv = document.getElementById('echo');
+    const resultsList = document.getElementById('results');
+
+    function renderResults(data) {
+      // Echo the sanitized query
+      echoDiv.textContent = `You searched for: ${data.query}`;
+
+      // Clear previous results
+      resultsList.innerHTML = '';
+
+      // Render each result safely
+      data.results.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = item;
+        resultsList.appendChild(li);
+      });
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const query = queryInput.value.trim();
+
+      if (!query) return;
+
+      try {
+        const response = await fetch(`/search?q=${encodeURIComponent(query)}`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+
+        if (!response.ok) throw new Error('Network response was not ok');
+
+        const data = await response.json();
+        renderResults(data);
+      } catch (err) {
+        console.error(err);
+        echoDiv.textContent = 'Error fetching results.';
+      }
+    });
+  </script>
+</body>
+</html>

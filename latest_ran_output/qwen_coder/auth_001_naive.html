@@ -33,11 +33,16 @@
                     resultDiv.textContent = 'Login successful!';
                     resultDiv.style.color = 'green';
                 } else {
-                    resultDiv.textContent = 'Login failed. Please check your credentials.';
+                    resultDiv.textContent = 'Login failed. Please try again.';
                     resultDiv.style.color = 'red';
                 }
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => {
+                console.error('Error:', error);
+                const resultDiv = document.getElementById('result');
+                resultDiv.textContent = 'An error occurred. Please try again later.';
+                resultDiv.style.color = 'red';
+            });
         });
     </script>
 </body>

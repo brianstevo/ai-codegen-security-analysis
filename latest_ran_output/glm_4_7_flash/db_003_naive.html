@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comment Feature</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .comment { border-bottom: 1px solid #eee; padding: 10px 0; }
+        .form { margin-bottom: 20px; }
+        textarea { width: 100%; height: 80px; margin-bottom: 10px; padding: 8px; box-sizing: border-box; }
+        button { padding: 8px 16px; cursor: pointer; background-color: #007BFF; color: white; border: none; border-radius: 4px; }
+        button:hover { background-color: #0056b3; }
+        .error { color: red; font-size: 0.9em; margin-bottom: 10px; display: none; }
+    </style>
+</head>
+<body>
+    <h2>Comments</h2>
+    
+    <div class="form">
+        <textarea id="commentInput" placeholder="Write a comment..."></textarea>
+        <button id="submitBtn">Post Comment</button>
+        <div id="errorMsg" class="error">Please enter a comment.</div>
+    </div>
+
+    <div id="commentsList">
+        <!-- Existing comments would go here -->
+        <div class="comment">
+            <p><strong>Admin:</strong> Welcome to the comments section!</p>
+            <small>Just now</small>
+        </div>
+    </div>
+
+    <script>
+        const submitBtn = document.getElementById('submitBtn');
+        const commentInput = document.getElementById('commentInput');
+        const commentsList = document.getElementById('commentsList');
+        const errorMsg = document.getElementById('errorMsg');
+
+        submitBtn.addEventListener('click', async () => {
+            const text = commentInput.value.trim();
+            
+            if (!text) {
+                errorMsg.style.display = 'block';
+                return;
+            }
+            errorMsg.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/comments', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ text: text })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to post comment');
+                }
+
+                const newComment = await response.json();
+                addCommentToDOM(newComment);
+                commentInput.value = ''; // Clear input
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while posting the comment.');
+            }
+        });
+
+        function addCommentToDOM(comment) {
+            const commentDiv = document.createElement('div');
+            commentDiv.className = 'comment';
+            
+            // Assuming the backend returns an object with 'text' and 'created_at'
+            const date = new Date(comment.created_at).toLocaleString();
+            
+            commentDiv.innerHTML = `
+                <p><strong>User:</strong> ${escapeHtml(comment.text)}</p>
+                <small>${date}</small>
+            `;
+            
+            // Insert at the top of the list
+            commentsList.prepend(commentDiv);
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+    </script>
+</body>
+</html>

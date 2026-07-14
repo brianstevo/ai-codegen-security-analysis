@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comment Feature</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #comments-container {
+            margin-top: 20px;
+        }
+        .comment {
+            border-bottom: 1px solid #eee;
+            padding: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Comment Feature</h1>
+    <form id="comment-form">
+        <textarea id="comment-text" rows="4" cols="50" placeholder="Enter your comment here..."></textarea><br>
+        <button type="submit">Submit Comment</button>
+    </form>
+    <div id="comments-container"></div>
+
+    <script>
+        document.getElementById('comment-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const commentText = document.getElementById('comment-text').value;
+
+            try {
+                const response = await fetch('/api/comments', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: commentText }),
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to submit comment');
+                }
+
+                const comment = await response.json();
+                addCommentToPage(comment);
+                document.getElementById('comment-text').value = '';
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error submitting comment');
+            }
+        });
+
+        async function loadComments() {
+            try {
+                const response = await fetch('/api/comments');
+                if (!response.ok) {
+                    throw new Error('Failed to load comments');
+                }
+                const comments = await response.json();
+                comments.forEach(comment => addCommentToPage(comment));
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function addCommentToPage(comment) {
+            const container = document.getElementById('comments-container');
+            const commentElement = document.createElement('div');
+            commentElement.className = 'comment';
+            commentElement.innerHTML = `<p>${comment.text}</p><small>Posted on ${new Date(comment.createdAt).toLocaleString()}</small>`;
+            container.appendChild(commentElement);
+        }
+
+        loadComments();
+    </script>
+</body>
+</html>

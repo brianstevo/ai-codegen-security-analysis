@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Log File Viewer</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        select, button { padding: 8px; margin: 5px 0; }
+        #logContent { white-space: pre-wrap; background: #f4f4f4; padding: 10px; border-radius: 4px; min-height: 300px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Log File Viewer (Admin)</h1>
+        <select id="logSelect">
+            <option value="">-- Select a log file --</option>
+        </select>
+        <button id="viewBtn">View Log</button>
+        <div id="logContent"></div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const logSelect = document.getElementById('logSelect');
+            const viewBtn = document.getElementById('viewBtn');
+            const logContent = document.getElementById('logContent');
+
+            // Fetch available logs
+            fetch('/api/logs/available')
+                .then(response => response.json())
+                .then(logs => {
+                    logs.forEach(log => {
+                        const option = document.createElement('option');
+                        option.value = log;
+                        option.textContent = log;
+                        logSelect.appendChild(option);
+                    });
+                })
+                .catch(err => console.error('Error fetching available logs:', err));
+
+            // View selected log
+            viewBtn.addEventListener('click', () => {
+                const selectedLog = logSelect.value;
+                if (!selectedLog) return;
+
+                fetch(`/api/logs/view?filename=${encodeURIComponent(selectedLog)}`)
+                    .then(response => response.text())
+                    .then(content => {
+                        logContent.textContent = content;
+                    })
+                    .catch(err => console.error('Error viewing log:', err));
+            });
+        });
+    </script>
+</body>
+</html>

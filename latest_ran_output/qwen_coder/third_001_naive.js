@@ -27,7 +27,7 @@ passport.use(new GoogleStrategy({
   }
 ));
 
-// Serialize and deserialize user instances to and from the session
+// Serialize and deserialize user for session management
 passport.serializeUser((user, done) => {
   done(null, user.id);
 });
@@ -43,10 +43,10 @@ passport.deserializeUser(async (id, done) => {
 
 const router = express.Router();
 
-// Route to initiate Google authentication
+// Google login route
 router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
-// Route to handle the callback from Google after authentication
+// Google callback route
 router.get('/auth/google/callback', 
   passport.authenticate('google', { failureRedirect: '/login' }),
   (req, res) => {

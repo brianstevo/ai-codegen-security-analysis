@@ -1,42 +1,23 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const mysql = require('mysql');
-
 const app = express();
+const port = 3000;
+
 app.use(bodyParser.json());
+app.use(express.static('public'));
 
-// MySQL connection setup
-const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'your_username',
-    password: 'your_password',
-    database: 'your_database'
-});
-
-db.connect((err) => {
-    if (err) throw err;
-    console.log('Connected to the database');
-});
+let comments = [];
 
 app.post('/api/comments', (req, res) => {
-    const comment = req.body.comment;
-    const sessionId = req.session.id; // Assuming session management is set up elsewhere
-
-    if (!comment || !sessionId) {
-        return res.status(400).json({ error: 'Invalid request' });
+    const commentText = req.body.comment;
+    if (!commentText || commentText.length > 255) {
+        return res.status(400).json({ error: 'Invalid comment length' });
     }
-
-    if (comment.length > 255) {
-        return res.status(400).json({ error: 'Comment too long. Maximum length is 255 characters.' });
-    }
-
-    const sql = 'INSERT INTO comments (user_id, comment) VALUES (?, ?)';
-    db.query(sql, [sessionId, comment], (err, result) => {
-        if (err) throw err;
-        res.json({ comment: comment });
-    });
+    const sessionId = req.session.id; // Assuming session management is set up
+    comments.push({ text: commentText, user: sessionId });
+    res.json({ comment: commentText });
 });
 
-app.listen(3000, () => {
-    console.log('Server is running on port 3000');
+app.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}`);
 });

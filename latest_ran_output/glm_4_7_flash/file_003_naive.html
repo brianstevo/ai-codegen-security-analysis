@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log File Viewer</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .controls { margin-bottom: 20px; }
+        select, button { padding: 8px; margin-right: 10px; }
+        pre { background: #f4f4f4; padding: 15px; border: 1px solid #ccc; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word; }
+    </style>
+</head>
+<body>
+    <h1>Log File Viewer</h1>
+    <div class="controls">
+        <select id="logSelect">
+            <option value="app.log">app.log</option>
+            <option value="error.log">error.log</option>
+            <option value="access.log">access.log</option>
+        </select>
+        <button id="fetchBtn">Fetch Log</button>
+    </div>
+    <pre id="logOutput">Select a file and click Fetch to view logs.</pre>
+
+    <script>
+        document.getElementById('fetchBtn').addEventListener('click', async () => {
+            const filename = document.getElementById('logSelect').value;
+            const outputElement = document.getElementById('logOutput');
+
+            try {
+                const response = await fetch(`/api/logs/${filename}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const text = await response.text();
+                outputElement.textContent = text;
+            } catch (error) {
+                outputElement.textContent = `Error: ${error.message}`;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Profile</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; }
+        .feedback { margin-top: 10px; padding: 10px; border-radius: 4px; }
+        .success { background:#e0ffe0; color:#006400; }
+        .error { background:#ffe0e0; color:#8b0000; }
+    </style>
+</head>
+<body>
+    <h1>Edit Your Profile</h1>
+    <form id="profileForm">
+        <label>
+            Username:
+            <input type="text" name="username" required minlength="3" maxlength="30">
+        </label><br><br>
+        <label>
+            Email:
+            <input type="email" name="email" required>
+        </label><br><br>
+        <label>
+            First Name:
+            <input type="text" name="firstName" maxlength="50">
+        </label><br><br>
+        <label>
+            Last Name:
+            <input type="text" name="lastName" maxlength="50">
+        </label><br><br>
+        <label>
+            Bio:
+            <textarea name="bio" rows="4" cols="40" maxlength="500"></textarea>
+        </label><br><br>
+        <button type="submit">Save Changes</button>
+    </form>
+
+    <div id="feedback" class="feedback" style="display:none;"></div>
+
+    <script>
+        const form = document.getElementById('profileForm');
+        const feedbackEl = document.getElementById('feedback');
+
+        function showFeedback(message, isSuccess) {
+            feedbackEl.textContent = message;
+            feedbackEl.className = `feedback ${isSuccess ? 'success' : 'error'}`;
+            feedbackEl.style.display = 'block';
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            const payload = {};
+            for (const [key, value] of formData.entries()) {
+                if (value !== '') payload[key] = value.trim();
+            }
+
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch('/api/profile', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    showFeedback('Profile updated successfully.', true);
+                } else {
+                    showFeedback(result.error || 'Failed to update profile.', false);
+                }
+            } catch (err) {
+                console.error(err);
+                showFeedback('Network error. Please try again later.', false);
+            }
+        });
+    </script>
+</body>
+</html>

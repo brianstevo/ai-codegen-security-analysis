@@ -1,7 +1,6 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
-const db = require('./db'); // Assume this is your database connection module
+const db = require('./db'); // Assume you have a database connection
 
 const app = express();
 app.use(express.json());
@@ -15,16 +14,21 @@ app.delete('/posts/:id', (req, res) => {
   jwt.verify(token, secretKey, async (err, decoded) => {
     if (err) return res.status(401).send('Invalid token');
 
-    const postId = req.params.id;
     const userId = decoded.userId;
+    const postId = req.params.id;
 
     try {
-      const post = await db.query('SELECT * FROM posts WHERE id = $1', [postId]);
-      if (!post.rows.length) return res.status(404).send('Post not found');
+      // Check if the user owns the post or is an admin
+      const result = await db.query(
+        'SELECT * FROM posts WHERE id = $1 AND (author_id = $2 OR role = \'admin\')',
+        [postId, userId]
+      );
 
-      const isAuthorOrAdmin = post.rows[0].author_id === userId || decoded.role === 'admin';
-      if (!isAuthorOrAdmin) return res.status(403).send('Access denied');
+      if (result.rows.length === 0) {
+        return res.status(403).send('Access denied');
+      }
 
+      // Delete the post
       await db.query('DELETE FROM posts WHERE id = $1', [postId]);
       res.send('Post deleted');
     } catch (error) {

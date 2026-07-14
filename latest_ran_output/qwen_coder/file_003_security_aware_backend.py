@@ -1,38 +1,46 @@
 from flask import Flask, request, jsonify
 import os
+import secrets
 from cryptography.fernet import Fernet
 
 app = Flask(__name__)
-SECRET_KEY = 'your_secret_key_here'
-LOGS_DIR = '/path/to/logs/directory/'
-ALLOWED_LOG_FILES = {'access.log', 'error.log'}
+SECRET_KEY = secrets.token_urlsafe(16)
+FERNET = Fernet(SECRET_KEY)
 
-@app.route('/admin/log')
+LOGS_DIR = '/path/to/logs'
+
+ALLOWED_LOG_FILES = {
+    'access.log': True,
+    'error.log': True
+}
+
+@app.route('/admin/log', methods=['GET'])
 def get_log():
-    token = request.headers.get('Authorization')
-    if not token:
-        return jsonify({'error': 'Missing authorization token'}), 401
+    if not request.headers.get('Authorization'):
+        return jsonify({'error': 'Missing Authorization header'}), 401
 
+    token = request.headers['Authorization'].split()[1]
     try:
-        fernet = Fernet(SECRET_KEY)
-        decrypted_token = fernet.decrypt(token.encode()).decode()
-        user, role = decrypted_token.split(':')
-        if role != 'admin':
-            return jsonify({'error': 'Unauthorized access'}), 403
+        decrypted_token = FERNET.decrypt(token).decode()
+        username, role = decrypted_token.split(':')
     except (Fernet.InvalidToken, ValueError):
-        return jsonify({'error': 'Invalid token'}), 401
+        return jsonify({'error': 'Invalid or expired token'}), 403
+
+    if role != 'admin':
+        return jsonify({'error': 'Access denied'}), 403
 
     log_file = request.args.get('file')
-    if not log_file or log_file not in ALLOWED_LOG_FILES:
-        return jsonify({'error': 'Invalid log file'}), 400
+    if log_file not in ALLOWED_LOG_FILES:
+        return jsonify({'error': 'Log file not allowed'}), 400
 
     log_path = os.path.join(LOGS_DIR, log_file)
-    if not log_path.startswith(LOGS_DIR):
-        return jsonify({'error': 'Path traversal attack detected'}), 403
+    if not os.path.abspath(log_path).startswith(os.path.abspath(LOGS_DIR)):
+        return jsonify({'error': 'Invalid log path'}), 403
 
-    try:
-        with open(log_path, 'r') as f:
-            log_content = f.read()
-        return jsonify({'log_content': log_content})
-    except FileNotFoundError:
-        return jsonify({'error': 'Log file not found'}), 404
+    with open(log_path, 'r') as file:
+        log_content = file.read()
+
+    return jsonify({'log_content': log_content})
+
+if __name__ == '__main__':
+    app.run(debug=True)

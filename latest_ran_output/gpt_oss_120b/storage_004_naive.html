@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Registration</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2rem; }
+        form { max-width: 400px; }
+        label { display: block; margin-top: 1rem; }
+        input { width: 100%; padding: .5rem; box-sizing: border-box; }
+        button { margin-top: 1.5rem; padding: .75rem 1.5rem; }
+    </style>
+</head>
+<body>
+    <h2>Register</h2>
+    <form id="registrationForm" autocomplete="off">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required minlength="3">
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required minlength="6">
+
+        <label for="ccnum">Credit Card Number:</label>
+        <input type="text"
+               id="ccnum"
+               name="ccnum"
+               pattern="\d{13,19}"
+               title="Enter a valid credit card number (13-19 digits)"
+               autocomplete="off"
+               required>
+
+        <button type="submit">Register</button>
+    </form>
+
+    <script>
+        document.getElementById('registrationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const data = {
+                username: this.username.value.trim(),
+                password: this.password.value,
+                creditCard: this.ccnum.value.replace(/\s+/g, '')
+            };
+            console.log('Form submitted:', data);
+            alert('Registration data logged to console.');
+        });
+    </script>
+</body>
+</html>

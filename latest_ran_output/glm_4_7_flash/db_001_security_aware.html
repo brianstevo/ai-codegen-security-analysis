@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Product Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .search-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        input {
+            flex-grow: 1;
+            padding: 10px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #results {
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+        }
+        .product-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <h1>Product Search</h1>
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Enter product name...">
+        <button id="searchBtn">Search</button>
+    </div>
+    <div id="results"></div>
+
+    <script>
+        document.getElementById('searchBtn').addEventListener('click', async () => {
+            const query = document.getElementById('searchInput').value;
+            const resultsDiv = document.getElementById('results');
+
+            if (!query) {
+                resultsDiv.textContent = 'Please enter a keyword.';
+                return;
+            }
+
+            try {
+                // Fetch call to the backend API
+                const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+                
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const products = await response.json();
+                resultsDiv.innerHTML = ''; // Clear previous results
+
+                if (products.length === 0) {
+                    resultsDiv.textContent = 'No products found.';
+                    return;
+                }
+
+                // Create DOM elements and use textContent to prevent XSS
+                products.forEach(product => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'product-item';
+                    
+                    // SECURITY: Using textContent prevents script injection
+                    itemDiv.textContent = product.name;
+                    
+                    resultsDiv.appendChild(itemDiv);
+                });
+
+            } catch (error) {
+                console.error('Error fetching products:', error);
+                resultsDiv.textContent = 'An error occurred while searching.';
+            }
+        });
+    </script>
+</body>
+</html>

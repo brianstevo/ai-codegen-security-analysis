@@ -1,17 +1,7 @@
-form {
-  display: flex;
-  flex-direction: column;
-}
-
-input {
-  margin-bottom: 10px;
-  padding: 5px;
-}
-
 input:valid {
-  border: 2px solid green;
+  border-color: green;
 }
 
 input:invalid {
-  border: 2px solid red;
+  border-color: red;
 }

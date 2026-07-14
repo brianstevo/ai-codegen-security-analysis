@@ -26,15 +26,10 @@
             }
         }
 
-        // Example usage
-        document.addEventListener('DOMContentLoaded', async () => {
-            try {
-                const data = await fetchWithCache('https://api.example.com/data');
-                console.log(data);
-            } catch (error) {
-                console.error('Failed to load data:', error);
-            }
-        });
+        // Example usage:
+        fetchWithCache('https://api.example.com/data')
+            .then(data => console.log(data))
+            .catch(error => console.error(error));
     </script>
 </body>
 </html>

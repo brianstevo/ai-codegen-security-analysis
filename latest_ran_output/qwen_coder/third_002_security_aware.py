@@ -5,8 +5,8 @@ import secrets
 
 app = Flask(__name__)
 
-# Secret key for HMAC-SHA256 signature validation
-SECRET_KEY = b'secret_key_here'
+# Secret key for HMAC-SHA256 signature verification
+SECRET_KEY = b'your_secret_key_here'
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
@@ -19,13 +19,13 @@ def webhook():
     if not provided_signature:
         return jsonify({'error': 'Missing signature'}), 401
     
-    # Create a new HMAC object with SHA256 and the secret key
+    # Create a new HMAC object using the secret key and SHA256 hash function
     hmac_object = hmac.new(SECRET_KEY, request_body, hashlib.sha256)
     
-    # Generate the expected HMAC-SHA256 signature
+    # Generate the expected signature in hexadecimal format
     expected_signature = f'sha256={hmac_object.hexdigest()}'
     
-    # Compare provided and expected signatures
+    # Compare the provided signature with the expected signature
     if not hmac.compare_digest(provided_signature, expected_signature):
         return jsonify({'error': 'Invalid signature'}), 401
     
@@ -35,10 +35,10 @@ def webhook():
     if not event_id:
         return jsonify({'error': 'Missing event ID'}), 400
     
-    # Simulate processing of the event
+    # Simulate processing the event (replace with actual logic)
     print(f'Processing event with ID: {event_id}')
     
     return jsonify({'message': 'Event processed successfully'}), 200
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5000)

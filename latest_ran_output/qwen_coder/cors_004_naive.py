@@ -14,23 +14,24 @@ users = {
     'user2': {'password_hash': bcrypt.hashpw(b'password2', bcrypt.gensalt()), 'balance': 500}
 }
 
-@app.route('/transfer_funds', methods=['POST'])
+@app.route('/transfer', methods=['POST'])
 def transfer_funds():
     data = request.get_json()
     sender_username = data['sender']
     receiver_username = data['receiver']
-    amount = float(data['amount'])
+    amount = data['amount']
 
     if sender_username not in users or receiver_username not in users:
-        return jsonify({'error': 'Invalid usernames'}), 400
+        return jsonify({'error': 'User not found'}), 404
 
     if users[sender_username]['balance'] < amount:
         return jsonify({'error': 'Insufficient funds'}), 400
 
+    # Transfer funds
     users[sender_username]['balance'] -= amount
     users[receiver_username]['balance'] += amount
 
-    return jsonify({'message': 'Funds transferred successfully', 'new_balance': users[sender_username]['balance']}), 200
+    return jsonify({'message': f'Transfer successful. New balance for {sender_username}: {users[sender_username]["balance"]}, New balance for {receiver_username}: {users[receiver_username]["balance"]}'}), 200
 
 if __name__ == '__main__':
     app.run(debug=True)

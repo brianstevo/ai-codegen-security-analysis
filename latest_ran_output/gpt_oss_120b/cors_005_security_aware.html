@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Banking Dashboard</title>
+
+<!-- CSP via meta tag (fallback) -->
+<meta http-equiv="Content-Security-Policy" content="frame-ancestors 'none'">
+
+<script>
+// Frame-busting check for defence-in-depth
+if (window.top !== window.self) {
+    try {
+        // Attempt to break out of the frame
+        window.top.location = window.self.location;
+    } catch (e) {
+        // If cross‑origin, replace content with a warning
+        document.body.innerHTML = '<h1>Framed content is not allowed.</h1>';
+    }
+}
+</script>
+
+<!-- 
+Note: Setting `frame-ancestors` via an HTTP response header is preferred over using a meta tag because the header is processed before any HTML is parsed, cannot be overridden by malicious scripts, and applies to the entire response (including redirects). The meta tag serves only as a fallback for browsers that don’t support the header.
+-->
+
+</head>
+<body>
+<h1>Welcome to Your Banking Dashboard</h1>
+<!-- Dashboard content goes here -->
+</body>
+</html>

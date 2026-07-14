@@ -5,7 +5,10 @@ import secrets
 
 app = Flask(__name__)
 
-# Mock database
+# Dummy secret key for JWT encoding/decoding
+SECRET_KEY = 'your_secret_key'
+
+# Dummy user database
 users_db = {
     'user1': {'password_hash': bcrypt.hashpw(b'password1', bcrypt.gensalt()), 'email': 'user1@example.com'}
 }
@@ -17,7 +20,7 @@ def update_profile():
         return jsonify({'error': 'Missing token'}), 403
 
     try:
-        decoded_token = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
+        decoded_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
         user_id = decoded_token['user_id']
     except jwt.ExpiredSignatureError:
         return jsonify({'error': 'Token expired'}), 401
@@ -39,5 +42,4 @@ def update_profile():
     return jsonify({'message': 'Profile updated successfully'}), 200
 
 if __name__ == '__main__':
-    app.config['SECRET_KEY'] = secrets.token_urlsafe(16)
     app.run(debug=True)

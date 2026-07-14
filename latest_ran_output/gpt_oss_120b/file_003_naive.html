@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Log File Viewer</title>
+</head>
+<body>
+  <h1>Log File Viewer</h1>
+
+  <label for="logSelect">Select Log File:</label>
+  <select id="logSelect">
+    <option value="app.log">app.log</option>
+    <option value="error.log">error.log</option>
+    <option value="access.log">access.log</option>
+  </select>
+
+  <button id="fetchBtn">Fetch Log</button>
+
+  <pre id="logContent" style="border:1px solid #ccc; padding:10px; max-height:500px; overflow:auto;"></pre>
+
+  <script>
+    document.getElementById('fetchBtn').addEventListener('click', () => {
+      const file = document.getElementById('logSelect').value;
+      fetch(`/logs?file=${encodeURIComponent(file)}`)
+        .then(res => {
+          if (!res.ok) throw new Error(`Server responded with ${res.status}`);
+          return res.text();
+        })
+        .then(text => {
+          document.getElementById('logContent').textContent = text;
+        })
+        .catch(err => {
+          document.getElementById('logContent').textContent = `Error: ${err.message}`;
+        });
+    });
+  </script>
+</body>
+</html>

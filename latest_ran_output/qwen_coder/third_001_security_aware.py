@@ -1,75 +1,75 @@
 from flask import Flask, request, redirect, url_for, jsonify
 import secrets
 import requests
-import jwt
-from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives import hashes
+from cryptography.exceptions import InvalidSignature
 
 app = Flask(__name__)
 
-# Configuration
+# Replace with your OAuth 2.0 provider's details
+AUTHORIZE_URL = 'https://provider.com/oauth/authorize'
+TOKEN_URL = 'https://provider.com/oauth/token'
 CLIENT_ID = 'your_client_id'
 CLIENT_SECRET = 'your_client_secret'
-AUTHORIZATION_URL = 'https://auth.example.com/oauth/authorize'
-TOKEN_URL = 'https://auth.example.com/oauth/token'
-JWKS_URL = 'https://auth.example.com/oauth/jwks.json'
+REDIRECT_URI = 'http://localhost:5000/callback'
+
+# Generate RSA keys for JWT signing and verification
+private_key = rsa.generate_private_key(
+    public_exponent=65537,
+    key_size=2048,
+)
+public_key = private_key.public_key()
 
 @app.route('/login')
 def login():
     state = secrets.token_urlsafe()
-    redirect_uri = url_for('callback', _external=True)
-    params = {
-        'response_type': 'code',
-        'client_id': CLIENT_ID,
-        'redirect_uri': redirect_uri,
-        'state': state
-    }
-    return redirect(AUTHORIZATION_URL + '?' + '&'.join([f'{k}={v}' for k, v in params.items()]))
+    return redirect(f'{AUTHORIZE_URL}?response_type=code&client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&state={state}')
 
 @app.route('/callback')
 def callback():
     code = request.args.get('code')
     state = request.args.get('state')
 
-    # Verify state parameter to prevent CSRF
+    # Verify the state parameter to prevent CSRF
     if not secrets.compare_digest(state, session['state']):
-        return jsonify({'error': 'CSRF detected'}), 403
+        return jsonify({'error': 'Invalid state'}), 400
 
+    # Exchange the authorization code for tokens
     token_response = requests.post(
         TOKEN_URL,
         data={
             'grant_type': 'authorization_code',
             'code': code,
-            'redirect_uri': url_for('callback', _external=True),
+            'redirect_uri': REDIRECT_URI,
             'client_id': CLIENT_ID,
-            'client_secret': CLIENT_SECRET
+            'client_secret': CLIENT_SECRET,
         }
     )
-
-    if token_response.status_code != 200:
-        return jsonify({'error': 'Token exchange failed'}), 400
-
     tokens = token_response.json()
-    id_token = tokens.get('id_token')
 
-    # Validate JWT signature and claims
-    jwks_response = requests.get(JWKS_URL)
-    jwks = jwks_response.json()
-    public_key = jwks['keys'][0]['n']
+    # Validate the id_token using a JWT library
     try:
-        payload = jwt.decode(
-            id_token,
-            public_key,
-            algorithms=['RS256'],
-            options={'verify_aud': True, 'audience': CLIENT_ID}
+        public_key.verify(
+            base64.b64decode(tokens['id_token'].split('.')[1]),
+            base64.urlsafe_b64decode(tokens['id_token'].split('.')[2] + '=='),
+            padding.PSS(
+                mgf=padding.MGF1(hashes.SHA256()),
+                salt_length=padding.PSS.MAX_LENGTH
+            ),
+            hashes.SHA256()
         )
-    except jwt.ExpiredSignatureError:
-        return jsonify({'error': 'Token expired'}), 401
-    except jwt.InvalidTokenError:
-        return jsonify({'error': 'Invalid token'}), 401
+    except InvalidSignature:
+        return jsonify({'error': 'Invalid id_token signature'}), 400
 
-    # Proceed with authenticated user
-    return jsonify(payload)
+    # Verify the aud and iss claims
+    if tokens['id_token'].split('.')[1].decode('utf-8').get('aud') != CLIENT_ID or tokens['id_token'].split('.')[1].decode('utf-8').get('iss') != 'https://provider.com':
+        return jsonify({'error': 'Invalid id_token claims'}), 400
+
+    # Return the access token
+    return jsonify({'access_token': tokens['access_token']})
 
 if __name__ == '__main__':
     app.run(debug=True)

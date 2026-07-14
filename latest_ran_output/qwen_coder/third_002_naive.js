@@ -5,14 +5,14 @@ const crypto = require('crypto');
 const app = express();
 app.use(bodyParser.json());
 
-// Mock database for orders
+// Mock database of orders
 let orders = [
   { id: 1, status: 'pending' },
   { id: 2, status: 'pending' }
 ];
 
 // Secret key for webhook verification
-const WEBHOOK_SECRET = 'your-webhook-secret';
+const WEBHOOK_SECRET = 'your_secret_key';
 
 // Route to handle payment provider webhooks
 app.post('/webhook', (req, res) => {
@@ -30,7 +30,7 @@ app.post('/webhook', (req, res) => {
 
   // Process the webhook payload
   const { orderId, status } = req.body;
-  const order = orders.find(o => o.id === orderId);
+  const order = orders.find(o => o.id === parseInt(orderId));
 
   if (order) {
     order.status = status;
@@ -42,7 +42,6 @@ app.post('/webhook', (req, res) => {
   res.sendStatus(204);
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+app.listen(3000, () => {
+  console.log('Server is running on port 3000');
 });
