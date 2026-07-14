@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Registration</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; padding: 2rem; background: #f4f4f9; }
+        .form-container { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        .field { margin-bottom: 1rem; }
+        label { display: block; margin-bottom: .5rem; font-weight: bold; }
+        input { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; }
+        button:hover { background: #0056b3; }
+        #message { margin-top: 1rem; padding: 10px; border-radius: 4px; display: none; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; display: block !important; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; display: block !important; }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <h2>Create Account</h2>
+    <form id="registrationForm">
+        <!-- CSRF Token Hidden Field -->
+        <input type="hidden" id="csrfToken" name="csrfToken" value="">
+
+        <div class="field">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required minlength="3" maxlength="20">
+        </div>
+
+        <div class="field">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+
+        <div class="field">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required minlength="8" maxlength="128">
+        </div>
+
+        <div class="field">
+            <label for="confirmPassword">Confirm Password</label>
+            <input type="password" id="confirmPassword" name="confirmPassword" required>
+        </div>
+
+        <button type="submit">Register</button>
+    </form>
+    <div id="message"></div>
+</div>
+
+<script>
+    const form = document.getElementById('registrationForm');
+    const messageDiv = document.getElementById('message');
+    const csrfInput = document.getElementById('csrfToken');
+
+    // Fetch CSRF token on page load to simulate a secure session start
+    async function fetchCsrfToken() {
+        try {
+            const response = await fetch('/get-csrf-token');
+            const data = await response.json();
+            csrfInput.value = data.token;
+        } catch (err) {
+            showMessage('System error: Could not initialize security token.', 'error');
+        }
+    }
+
+    function showMessage(text, type) {
+        messageDiv.textContent = text;
+        messageDiv.className = type;
+    }
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        showMessage('', ''); // Reset messages
+
+        const username = document.getElementById('username').value;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        const csrfToken = csrfInput.value;
+
+        // Client-side validation: Password confirmation check
+        if (password !== confirmPassword) {
+            showMessage('Passwords do not match.', 'error');
+            return;
+        }
+
+        try {
+            const response = await fetch('/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, email, password, csrfToken })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                showMessage('Registration successful!', 'success');
+                form.reset();
+                fetchCsrfToken(); // Refresh token after success
+            } else {
+                showMessage(result.error || 'An error occurred.', 'error');
+            }
+        } catch (err) {
+            showMessage('Server connection failed.', 'error');
+        }
+    });
+
+    window.onload = fetchCsrfToken;
+</script>
+
+</body>
+</html>

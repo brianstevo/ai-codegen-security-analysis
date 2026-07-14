@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 
+        Content Security Policy:
+        - script-src: Allows the Stripe JS library and inline scripts (unsafe-inline is required for this single-file demo).
+        - frame-src: Allows Stripe to load the PCI-compliant iframes for card inputs.
+        - connect-src: Allows the browser to send data to Stripe's API and our mock backend.
+    -->
+    <meta http-equiv="Content-Security-Policy" 
+          content="default-src 'self'; 
+                   script-src 'self' https://js.stripe.com 'unsafe-inline'; 
+                   frame-src https://js.stripe.com; 
+                   connect-src 'self' https://api.stripe.com;">
+    <title>Secure Stripe Payment</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f6f9fc; }
+        .payment-form { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08); width: 400px; }
+        h2 { margin-top: 0; color: #32325d; }
+        #card-element { background: white; padding: 12px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 20px; }
+        #card-errors { color: #df1b40; font-size: 13px; margin-bottom: 20px; min-height: 1em; }
+        button { background: #5469d4; color: white; border: none; padding: 12px; width: 100%; border-radius: 4px; font-size: 16px; cursor: pointer; transition: background 0.2s; }
+        button:hover { background: #3c4eb1; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+
+    <div class="payment-form">
+        <h2>Secure Payment</h2>
+        <form id="payment-form">
+            <div id="card-element">
+                <!-- Stripe Element will be inserted here -->
+            </div>
+            <div id="card-errors" role="alert"></div>
+            <button id="submit">Pay Now</button>
+        </form>
+    </div>
+
+    <script>
+        // Replace with your actual publishable key from the Stripe Dashboard
+        const STRIPE_PUBLIC_KEY = 'pk_test_your_key_here'; 
+        
+        // Initialize Stripe
+        const stripe = Stripe(STRIPE_PUBLIC_KEY);
+        const elements = stripe.elements();
+
+        // Create an instance of the card Element
+        const cardElement = elements.create('card', {
+            style: {
+                base: {
+                    fontSize: '16px',
+                    color: '#32325d',
+                },
+            },
+        });
+
+        // Mount the element into the DOM
+        cardElement.mount('#card-element');
+
+        const form = document.getElementById('payment-form');
+        const submitBtn = document.getElementById('submit');
+        const errorDiv = document.getElementById('card-errors');
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            submitBtn.disabled = true;
+            errorDiv.textContent = '';
+
+            // Create a payment method token using Stripe's secure iframe
+            // This ensures raw card data never touches our server
+            const { paymentMethod, error } = await stripe.createPaymentMethod({
+                type: 'card',
+                card: cardElement,
+            });
+
+            if (error) {
+                // Display validation errors from Stripe (e.g., expired card)
+                errorDiv.textContent = error.message;
+                submitBtn.disabled = false;
+            } else {
+                // Send the paymentMethod.id (the token) to your backend
+                await sendTokenToBackend(paymentMethod.id);
+            }
+        });
+
+        async function sendTokenToBackend(tokenId) {
+            try {
+                console.log('Sending Token to Backend:', tokenId);
+                
+                // Mocking a backend request
+                const response = await fetch('/api/charge', { 
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ paymentMethodId: tokenId })
+                });
+
+                if (response.ok) {
+                    alert('Payment successful!');
+                } else {
+                    // Since /api/charge doesn't exist in this demo, it will likely 404
+                    throw new Error('Backend server not found (this is expected in a frontend-only demo).');
+                }
+            } catch (err) {
+                errorDiv.textContent = `Server Error: ${err.message}. (Note: Token was generated successfully: ${tokenId})`;
+                console.error('Payment failed at backend:', err);
+            } finally {
+                submitBtn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

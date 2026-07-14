@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ApexBank | Digital Dashboard</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --border: #e2e8f0;
+            --sidebar-width: 260px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        aside {
+            width: var(--sidebar-width);
+            background-color: #0f172a;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            transition: all 0.3s ease;
+        }
+
+        .logo {
+            padding: 2rem;
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo span { color: var(--primary); }
+
+        nav {
+            flex: 1;
+            padding: 1rem;
+        }
+
+        nav ul {
+            list-style: none;
+        }
+
+        nav li {
+            padding: 0.8rem 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #94a3b8;
+        }
+
+        nav li:hover, nav li.active {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        /* Main Content */
+        main {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 2rem;
+            max-width: 1400px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            padding: 1.5rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            border: 1px solid var(--border);
+        }
+
+        .stat-card h3 {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card .value {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        .trend {
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            display: block;
+        }
+
+        .trend.up { color: var(--success); }
+        .trend.down { color: var(--danger); }
+
+        /* Bottom Section */
+        .content-bottom {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            border: 1px solid var(--border);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Transactions Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.95rem;
+        }
+
+        .amount-pos { color: var(--success); font-weight: 600; }
+        .amount-neg { color: var(--danger); font-weight: 600; }
+
+        /* Transfer Form */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.4rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: var(--primary-dark);
+        }
+
+        @media (max-width: 1024px) {
+            .dashboard-grid, .content-bottom {
+                grid-template-columns: 1fr;
+            }
+            aside { width: 70px; }
+            aside .logo span, aside nav li span { display: none; }
+            main { margin-left: 70px; }
+        }
+    </style>
+</head>
+<body>
+
+    <aside>
+        <div class="logo"><span>Apex</span>Bank</div>
+        <nav>
+            <ul>
+                <li class="active">🏠 <span>Dashboard</span></li>
+                <li>📊 <span>Analytics</span></li>
+                <li>💸 <span>Transactions</span></li>
+                <li>💳 <span>My Cards</span></li>
+                <li>⚙️ <span>Settings</span></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main>
+        <header>
+            <div>
+                <h1>Welcome back, Alex</h1>
+                <p style="color: var(--text-muted)">Here's what's happening with your money.</p>
+            </div>
+            <div class="user-profile">
+                <div class="avatar">A</div>
+                <span>Alex Johnson</span>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <div class="stat-card">
+                <h3>Total Balance</h3>
+                <div class="value" id="totalBalance">$0.00</div>
+                <span class="trend up">▲ 2.5% from last month</span>
+            </div>
+            <div class="stat-card">
+                <h3>Monthly Income</h3>
+                <div class="value" style="color: var(--success)" id="monthlyIncome">$0.00</div>
+                <span class="trend up">▲ 12% increase</span>
+            </div>
+            <div class="stat-card">
+                <h3>Monthly Expenses</h3>
+                <div class="value" style="color: var(--danger)" id="monthlyExpenses">$0.00</div>
+                <span class="trend down">▼ 4% decrease</span>
+            </div>
+        </div>
+
+        <div class="content-bottom">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Recent Transactions</h2>
+                    <button style="width: auto; padding: 0.5rem 1rem; font-size: 0.8rem;">View All</button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Entity</th>
+                            <th>Category</th>
+                            <th>Date</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactionBody">
+                        <!-- JS injected -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>Quick Transfer</h2>
+                </div>
+                <form id="transferForm">
+                    <div class="form-group">
+                        <label>Recipient Name</label>
+                        <input type="text" id="recipient" placeholder="e.g. Sarah Connor" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Account Number</label>
+                        <input type="text" id="account" placeholder="XXXX XXXX XXXX" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Amount ($)</label>
+                        <input type="number" id="amount" step="0.01" placeholder="0.00" required>
+                    </div>
+                    <button type="submit">Send Money</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Initial State
+        const state = {
+            balance: 12450.85,
+            income: 4200.00,
+            expenses: 1850.20,
+            transactions: [
+                { id: 1, entity: 'Apple Store', category: 'Technology', date: 'Oct 24, 2023', amount: -999.00 },
+                { id: 2, entity: 'Freelance Project', category: 'Income', date: 'Oct 22, 2023', amount: 2500.00 },
+                { id: 3, entity: 'Starbucks Coffee', category: 'Food', date: 'Oct 21, 2023', amount: -6.50 },
+                { id: 4, entity: 'Landlord Inc', category: 'Rent', date: 'Oct 01, 2023', amount: -1200.00 },
+                { id: 5, entity: 'Amazon Prime', category: 'Shopping', date: 'Sep 28, 2023', amount: -14.99 },
+            ]
+        };
+
+        // DOM Elements
+        const balanceEl = document.getElementById('totalBalance');
+        const incomeEl = document.getElementById('monthlyIncome');
+        const expenseEl = document.getElementById('monthlyExpenses');
+        const transactionBody = document.getElementById('transactionBody');
+        const transferForm = document.getElementById('transferForm');
+
+        // Format currency helper
+        const formatCurrency = (num) => {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+            }).format(num);
+        };
+
+        // Update UI Stats
+        function updateStats() {
+            balanceEl.textContent = formatCurrency(state.balance);
+            incomeEl.textContent = formatCurrency(state.income);
+            expenseEl.textContent = formatCurrency(state.expenses);
+        }
+
+        // Render Transactions Table
+        function renderTransactions() {
+            transactionBody.innerHTML = '';
+            state.transactions.forEach(tx => {
+                const row = document.createElement('tr');
+                const amountClass = tx.amount > 0 ? 'amount-pos' : 'amount-neg';
+                const prefix = tx.amount > 0 ? '+' : '';
+
+                row.innerHTML = `
+                    <td><strong>${tx.entity}</strong></td>
+                    <td>${tx.category}</td>
+                    <td>${tx.date}</td>
+                    <td class="${amountClass}">${prefix}${formatCurrency(tx.amount)}</td>
+                `;
+                transactionBody.appendChild(row);
+            });
+        }
+
+        // Handle Transfer Form
+        transferForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const recipient = document.getElementById('recipient').value;
+            const amount = parseFloat(document.getElementById('amount').value);
+
+            if (amount > state.balance) {
+                alert('Insufficient funds!');
+                return;
+            }
+
+            // Update State
+            state.balance -= amount;
+            state.expenses += amount;
+            state.transactions.unshift({
+                id: Date.now(),
+                entity: `Transfer to ${recipient}`,
+                category: 'Transfer',
+                date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                amount: -amount
+            });
+
+            // Update UI
+            updateStats();
+            renderTransactions();
+            transferForm.reset();
+            
+            alert(`Successfully sent ${formatCurrency(amount)} to ${recipient}!`);
+        });
+
+        // Initial Load
+        function init() {
+            updateStats();
+            renderTransactions();
+        }
+
+        init();
+    </script>
+</body>
+</html>

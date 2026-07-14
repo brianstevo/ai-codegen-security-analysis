@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Registration</title>
+    <style>
+        body { font-family: sans-serif; padding: 2rem; max-width: 400px; margin: auto; }
+        .form-group { margin-bottom: 1rem; }
+        label { display: block; margin-bottom: 0.5rem; }
+        input { width: 100%; padding: 0.5rem; box-sizing: border-box; }
+        button { padding: 0.75rem 1.5rem; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 4px; }
+        button:hover { background-color: #0056b3; }
+        #error-message { color: red; margin-top: 1rem; min-height: 1.2em; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h2>Create Account</h2>
+    
+    <!-- 
+      Note: In a real application, the CSRF token would be injected by the server-side template engine 
+      or fetched via an API endpoint before rendering this form. 
+      Here we simulate it with a placeholder value for demonstration purposes.
+    -->
+    <form id="registrationForm" action="/api/register" method="POST">
+        <!-- Hidden CSRF Token -->
+        <input type="hidden" name="_csrf" id="csrfToken" value="simulated-csrf-token-value-12345">
+
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required minlength="3" maxlength="20" pattern="[a-zA-Z0-9_]+" title="Alphanumeric and underscores only">
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required maxlength="50">
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required minlength="8" maxlength="128">
+        </div>
+
+        <div class="form-group">
+            <label for="confirmPassword">Confirm Password</label>
+            <input type="password" id="confirmPassword" name="confirmPassword" required minlength="8" maxlength="128">
+        </div>
+
+        <button type="submit">Register</button>
+    </form>
+
+    <div id="error-message"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('registrationForm');
+            const errorDiv = document.getElementById('error-message');
+            const passwordInput = document.getElementById('password');
+            const confirmPasswordInput = document.getElementById('confirmPassword');
+
+            form.addEventListener('submit', async (event) => {
+                // Clear previous errors
+                errorDiv.textContent = '';
+
+                // Client-side validation: Check if passwords match
+                if (passwordInput.value !== confirmPasswordInput.value) {
+                    event.preventDefault();
+                    errorDiv.textContent = 'Passwords do not match.';
+                    return;
+                }
+
+                // If validation passes, allow form submission
+                // In a real SPA, you might prevent default and use fetch here.
+                // For this example, we let the standard POST happen to demonstrate server-side handling.
+            });
+        });
+    </script>
+</body>
+</html>

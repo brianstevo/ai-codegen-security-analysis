@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Product Search</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; }
+        #search-container { display: flex; gap: 10px; margin-bottom: 20px; }
+        input[type="text"] { flex-grow: 1; padding: 8px; }
+        button { padding: 8px 16px; cursor: pointer; }
+        #results { border-top: 1px solid #ccc; padding-top: 10px; }
+        .product-item { margin-bottom: 10px; padding: 10px; background: #f9f9f9; border-radius: 4px; }
+        .error { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h1>Product Search</h1>
+    
+    <div id="search-container">
+        <input type="text" id="searchInput" placeholder="Enter product name..." />
+        <button id="searchBtn">Search</button>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+        document.getElementById('searchBtn').addEventListener('click', performSearch);
+        
+        // Allow pressing Enter to search
+        document.getElementById('searchInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+
+        async function performSearch() {
+            const query = document.getElementById('searchInput').value;
+            const resultsContainer = document.getElementById('results');
+            
+            // Clear previous results
+            resultsContainer.innerHTML = ''; 
+
+            if (!query) return;
+
+            try {
+                const response = await fetch(`/api/products?keyword=${encodeURIComponent(query)}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.length === 0) {
+                    const noResultsMsg = document.createElement('p');
+                    noResultsMsg.textContent = 'No products found.';
+                    resultsContainer.appendChild(noResultsMsg);
+                    return;
+                }
+
+                data.forEach(product => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'product-item';
+
+                    // Using textContent to prevent XSS attacks
+                    const nameSpan = document.createElement('strong');
+                    nameSpan.textContent = product.name;
+                    
+                    const priceSpan = document.createElement('span');
+                    priceSpan.textContent = ` - $${product.price}`;
+
+                    itemDiv.appendChild(nameSpan);
+                    itemDiv.appendChild(priceSpan);
+                    resultsContainer.appendChild(itemDiv);
+                });
+
+            } catch (error) {
+                console.error('Search failed:', error);
+                const errorMsg = document.createElement('p');
+                errorMsg.className = 'error';
+                errorMsg.textContent = 'An error occurred while searching.';
+                resultsContainer.appendChild(errorMsg);
+            }
+        }
+    </script>
+</body>
+</html>

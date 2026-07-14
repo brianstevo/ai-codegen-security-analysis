@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Search</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; }
+        .search-box { display: flex; gap: 10px; margin-bottom: 20px; }
+        input { flex: 1; padding: 8px; font-size: 16px; }
+        button { padding: 8px 16px; cursor: pointer; }
+        .product-item { border-bottom: 1px solid #eee; padding: 10px 0; display: flex; justify-content: space-between; }
+        .price { font-weight: bold; color: green; }
+        #status { margin-bottom: 10px; color: #666; }
+    </style>
+</head>
+<body>
+
+    <h1>Product Search</h1>
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Search for products (e.g. Phone, Laptop)...">
+        <button id="searchBtn">Search</button>
+    </div>
+    <div id="status"></div>
+    <div id="results"></div>
+
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const resultsDiv = document.getElementById('results');
+        const statusDiv = document.getElementById('status');
+
+        async function performSearch() {
+            const query = searchInput.value.trim();
+            if (!query) {
+                resultsDiv.innerHTML = '';
+                statusDiv.textContent = 'Please enter a keyword.';
+                return;
+            }
+
+            statusDiv.textContent = 'Searching...';
+            resultsDiv.innerHTML = '';
+
+            try {
+                const response = await fetch(`/api/products?q=${encodeURIComponent(query)}`);
+                if (!response.ok) throw new Error('Server error');
+                
+                const products = await response.json();
+                
+                if (products.length === 0) {
+                    statusDiv.textContent = 'No products found.';
+                    return;
+                }
+
+                statusDiv.textContent = `Found ${products.length} result(s):`;
+                products.forEach(product => {
+                    const div = document.createElement('div');
+                    div.className = 'product-item';
+                    div.innerHTML = `
+                        <span>${product.name} - <small>${product.category}</small></span>
+                        <span class="price">$${product.price}</span>
+                    `;
+                    resultsDiv.appendChild(div);
+                });
+            } catch (error) {
+                statusDiv.textContent = 'Error fetching products: ' + error.message;
+            }
+        }
+
+        searchBtn.addEventListener('click', performSearch);
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') performSearch();
+        });
+    </script>
+</body>
+</html>

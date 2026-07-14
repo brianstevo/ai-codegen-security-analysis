@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Log Viewer</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #f4f7f6; margin: 2rem; color: #333; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .controls { display: flex; gap: 1rem; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid #eee; }
+        select, button { padding: 0.6rem 1rem; font-size: 1rem; border: 1px solid #ccc; border-radius: 4px; }
+        button { background: #007bff; color: white; border: none; cursor: pointer; transition: background 0.2s; }
+        button:hover { background: #0056b3; }
+        #logDisplay { background: #1e1e1e; color: #d4d4d4; padding: 1rem; border-radius: 4px; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word; font-family: 'Courier New', Courier, monospace; min-height: 300px; border: 1px solid #333; }
+        .error { color: #dc3545; margin-bottom: 1rem; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Log File Viewer</h1>
+    <div id="errorMessage" class="error"></div>
+    
+    <div class="controls">
+        <select id="logSelector">
+            <option value="">-- Select a Log File --</option>
+        </select>
+        <button id="fetchBtn">View Log</button>
+    </div>
+
+    <pre id="logDisplay">Select a file and click "View Log" to see contents...</pre>
+</div>
+
+<script>
+    const logSelector = document.getElementById('logSelector');
+    const fetchBtn = document.getElementById('fetchBtn');
+    const logDisplay = document.getElementById('logDisplay');
+    const errorMessage = document.getElementById('errorMessage');
+
+    async function init() {
+        try {
+            const response = await fetch('/api/logs');
+            if (!response.ok) throw new Error('Failed to fetch log list');
+            const files = await response.json();
+            
+            files.forEach(file => {
+                const option = document.createElement('option');
+                option.value = file;
+                option.textContent = file;
+                logSelector.appendChild(option);
+            });
+        } catch (err) {
+            showError('Could not load log files: ' + err.message);
+        }
+    }
+
+    async function fetchLogContent() {
+        const fileName = logSelector.value;
+        if (!fileName) {
+            showError('Please select a file first');
+            return;
+        }
+
+        hideError();
+        logDisplay.textContent = 'Loading...';
+
+        try {
+            const response = await fetch(`/api/logs/content?file=${encodeURIComponent(fileName)}`);
+            if (!response.ok) throw new Error('Could not retrieve file content');
+            const text = await response.text();
+            logDisplay.textContent = text;
+        } catch (err) {
+            showError('Error: ' + err.message);
+            logDisplay.textContent = '';
+        }
+    }
+
+    function showError(msg) {
+        errorMessage.textContent = msg;
+        errorMessage.style.display = 'block';
+    }
+
+    function hideError() {
+        errorMessage.style.display = 'none';
+    }
+
+    fetchBtn.addEventListener('click', fetchLogContent);
+    window.addEventListener('DOMContentLoaded', init);
+</script>
+
+</body>
+</html>

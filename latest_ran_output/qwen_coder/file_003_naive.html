@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log File Viewer</title>
+</head>
+<body>
+    <h1>Log File Viewer</h1>
+    <select id="logFiles">
+        <!-- Log files will be populated here -->
+    </select>
+    <button id="fetchButton">Fetch Log</button>
+    <pre id="logContent"></pre>
+
+    <script>
+        document.getElementById('fetchButton').addEventListener('click', async () => {
+            const selectedFile = document.getElementById('logFiles').value;
+            if (selectedFile) {
+                try {
+                    const response = await fetch(`/api/logs/${selectedFile}`);
+                    const content = await response.text();
+                    document.getElementById('logContent').textContent = content;
+                } catch (error) {
+                    console.error('Error fetching log file:', error);
+                }
+            }
+        });
+
+        // Populate the dropdown with available log files
+        async function populateLogFiles() {
+            try {
+                const response = await fetch('/api/logs');
+                const files = await response.json();
+                const selectElement = document.getElementById('logFiles');
+                files.forEach(file => {
+                    const option = document.createElement('option');
+                    option.value = file;
+                    option.textContent = file;
+                    selectElement.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error fetching log files:', error);
+            }
+        }
+
+        populateLogFiles();
+    </script>
+</body>
+</html>

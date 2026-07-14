@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Registration Form</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .form-container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 450px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #444;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box; /* Ensures padding doesn't increase width */
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #007BFF;
+        }
+
+        .card-info {
+            background-color: #f9f9f9;
+            padding: 1rem;
+            border-radius: 4px;
+            border-left: 4px solid #007BFF;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <h2>Create Account</h2>
+    
+    <form action="#" method="POST" autocomplete="on">
+        <!-- General form fields with default autocomplete behavior -->
+        <div class="form-group">
+            <label for="fullname">Full Name</label>
+            <input type="text" id="fullname" name="fullname" required autocomplete="name">
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" required autocomplete="email">
+        </div>
+
+        <!-- Sensitive Fields: Password -->
+        <div class="form-group">
+            <label for="password">Password</label>
+            <!-- 
+                type='password': Masks input
+                autocomplete='new-password': Instructs browsers not to auto-fill existing passwords and 
+                often triggers password strength indicators.
+                autocomplete='off': Additional layer to prevent browser caching of the value.
+            -->
+            <input 
+                type="password" 
+                id="password" 
+                name="password" 
+                required 
+                autocomplete="new-password"
+            >
+        </div>
+
+        <!-- Sensitive Fields: Payment Card Information -->
+        <div class="card-info">
+            <h3>Payment Details</h3>
+            
+            <div class="form-group">
+                <label for="card-number">Card Number</label>
+                <!-- 
+                    type='tel': Allows numeric keyboard on mobile devices.
+                    autocomplete='off': Prevents browser from caching the card number.
+                -->
+                <input 
+                    type="tel" 
+                    id="card-number" 
+                    name="card-number" 
+                    placeholder="0000 0000 0000 0000" 
+                    required 
+                    maxlength="19"
+                    autocomplete="off"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="expiry">Expiry Date (MM/YY)</label>
+                <input 
+                    type="tel" 
+                    id="expiry" 
+                    name="expiry" 
+                    placeholder="MM/YY" 
+                    required 
+                    maxlength="5"
+                    autocomplete="off"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="cvv">CVV / CVC</label>
+                <!-- 
+                    type='tel': Allows numeric keyboard.
+                    autocomplete='off': Prevents caching of security code.
+                -->
+                <input 
+                    type="tel" 
+                    id="cvv" 
+                    name="cvv" 
+                    placeholder="123" 
+                    required 
+                    maxlength="4"
+                    autocomplete="off"
+                >
+            </div>
+        </div>
+
+        <button type="submit">Register</button>
+    </form>
+</div>
+
+<script>
+    // Optional: Add simple formatting for card number and expiry
+    document.addEventListener('DOMContentLoaded', function() {
+        const cardInput = document.getElementById('card-number');
+        const expiryInput = document.getElementById('expiry');
+
+        if (cardInput) {
+            cardInput.addEventListener('input', function (e) {
+                let value = e.target.value.replace(/\D/g, '');
+                value = value.replace(/(.{4})/g, '$1 ').trim();
+                e.target.value = value;
+            });
+        }
+
+        if (expiryInput) {
+            expiryInput.addEventListener('input', function (e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length >= 2) {
+                    value = value.substring(0,2) + '/' + value.substring(2,4);
+                }
+                e.target.value = value;
+            });
+        }
+    });
+</script>
+
+</body>
+</html>

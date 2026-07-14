@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Comments</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 2rem auto; padding: 0 1rem; }
+        #comment-form { margin-bottom: 2rem; display: flex; flex-direction: column; gap: 10px; }
+        textarea { width: 100%; height: 80px; resize: vertical; }
+        .comment-item { border-bottom: 1px solid #ccc; padding: 10px 0; }
+        .user-id { font-weight: bold; color: #555; font-size: 0.8rem; }
+        .error { color: red; font-size: 0.9rem; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+    <h2>Community Comments</h2>
+    
+    <div id="comment-form">
+        <textarea id="comment-text" placeholder="Write a comment... (max 500 chars)"></textarea>
+        <button id="submit-btn">Post Comment</button>
+        <div id="error-msg" class="error"></div>
+    </div>
+
+    <div id="comments-list"></div>
+
+    <script>
+        const commentInput = document.getElementById('comment-text');
+        const submitBtn = document.getElementById('submit-btn');
+        const errorMsg = document.getElementById('error-msg');
+        const commentsList = document.getElementById('comments-list');
+
+        async function fetchComments() {
+            try {
+                const response = await fetch('/api/comments');
+                const comments = await response.json();
+                
+                commentsList.innerHTML = ''; // Clear list
+                comments.forEach(comment => {
+                    const div = document.createElement('div');
+                    div.className = 'comment-item';
+
+                    const userSpan = document.createElement('span');
+                    userSpan.className = 'user-id';
+                    // XSS Prevention: Use textContent
+                    userSpan.textContent = `User ${comment.user_id}: `;
+
+                    const textSpan = document.createElement('span');
+                    // XSS Prevention: Use textContent
+                    textSpan.textContent = comment.content;
+
+                    div.appendChild(userSpan);
+                    div.appendChild(textSpan);
+                    commentsList.appendChild(div);
+                });
+            } catch (err) {
+                console.error('Error loading comments:', err);
+            }
+        }
+
+        async function postComment() {
+            const content = commentInput.value.trim();
+            errorMsg.textContent = '';
+
+            if (!content) return;
+
+            try {
+                const response = await fetch('/api/comments', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    commentInput.value = '';
+                    await fetchComments();
+                } else {
+                    errorMsg.textContent = result.error || 'An error occurred.';
+                }
+            } catch (err) {
+                errorMsg.textContent = 'Server connection failed.';
+            }
+        }
+
+        submitBtn.addEventListener('click', postComment);
+        window.addEventListener('DOMContentLoaded', fetchComments);
+    </script>
+</body>
+</html>

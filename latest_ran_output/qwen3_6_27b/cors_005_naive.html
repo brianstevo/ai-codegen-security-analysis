@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NovaBank | Dashboard</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --secondary: #64748b;
+            --bg-body: #f1f5f9;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background-color: var(--bg-card);
+            border-right: 1px solid var(--border);
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 10;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .nav-item a {
+            text-decoration: none;
+            color: var(--text-muted);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .nav-item a:hover, .nav-item.active a {
+            background-color: #eff6ff;
+            color: var(--primary);
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 2rem;
+            max-width: 1400px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .welcome-text h1 {
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .welcome-text p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        /* Balance Cards */
+        .balance-section {
+            grid-column: span 8;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card.secondary {
+            background: white;
+            color: var(--text-main);
+            border: 1px solid var(--border);
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            opacity: 0.9;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-trend {
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .trend-up { color: #6ee7b7; } /* Light green for dark bg */
+        .trend-down { color: #fca5a5; } /* Light red for dark bg */
+        
+        .stat-card.secondary .trend-up { color: var(--success); }
+        .stat-card.secondary .trend-down { color: var(--danger); }
+
+        /* Chart Section */
+        .chart-section {
+            grid-column: span 4;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        /* Transactions */
+        .transactions-section {
+            grid-column: span 8;
+        }
+
+        .transaction-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-radius: 12px;
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+
+        .transaction-item:hover {
+            background-color: #f8fafc;
+        }
+
+        .t-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .t-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background-color: #eff6ff;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .t-details h4 {
+            font-size: 0.95rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .t-details span {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .t-amount {
+            font-weight: 600;
+        }
+
+        .amount-pos { color: var(--success); }
+        .amount-neg { color: var(--text-main); }
+
+        /* Quick Transfer */
+        .transfer-section {
+            grid-column: span 4;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+        }
+
+        .action-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .action-avatar:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+
+        /* SVG Icons */
+        svg {
+            fill: currentColor;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .balance-section, .chart-section, .transactions-section, .transfer-section {
+                grid-column: span 12;
+            }
+            .balance-section {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .balance-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="logo">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4 8 4v14"/><path d="M9 10a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v1"/></svg>
+            NovaBank
+        </div>
+        <ul class="nav-links">
+            <li class="nav-item active">
+                <a href="#">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    Transactions
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                    Cards
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+                    Analytics
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    Settings
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header>
+            <div class="welcome-text">
+                <h1>Hello, Alex</h1>
+                <p>Here's your financial overview for today.</p>
+            </div>
+            <div class="user-profile">
+                <div style="text-align: right;">
+                    <strong>Alex Morgan</strong><br>
+                    <span style="font-size: 0.8rem; color: var(--text-muted);">Premium Account</span>
+                </div>
+                <div class="avatar">AM</div>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            
+            <!-- Balance Cards -->
+            <div class="balance-section">
+                <div class="stat-card">
+                    <div class="stat-label">Total Balance</div>
+                    <div class="stat-value" id="total-balance">$24,500.00</div>
+                    <div class="stat-trend trend-up">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+                        +2.4% this month
+                    </div>
+                </div>
+                <div class="stat-card secondary">
+                    <div class="stat-label">Monthly Income</div>
+                    <div class="stat-value" id="monthly-income">$8,250.00</div>
+                    <div class="stat-trend trend-up">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+                        +1.2% vs last month
+                    </div>
+                </div>
+                <div class="stat-card secondary">
+                    <div class="stat-label">Monthly Expenses</div>
+                    <div class="stat-value" id="monthly-expenses">$3,400.00</div>
+                    <div class="stat-trend trend-down">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline><polyline points="17 18 23 18 23 12"></polyline></svg>
+                        -0.5% vs last month
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart -->
+            <div class="card chart-section">
+                <div class="section-header">
+                    <h3 class="section-title">Spending Activity</h3>
+                    <select style="border: none; background: transparent; color: var(--text-muted); font-size: 0.85rem;">
+                        <option>This Week</option>
+                        <option>This Month</option>
+                    </select>
+                </div>
+                <canvas id="spendingChart" height="200"></canvas>
+            </div>
+
+            <!-- Transactions -->
+            <div class="card transactions-section">
+                <div class="section-header">
+                    <h3 class="section-title">Recent Transactions</h3>
+                    <a href="#" style="color: var(--primary); text-decoration: none; font-size: 0.9rem;">View All</a>
+                </div>
+                <div class="transaction-list" id="transaction-list">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Quick Transfer -->
+            <div class="card transfer-section">
+                <div class="section-header">
+                    <h3 class="section-title">Quick Transfer</h3>
+                </div>
+                
+                <div class="quick-actions">
+                    <div class="action-avatar" title="Sarah">S</div>
+                    <div class="action-avatar" title="Mike">M</div>
+                    <div class="action-avatar" title="Emma">E</div>
+                    <div class="action-avatar" title="John">J</div>
+                    <div class="action-avatar" style="border-style: dashed;">+</div>
+                </div>
+
+                <form id="transfer-form">
+                    <div class="form-group">
+                        <label class="form-label">Recipient Name</label>
+                        <input type="text" class="form-input" placeholder="e.g. Sarah Smith" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Amount ($)</label>
+                        <input type="number" id="transfer-amount" class="form-input" placeholder="0.00" min="1" step="0.01" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Send Money</button>
+                </form>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // --- Data & State ---
+        const state = {
+            balance: 24500.00,
+            income: 8250.00,
+            expenses: 3400.00,
+            transactions: [
+                { id: 1, title: 'Netflix Subscription', category: 'Entertainment', date: 'Today, 10:23 AM', amount: -14.99, icon: 'play' },
+                { id: 2, title: 'Salary Deposit', category: 'Income', date: 'Yesterday, 5:00 PM', amount: 3200.00, icon: 'briefcase' },
+                { id: 3, title: 'Whole Foods Market', category: 'Groceries', date: 'Oct 24, 2:15 PM', amount: -124.50, icon: 'shopping-bag' },
+                { id: 4, title: 'Uber Ride', category: 'Transport', date: 'Oct 23, 8:30 PM', amount: -24.00, icon: 'car' },
+                { id: 5, title: 'Freelance Payment', category: 'Income', date: 'Oct 22, 11:00 AM', amount: 450.00, icon: 'briefcase' }
+            ],
+            chartData: [45, 70, 35, 60, 90, 55, 80] // Mock data for chart
+        };
+
+        // --- DOM Elements ---
+        const els = {
+            balance: document.getElementById('total-balance'),
+            income: document.getElementById('monthly-income'),
+            expenses: document.getElementById('monthly-expenses'),
+            list: document.getElementById('transaction-list'),
+            form: document.getElementById('transfer-form'),
+            amountInput: document.getElementById('transfer-amount')
+        };
+
+        // --- Helper Functions ---
+        const formatCurrency = (num) => {
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(num);
+        };
+
+        const getIconSVG = (type) => {
+            if (type === 'play') return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>';
+            if (type === 'briefcase') return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>';
+            if (type === 'shopping-bag') return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>';
+            if (type === 'car') return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>';
+            return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>';
+        };
+
+        // --- Render Functions ---
+        const renderTransactions = () => {
+            els.list.innerHTML = state.transactions.map(t => `
+                <div class="transaction-item">
+                    <div class="t-left">
+                        <div class="t-icon">${getIconSVG(t.icon)}</div>
+                        <div class="t-details">
+                            <h4>${t.title}</h4>
+                            <span>${t.category} • ${t.date}</span>
+                        </div>
+                    </div>
+                    <div class="t-amount ${t.amount > 0 ? 'amount-pos' : 'amount-neg'}">
+                        ${t.amount > 0 ? '+' : ''}${formatCurrency(t.amount)}
+                    </div>
+                </div>
+            `).join('');
+        };
+
+        const updateTotals = () => {
+            els.balance.textContent = formatCurrency(state.balance);
+            els.income.textContent = formatCurrency(state.income);
+            els.expenses.textContent = formatCurrency(state.expenses);
+        };
+
+        // --- Chart Logic (Vanilla JS Canvas) ---
+        const drawChart = () => {
+            const canvas = document.getElementById('spendingChart');
+            const ctx = canvas.getContext('2d');
+            
+            // Fix resolution for high DPI screens
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+
+            const width = rect.width;
+            const height = rect.height;
+            const padding = 20;
+            const data = state.chartData;
+            const maxVal = Math.max(...data) * 1.2;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, width, height);
+
+            // Draw Grid lines (horizontal)
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 1;
+            for(let i=0; i<=4; i++) {
+                const y = padding + (height - 2*padding) * (i/4);
+                ctx.beginPath();
+                ctx.moveTo(padding, y);
+                ctx.lineTo(width - padding, y);
+                ctx.stroke();
+            }
+
+            // Draw Bars
+            const barWidth = (width - 2*padding) / data.length;
+            
+            data.forEach((val, index) => {
+                const barHeight = (val / maxVal) * (height - 2*padding);
+                const x = padding + (index * barWidth) + (barWidth * 0.2); // Center bar
+                const y = height - padding - barHeight;
+                
+                // Gradient for bars
+                const gradient = ctx.createLinearGradient(0, y, 0, height - padding);
+                gradient.addColorStop(0, '#2563eb');
+                gradient.addColorStop(1, '#60a5fa');
+
+                ctx.fillStyle = gradient;
+                
+                // Rounded top corners logic (simplified)
+                const radius = 4;
+                ctx.beginPath();
+                ctx.moveTo(x, height - padding);
+                ctx.lineTo(x, y + radius);
+                ctx.quadraticCurveTo(x, y, x + radius, y);
+                ctx.lineTo(x + barWidth * 0.6 - radius, y);
+                ctx.quadraticCurveTo(x + barWidth * 0.6, y, x + barWidth * 0.6, y + radius);
+                ctx.lineTo(x + barWidth * 0.6, height - padding);
+                ctx.fill();
+            });
+
+            // Draw Labels (Days)
+            const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            ctx.fillStyle = '#64748b';
+            ctx.font = '12px sans-serif';
+            ctx.textAlign = 'center';
+            
+            data.forEach((_, index) => {
+                const x = padding + (index * barWidth) + (barWidth / 2);
+                ctx.fillText(days[index], x, height - 5);
+            });
+        };
+
+        // --- Event Listeners ---
+        els.form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const amount = parseFloat(els.amountInput.value);
+            
+            if (!amount || amount <= 0) return;
+
+            // Update State
+            state.balance -= amount;
+            state.expenses += amount;
+            
+            // Add Transaction
+            const newTx = {
+                id: Date.now(),
+                title: 'Transfer to Recipient',
+                category: 'Transfer',
+                date: 'Just now',
+                amount: -amount,
+                icon: 'briefcase'
+            };
+            state.transactions.unshift(newTx);
+
+            // Update UI
+            updateTotals();
+            renderTransactions();
+            
+            // Reset Form
+            els.form.reset();
+            
+            // Visual Feedback (Simple Alert for demo)
+            alert(`Successfully sent ${formatCurrency(amount)}!`);
+        });
+
+        // --- Initialization ---
+        window.addEventListener('resize', drawChart);
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTransactions();
+            updateTotals();
+            drawChart();
+        });
+
+    </script>
+</body>
+</html>

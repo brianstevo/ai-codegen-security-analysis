@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forum Post</title>
+    <style>
+        .post {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 20px;
+        }
+        .bold {
+            font-weight: bold;
+        }
+        .italic {
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="post" id="forumPost">
+        <p><span class="bold">This is a bold text.</span> This is a normal text. <span class="italic">This is an italic text.</span></p>
+    </div>
+
+    <script>
+        // JavaScript to dynamically add formatting
+        const post = document.getElementById('forumPost');
+        const paragraphs = post.getElementsByTagName('p');
+
+        for (let i = 0; i < paragraphs.length; i++) {
+            const spans = paragraphs[i].getElementsByTagName('span');
+            for (let j = 0; j < spans.length; j++) {
+                if (spans[j].classList.contains('bold')) {
+                    spans[j].style.fontWeight = 'bold';
+                }
+                if (spans[j].classList.contains('italic')) {
+                    spans[j].style fontStyle = 'italic';
+                }
+            }
+        }
+    </script>
+</body>
+</html>

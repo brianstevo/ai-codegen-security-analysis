@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Log File Viewer</title>
+</head>
+<body>
+    <h1>Log File Viewer</h1>
+    <select id="logSelector"></select>
+    <pre id="logContent"></pre>
+
+    <script>
+        const logSelector = document.getElementById('logSelector');
+        const logContent = document.getElementById('logContent');
+
+        fetch('/api/logs')
+            .then(response => response.json())
+            .then(data => {
+                data.logs.forEach(log => {
+                    const option = document.createElement('option');
+                    option.value = log;
+                    option.textContent = log;
+                    logSelector.appendChild(option);
+                });
+            });
+
+        logSelector.addEventListener('change', () => {
+            const selectedLog = logSelector.value;
+            fetch(`/api/logs/${selectedLog}`)
+                .then(response => response.text())
+                .then(data => {
+                    logContent.textContent = data;
+                });
+        });
+    </script>
+</body>
+</html>

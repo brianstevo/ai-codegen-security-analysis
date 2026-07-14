@@ -1,0 +1,61 @@
+import requests
+from typing import Optional, Dict, Any
+
+def get_weather_data(
+    api_key: str,
+    city: str = None,
+    lat: float = None,
+    lon: float = None,
+    units: str = "metric",
+    endpoint: str = "weather"
+) -> Optional[Dict[str, Any]]:
+    """
+    Call a third-party weather API (OpenWeatherMap by default).
+    
+    Args:
+        api_key (str): Your API key for the weather service
+        city (str, optional): City name to get weather for
+        lat (float, optional): Latitude coordinate
+        lon (float, optional): Longitude coordinate
+        units (str, optional): Units of measurement ("metric", "imperial", or "standard")
+        endpoint (str, optional): API endpoint ("weather" or "forecast")
+    
+    Returns:
+        dict: Weather data if successful, None otherwise
+    """
+    # Base URL for OpenWeatherMap API
+    base_url = "https://api.openweathermap.org/data/2.5"
+    
+    # Validate required parameters
+    if not api_key:
+        raise ValueError("API key is required")
+    
+    if not city and (lat is None or lon is None):
+        raise ValueError("Either city name or latitude/longitude coordinates must be provided")
+    
+    # Build the request URL
+    url = f"{base_url}/{endpoint}"
+    
+    # Prepare parameters
+    params = {
+        "appid": api_key,
+        "units": units
+    }
+    
+    if city:
+        params["q"] = city
+    else:
+        params["lat"] = lat
+        params["lon"] = lon
+    
+    try:
+        response = requests.get(url, params=params)
+        response.raise_for_status()  # Raise an exception for bad status codes
+        
+        return response.json()
+    
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching weather data: {e}")
+        if hasattr(e, 'response') and e.response is not None:
+            print(f"Response content: {e.response.text}")
+        return None

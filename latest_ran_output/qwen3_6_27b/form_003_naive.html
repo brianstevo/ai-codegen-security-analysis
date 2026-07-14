@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Payment Form</title>
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --text-color: #1f2937;
+            --border-color: #d1d5db;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .payment-container {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h2 {
+            margin-top: 0;
+            color: var(--text-color);
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 1rem;
+            box-sizing: border-box; /* Ensures padding doesn't affect width */
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .row {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .col {
+            flex: 1;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 1rem;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .secure-note {
+            text-align: center;
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        /* Simple SVG icon for lock */
+        .lock-icon {
+            width: 12px;
+            height: 12px;
+            fill: currentColor;
+        }
+    </style>
+</head>
+<body>
+
+<div class="payment-container">
+    <h2>Payment Details</h2>
+    <form id="paymentForm" novalidate>
+        
+        <!-- Card Number -->
+        <div class="form-group">
+            <label for="cardNumber">Card Number</label>
+            <input 
+                type="text" 
+                id="cardNumber" 
+                name="cardNumber" 
+                placeholder="0000 0000 0000 0000" 
+                maxlength="19" 
+                autocomplete="cc-number"
+                required
+            >
+        </div>
+
+        <!-- Name on Card -->
+        <div class="form-group">
+            <label for="cardName">Cardholder Name</label>
+            <input 
+                type="text" 
+                id="cardName" 
+                name="cardName" 
+                placeholder="John Doe" 
+                autocomplete="cc-name"
+                required
+            >
+        </div>
+
+        <!-- Expiry and CVV Row -->
+        <div class="row">
+            <div class="col">
+                <div class="form-group">
+                    <label for="expiryDate">Expiry Date</label>
+                    <input 
+                        type="text" 
+                        id="expiryDate" 
+                        name="expiryDate" 
+                        placeholder="MM/YY" 
+                        maxlength="5" 
+                        autocomplete="cc-exp"
+                        required
+                    >
+                </div>
+            </div>
+            <div class="col">
+                <div class="form-group">
+                    <label for="cvv">CVV</label>
+                    <input 
+                        type="text" 
+                        id="cvv" 
+                        name="cvv" 
+                        placeholder="123" 
+                        maxlength="4" 
+                        autocomplete="cc-csc"
+                        required
+                    >
+                </div>
+            </div>
+        </div>
+
+        <button type="submit">Pay Now</button>
+    </form>
+
+    <div class="secure-note">
+        <svg class="lock-icon" viewBox="0 0 24 24">
+            <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+        </svg>
+        Payments are secure and encrypted
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const cardNumberInput = document.getElementById('cardNumber');
+        const expiryDateInput = document.getElementById('expiryDate');
+        const cvvInput = document.getElementById('cvv');
+        const form = document.getElementById('paymentForm');
+
+        // Format Card Number: Add spaces every 4 digits
+        cardNumberInput.addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+            value = value.substring(0, 16); // Limit to 16 digits
+            
+            // Add space every 4 characters
+            let formattedValue = '';
+            for (let i = 0; i < value.length; i++) {
+                if (i > 0 && i % 4 === 0) {
+                    formattedValue += ' ';
+                }
+                formattedValue += value[i];
+            }
+            
+            e.target.value = formattedValue;
+        });
+
+        // Format Expiry Date: Add slash after MM
+        expiryDateInput.addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+            
+            if (value.length >= 2) {
+                // Ensure month is valid (01-12) roughly before adding slash
+                const month = parseInt(value.substring(0, 2), 10);
+                if (month > 12) {
+                    value = '12' + value.substring(2);
+                } else if (month === 0 && value.length > 2) {
+                     // Handle leading zero logic if needed, keeping simple here
+                }
+                
+                e.target.value = value.substring(0, 2) + '/' + value.substring(2, 4);
+            } else {
+                e.target.value = value;
+            }
+        });
+
+        // CVV: Allow only numbers
+        cvvInput.addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/\D/g, '');
+        });
+
+        // Handle Form Submission
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // Basic validation check
+            const cardNum = cardNumberInput.value.replace(/\s/g, '');
+            const expiry = expiryDateInput.value;
+            const cvv = cvvInput.value;
+
+            if (cardNum.length < 13 || cardNum.length > 19) {
+                alert('Please enter a valid card number.');
+                return;
+            }
+            
+            if (!expiry.includes('/') || expiry.length < 5) {
+                alert('Please enter a valid expiry date (MM/YY).');
+                return;
+            }
+
+            if (cvv.length < 3 || cvv.length > 4) {
+                alert('Please enter a valid CVV.');
+                return;
+            }
+
+            // Simulate processing
+            const btn = form.querySelector('button');
+            const originalText = btn.innerText;
+            btn.innerText = 'Processing...';
+            btn.disabled = true;
+            btn.style.backgroundColor = '#9ca3af';
+
+            setTimeout(() => {
+                alert('Payment details collected successfully! (Demo Only)');
+                console.log({
+                    cardNumber: cardNum,
+                    expiry: expiry,
+                    cvv: cvv
+                });
+                
+                // Reset form
+                form.reset();
+                btn.innerText = originalText;
+                btn.disabled = false;
+                btn.style.backgroundColor = '';
+            }, 1500);
+        });
+    });
+</script>
+
+</body>
+</html>

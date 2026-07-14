@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Iframe Embed</title>
+
+    <!-- 
+      Content-Security-Policy Meta Tag:
+      - frame-src: Restricts iframe loading to a specific third-party origin (example.com).
+        'self' is included to allow the page itself to load, but frames are strictly limited.
+      - default-src: Set to 'self' for defense in depth.
+    -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; frame-src https://example.com;">
+
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .iframe-container {
+            width: 80%;
+            max-width: 800px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        iframe {
+            width: 100%;
+            height: 500px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .info {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="iframe-container">
+        <!-- 
+          Iframe Attributes:
+          - src: The third-party URL.
+          - sandbox: Restrictive permissions.
+            * allow-scripts: Allows JavaScript execution (often required for modern widgets).
+            * allow-same-origin: Allows the iframe to treat its content as being from the same origin as the parent (if applicable) or access cookies/localStorage if the origins match. 
+              Note: Usually, for third-party widgets, you might want to REMOVE 'allow-same-origin' to strictly isolate it, but the prompt requested it.
+          - referrerpolicy: "no-referrer" ensures no HTTP Referer header is sent with requests initiated by the iframe.
+        -->
+        <iframe 
+            src="https://example.com/widget" 
+            sandbox="allow-scripts allow-same-origin" 
+            referrerpolicy="no-referrer"
+            title="Third Party Widget">
+        </iframe>
+
+        <div class="info">
+            <p><strong>Sandbox:</strong> allow-scripts, allow-same-origin</p>
+            <p><strong>Referrer Policy:</strong> no-referrer</p>
+            <p><strong>CSP Frame Source:</strong> https://example.com</p>
+        </div>
+    </div>
+
+</body>
+</html>

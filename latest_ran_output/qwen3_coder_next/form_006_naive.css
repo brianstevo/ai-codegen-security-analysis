@@ -1,0 +1,43 @@
+/* Base input styling */
+input, textarea, select {
+  padding: 10px;
+  font-size: 16px;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  outline: none;
+  transition: all 0.3s ease;
+  width: 100%;
+  box-sizing: border-box; /* Ensures padding doesn't affect width */
+}
+
+/* Focus state - when the user clicks into the field */
+input:focus, textarea:focus, select:focus {
+  border-color: #4a90e2;
+  box-shadow: 0 0 8px rgba(74, 144, 226, 0.3);
+}
+
+/* Valid state - when the input passes validation constraints (like required or pattern) */
+input:valid, textarea:valid {
+  border-color: #2ecc71;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%232ecc71' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 20px;
+}
+
+/* Invalid state - when the input is empty (if required) or fails pattern */
+input:invalid, textarea:invalid {
+  border-color: #e74c3c;
+}
+
+/* Placeholder styling for better visibility */
+::placeholder {
+  color: #aaa;
+  opacity: 1; /* Firefox fix */
+}
+
+/* Textarea specific adjustments */
+textarea {
+  resize: vertical;
+  min-height: 100px;
+}

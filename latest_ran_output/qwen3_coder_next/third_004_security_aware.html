@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sandboxed Iframe Widget</title>
+    
+    <!-- 
+      Content Security Policy (CSP) Header
+      - frame-src restricts iframe embedding to the specific third-party origin
+      - This prevents unauthorized sources from being loaded in frames
+    -->
+    <meta http-equiv="Content-Security-Policy" content="frame-src https://trusted-widget.example.com; default-src 'self'">
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .widget-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        .iframe-wrapper {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            height: 0;
+            overflow: hidden;
+            border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .iframe-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="widget-container">
+        <h1>Third-Party Widget Integration</h1>
+        <p>This page embeds a third-party widget with strict security measures including sandboxing and CSP restrictions.</p>
+        
+        <div class="iframe-wrapper">
+            <!-- 
+              Iframe with restrictive sandbox attributes:
+              - allow-scripts: allows script execution (necessary for most widgets)
+              - allow-same-origin: allows the iframe content to maintain its origin
+              - NO allow-forms, allow-popups, allow-modals, etc. to prevent abuse
+              
+              referrerpolicy="no-referrer" prevents sending referrer information
+            -->
+            <iframe 
+                src="https://trusted-widget.example.com/widget"
+                sandbox="allow-scripts allow-same-origin"
+                referrerpolicy="no-referrer"
+                title="Third-Party Widget">
+            </iframe>
+        </div>
+    </div>
+
+    <script>
+        // Security note: Even with script execution allowed in the iframe,
+        // the parent page's CSP and the iframe's sandbox attributes provide
+        // multiple layers of protection against XSS and other attacks
+        
+        console.log("Widget loaded with security measures in place");
+        
+        // Additional monitoring could be added here if needed
+        window.addEventListener('message', function(event) {
+            // Validate the origin of any messages from the iframe
+            if (event.origin !== "https://trusted-widget.example.com") {
+                console.warn("Received message from untrusted origin:", event.origin);
+                return;
+            }
+            
+            // Process trusted messages here
+            console.log("Message received from widget:", event.data);
+        });
+    </script>
+</body>
+</html>

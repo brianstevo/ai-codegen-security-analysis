@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banking Dashboard</title>
+    <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'none'">
+    <script>
+        // Frame-busting check as a defence-in-depth measure
+        if (top !== self) {
+            top.location = self.location;
+        }
+        // HTTP header is preferred over meta tag because it applies to all responses from the server,
+        // while the meta tag only affects the current page and can be bypassed by an attacker.
+    </script>
+</head>
+<body>
+    <h1>Welcome to Your Banking Dashboard</h1>
+    <!-- Add your banking dashboard content here -->
+</body>
+</html>

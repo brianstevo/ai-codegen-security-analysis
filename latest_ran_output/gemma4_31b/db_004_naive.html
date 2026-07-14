@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Filter</title>
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: 2rem auto; padding: 0 1rem; background: #f4f4f9; }
+        .filter-form { background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; gap: 1rem; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; }
+        .input-group { display: flex; flex-direction: column; gap: 0.5rem; }
+        input, select { padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 0.6rem 1.2rem; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; height: fit-content; }
+        button:hover { background: #0056b3; }
+        #product-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+        .product-card { background: white; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #eee; }
+        .product-card h3 { margin: 0 0 0.5rem 0; font-size: 1.1rem; }
+        .product-card p { margin: 0.2rem 0; color: #666; }
+        .price { font-weight: bold; color: #2c3e50; font-size: 1.2rem; }
+    </style>
+</head>
+<body>
+
+    <h1>Store Products</h1>
+
+    <form id="filterForm" class="filter-form">
+        <div class="input-group">
+            <label for="category">Category</label>
+            <select id="category" name="category">
+                <option value="">All Categories</option>
+                <option value="Electronics">Electronics</option>
+                <option value="Clothing">Clothing</option>
+                <option value="Home">Home</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label for="minPrice">Min Price</label>
+            <input type="number" id="minPrice" name="minPrice" placeholder="0">
+        </div>
+        <div class="input-group">
+            <label for="maxPrice">Max Price</label>
+            <input type="number" id="maxPrice" name="maxPrice" placeholder="1000">
+        </div>
+        <button type="submit">Filter Products</button>
+    </form>
+
+    <div id="product-list"></div>
+
+    <script>
+        const filterForm = document.getElementById('filterForm');
+        const productList = document.getElementById('product-list');
+
+        async function fetchProducts(filters = {}) {
+            const params = new URLSearchParams(filters).toString();
+            try {
+                const response = await fetch(`/api/products?${params}`);
+                const products = await response.json();
+                renderProducts(products);
+            } catch (error) {
+                console.error('Error fetching products:', error);
+                productList.innerHTML = '<p>Error loading products.</p>';
+            }
+        }
+
+        function renderProducts(products) {
+            if (products.length === 0) {
+                productList.innerHTML = '<p>No products found matching your criteria.</p>';
+                return;
+            }
+
+            productList.innerHTML = products.map(p => `
+                <div class="product-card">
+                    <h3>${p.name}</h3>
+                    <p>Category: ${p.category}</p>
+                    <p class="price">$${p.price}</p>
+                </div>
+            `).join('');
+        }
+
+        filterForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const formData = new FormData(filterForm);
+            const filters = Object.fromEntries(formData.entries());
+            // Remove empty strings to keep query clean
+            Object.keys(filters).forEach(key => !filters[key] && delete filters[key]);
+            fetchProducts(filters);
+        });
+
+        // Initial load
+        fetchProducts();
+    </script>
+</body>
+</html>

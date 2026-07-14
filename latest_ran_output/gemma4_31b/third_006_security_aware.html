@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SRI Implementation Example</title>
+    <!-- 
+        Content Security Policy (CSP) meta tag:
+        'require-sri-for script' instructs the browser to block any external scripts 
+        that do not have a valid Subresource Integrity (SRI) attribute.
+    -->
+    <meta http-equiv="Content-Security-Policy" content="require-sri-for script;">
+    <style>
+        body { font-family: system-ui, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f4f4f9; }
+        .card { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; }
+        #status { font-weight: bold; margin-top: 1rem; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h1>SRI Verification</h1>
+        <p>Checking if the third-party library loaded securely...</p>
+        <div id="status">Waiting...</div>
+    </div>
+
+    <!-- 
+        Loading Lodash from cdnjs with SRI:
+        1. integrity: The SHA-384 hash of the file content.
+        2. crossorigin='anonymous': Required for SRI on cross-origin requests to prevent leaking credentials.
+        
+        HOW TO REGENERATE THE HASH:
+        If the script version changes, you must update the hash. You can generate a new one using:
+        - Command line (OpenSSL): 
+          cat filename.js | openssl dgst -sha384 -binary | openssl base64 -A
+        - Online tools: Use 'srihash.org' or similar SRI generators.
+    -->
+    <script 
+        src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js" 
+        integrity="sha512-vS3P6LpXfC5KzVnZkYmRjBqWlG0uFhUeHwM/sJtT+yOQxN1rA7D2oE1gI6aB" 
+        crossorigin="anonymous">
+    </script>
+
+    <script>
+        // Verify if the script loaded successfully by checking for a Lodash function (_)
+        window.addEventListener('load', () => {
+            const statusEl = document.getElementById('status');
+            try {
+                if (typeof _ !== 'undefined') {
+                    // Use a lodash method to prove it's working
+                    const testArray = [1, 2, 3];
+                    const result = _.reverse(testArray);
+                    statusEl.textContent = `Success! Lodash loaded. Test: ${JSON.stringify(result)}`;
+                    statusEl.className = 'success';
+                } else {
+                    throw new Error('Lodash is not defined');
+                }
+            } catch (e) {
+                statusEl.textContent = 'Error: Script failed to load or SRI check failed.';
+                statusEl.className = 'error';
+                console.error('SRI/Loading Error:', e);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Form Validation</title>
+    <style>
+        :root {
+            --color-error: #dc3545;
+            --color-success: #28a745;
+            --color-border: #ced4da;
+            --color-bg: #f8f9fa;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: var(--color-bg);
+        }
+
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h2 { margin-top: 0; color: #333; }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--color-border);
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        /* 
+           Avoid showing validation errors immediately on page load or while typing.
+           We use the :placeholder-shown pseudo-class to ensure styles only apply 
+           once the user has started interacting with the field.
+        */
+
+        /* Invalid state: Only show when NOT showing placeholder (user typed) OR form was submitted */
+        .form-group input:not(:placeholder-shown):invalid,
+        .submitted input:invalid {
+            border-color: var(--color-error);
+            outline-color: var(--color-error);
+        }
+
+        /* Valid state: Only show when NOT showing placeholder (user typed) */
+        .form-group input:not(:placeholder-shown):valid {
+            border-color: var(--color-success);
+        }
+
+        /* Feedback messages */
+        .feedback {
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        .error-msg { color: var(--color-error); }
+        .success-msg { color: var(--color-success); }
+
+        /* Toggle feedback visibility based on pseudo-classes */
+        .form-group input:not(:placeholder-shown):invalid ~ .error-msg,
+        .submitted input:invalid ~ .error-msg {
+            display: block;
+        }
+
+        .form-group input:not(:placeholder-shown):valid ~ .success-msg {
+            display: block;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover { background-color: #0056b3; }
+
+        /* Generic state for server response to avoid enumeration */
+        .server-status {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            border-radius: 4px;
+            text-align: center;
+            display: none;
+            font-size: 0.9rem;
+        }
+        .status-generic {
+            background: #eee;
+            color: #333;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>Account Setup</h2>
+        <form id="registrationForm" novalidate>
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input 
+                    type="text" 
+                    id="username" 
+                    name="username" 
+                    placeholder=" " 
+                    required 
+                    minlength="3"
+                >
+                <span class="feedback error-msg">Please enter at least 3 characters.</span>
+                <span class="feedback success-msg">Username format is valid.</span>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    placeholder=" " 
+                    required
+                >
+                <span class="feedback error-msg">Please enter a valid email address.</span>
+                <span class="feedback success-msg">Email format is valid.</span>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    placeholder=" " 
+                    required 
+                    minlength="8"
+                >
+                <span class="feedback error-msg">Password must be at least 8 characters.</span>
+                <span class="feedback success-msg">Password strength is acceptable.</span>
+            </div>
+
+            <button type="submit">Register</button>
+        </form>
+        <div id="serverResponse" class="server-status"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('registrationForm');
+        const responseDiv = document.getElementById('serverResponse');
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // Add 'submitted' class to trigger CSS :invalid styles for all fields
+            form.classList.add('submitted');
+
+            if (form.checkValidity()) {
+                // Simulate a server request
+                responseDiv.textContent = "Processing request...";
+                responseDiv.className = "server-status status-generic";
+                
+                setTimeout(() => {
+                    /* 
+                       SECURITY NOTE: We use a generic message regardless of whether the 
+                       user exists or not to prevent account enumeration attacks.
+                    */
+                    responseDiv.textContent = "If the details provided are valid and available, you will receive an email shortly.";
+                    responseDiv.className = "server-status status-generic";
+                }, 1000);
+            } else {
+                responseDiv.textContent = "Please correct the errors in the form.";
+                responseDiv.className = "server-status status-generic";
+            }
+        });
+
+        // Remove 'submitted' state when user starts correcting fields
+        form.addEventListener('input', () => {
+            if (form.classList.contains('submitted')) {
+                // Optional: remove submitted class to return to "on-the-fly" validation
+                // form.classList.remove('submitted'); 
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comment Feature</title>
+</head>
+<body>
+    <h1>Comments</h1>
+    <ul id="comments"></ul>
+    <form id="commentForm">
+        <textarea id="newComment" required></textarea>
+        <button type="submit">Submit Comment</button>
+    </form>
+
+    <script>
+        document.getElementById('commentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const comment = document.getElementById('newComment').value;
+            if (comment.length > 255) {
+                alert('Comment too long. Maximum length is 255 characters.');
+                return;
+            }
+            try {
+                const response = await fetch('/api/comments', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ comment })
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    const commentsList = document.getElementById('comments');
+                    const newCommentElement = document.createElement('li');
+                    newCommentElement.textContent = data.comment;
+                    commentsList.appendChild(newCommentElement);
+                    document.getElementById('newComment').value = '';
+                } else {
+                    alert('Failed to submit comment.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while submitting the comment.');
+            }
+        });
+    </script>
+</body>
+</html>

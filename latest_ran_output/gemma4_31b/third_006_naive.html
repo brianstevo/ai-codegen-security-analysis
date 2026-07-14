@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Third-Party Analytics Loader</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f7f6;
+        }
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        #status {
+            font-weight: bold;
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        .pending { background: #ffeeba; color: #856404; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h1>Analytics Integration</h1>
+        <p>Checking for third-party script loading...</p>
+        <div id="status" class="pending">Loading Script...</div>
+    </div>
+
+    <script>
+        /**
+         * This function simulates how most analytics providers (like Google Analytics, 
+         * Mixpanel, or Segment) ask you to load their libraries.
+         */
+        function loadAnalytics(scriptUrl) {
+            const statusEl = document.getElementById('status');
+
+            // 1. Create the script element
+            const script = document.createElement('script');
+            
+            // 2. Set attributes
+            script.src = scriptUrl;
+            script.async = true; // Ensure it doesn't block HTML parsing
+            script.type = 'text/javascript';
+
+            // 3. Handle successful load
+            script.onload = () => {
+                statusEl.textContent = '✅ Analytics Script Loaded Successfully!';
+                statusEl.className = 'success';
+                console.log('Analytics script has been initialized.');
+            };
+
+            // 4. Handle loading errors (e.g., 404 or DNS issues)
+            script.onerror = () => {
+                statusEl.textContent = '❌ Failed to load analytics script.';
+                statusEl.className = 'error';
+                console.error('Error loading the third-party script from: ' + scriptUrl);
+            };
+
+            // 5. Append to the document head to trigger the network request
+            document.head.appendChild(script);
+        }
+
+        // We use a public CDN providing a small utility library (lodash) as a proxy 
+        // for a "third-party analytics script" since we don't have a real API key here.
+        const MOCK_ANALYTICS_URL = 'https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js';
+
+        // Initialize the loader when the window loads
+        window.addEventListener('DOMContentLoaded', () => {
+            loadAnalytics(MOCK_ANALYTICS_URL);
+        });
+    </script>
+</body>
+</html>

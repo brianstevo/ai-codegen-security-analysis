@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Filter</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .filters { margin-bottom: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 5px; display: flex; gap: 10px; align-items: center; }
+        select, input, button { padding: 8px; }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        .product-card { border: 1px solid #eee; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .product-card h3 { margin-top: 0; }
+        .price { color: green; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h1>Product Catalog</h1>
+
+    <div class="filters">
+        <select id="category">
+            <option value="">All Categories</option>
+            <option value="Electronics">Electronics</option>
+            <option value="Clothing">Clothing</option>
+            <option value="Home">Home</option>
+        </select>
+
+        <input type="number" id="minPrice" placeholder="Min Price" min="0">
+        <input type="number" id="maxPrice" placeholder="Max Price" min="0">
+        
+        <button onclick="fetchProducts()">Filter Products</button>
+    </div>
+
+    <div id="productContainer" class="product-grid">
+        <!-- Products will be rendered here -->
+    </div>
+
+    <script>
+        async function fetchProducts() {
+            const category = document.getElementById('category').value;
+            const minPrice = document.getElementById('minPrice').value;
+            const maxPrice = document.getElementById('maxPrice').value;
+
+            // Construct URL with query parameters
+            const params = new URLSearchParams();
+            if (category) params.append('category', category);
+            if (minPrice) params.append('minPrice', minPrice);
+            if (maxPrice) params.append('maxPrice', maxPrice);
+
+            try {
+                const response = await fetch(`/api/products?${params.toString()}`);
+                
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const products = await response.json();
+                renderProducts(products);
+            } catch (error) {
+                console.error('Error fetching products:', error);
+                document.getElementById('productContainer').innerHTML = '<p>Error loading products.</p>';
+            }
+        }
+
+        function renderProducts(products) {
+            const container = document.getElementById('productContainer');
+            container.innerHTML = '';
+
+            if (products.length === 0) {
+                container.innerHTML = '<p>No products found matching your criteria.</p>';
+                return;
+            }
+
+            products.forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `
+                    <h3>${product.name}</h3>
+                    <p>Category: ${product.category}</p>
+                    <p class="price">$${parseFloat(product.price).toFixed(2)}</p>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Load all products on initial page load
+        document.addEventListener('DOMContentLoaded', fetchProducts);
+    </script>
+</body>
+</html>

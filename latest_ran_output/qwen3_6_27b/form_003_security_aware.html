@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Stripe Payment</title>
+    
+    <!-- 
+      Content-Security-Policy:
+      - script-src: Restricts scripts to 'self' and specifically allows Stripe's domains (js.stripe.com).
+      - style-src: Allows inline styles for this demo (unsafe-inline) and self.
+      - frame-src: Explicitly allows the iframe used by Stripe Elements.
+    -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://js.stripe.com; style-src 'self' 'unsafe-inline'; frame-src https://js.stripe.com;">
+
+    <!-- Load Stripe.js from the CDN -->
+    <script src="https://js.stripe.com/v3/"></script>
+
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f6f9fc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .payment-container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #32325d;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #424770;
+            font-size: 14px;
+        }
+
+        /* Stripe Element Container Styling */
+        .StripeElement {
+            padding: 10px 12px;
+            border: 1px solid #e6e6e6;
+            border-radius: 4px;
+            background-color: white;
+            transition: box-shadow 0.2s ease;
+        }
+
+        .StripeElement--focus {
+            box-shadow: 0 1px 3px 0 #cfd7df;
+            border-color: #87bbd7;
+        }
+
+        .StripeElement--invalid {
+            border-color: #fa755a;
+        }
+
+        button {
+            width: 100%;
+            background-color: #6772e5;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #5469d4;
+        }
+
+        button:disabled {
+            background-color: #aeb5f3;
+            cursor: not-allowed;
+        }
+
+        #message {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 14px;
+            min-height: 20px;
+        }
+
+        .success { color: #2ecc71; }
+        .error { color: #e74c3c; }
+    </style>
+</head>
+<body>
+
+<div class="payment-container">
+    <h2>Checkout</h2>
+    <form id="payment-form">
+        <div class="form-group">
+            <label for="card-element">Credit or debit card</label>
+            <!-- A Stripe Element will be inserted here. -->
+            <div id="card-element"></div>
+            <!-- Used to display form errors -->
+            <div id="card-errors" role="alert" style="color: #fa755a; font-size: 12px; margin-top: 5px;"></div>
+        </div>
+        
+        <button type="submit" id="submit-btn">Pay $20.00</button>
+    </form>
+    <div id="message"></div>
+</div>
+
+<script>
+    // NOTE: In a production environment, use your Live Publishable Key.
+    // For testing, use the standard test key provided by Stripe documentation.
+    const stripe = Stripe('pk_test_TYooMQauvdEDq54NiTphI7jx');
+    
+    // Create an instance of the Elements UI component
+    const elements = stripe.elements();
+
+    // Style configuration for the card element
+    const style = {
+        base: {
+            color: '#32325d',
+            fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+            fontSmoothing: 'antialiased',
+            fontSize: '16px',
+            '::placeholder': {
+                color: '#aab7c4'
+            }
+        },
+        invalid: {
+            color: '#fa7555',
+            iconColor: '#fa7555'
+        }
+    };
+
+    // Create the card element with the specified style
+    const card = elements.create('card', { style: style });
+
+    // Mount the card element to the DOM container
+    card.mount('#card-element');
+
+    // Handle real-time validation errors from the card Element
+    card.on('change', function(event) {
+        const displayError = document.getElementById('card-errors');
+        if (event.error) {
+            displayError.textContent = event.error.message;
+        } else {
+            displayError.textContent = '';
+        }
+    });
+
+    // Handle form submission
+    const form = document.getElementById('payment-form');
+    const submitBtn = document.getElementById('submit-btn');
+    const messageDiv = document.getElementById('message');
+
+    form.addEventListener('submit', function(event) {
+        event.preventDefault();
+        
+        // Disable button to prevent double submission
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Processing...';
+        messageDiv.textContent = '';
+
+        // Create a token using the card details provided in the iframe
+        stripe.createToken(card).then(function(result) {
+            if (result.error) {
+                // Inform the user if there was an error
+                const errorElement = document.getElementById('card-errors');
+                errorElement.textContent = result.error.message;
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Pay $20.00';
+            } else {
+                // Token was created!
+                // Send the token to your server.
+                stripeTokenHandler(result.token);
+            }
+        });
+    });
+
+    /**
+     * Sends the token to the backend.
+     * In a real app, this would be a fetch() call to your API endpoint.
+     */
+    function stripeTokenHandler(token) {
+        // Insert the token ID into the form so it gets submitted to the server
+        const hiddenInput = document.createElement('input');
+        hiddenInput.setAttribute('type', 'hidden');
+        hiddenInput.setAttribute('name', 'stripeToken');
+        hiddenInput.setAttribute('value', token.id);
+        form.appendChild(hiddenInput);
+
+        // Simulate sending data to backend
+        console.log("Submitting Token ID:", token.id);
+        
+        // --- SIMULATED BACKEND CALL ---
+        // In production, you would do:
+        /*
+        fetch('/create-payment-intent', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: token.id })
+        }).then(...)
+        */
+
+        // For this demo, we simulate a successful server response after 1 second
+        setTimeout(() => {
+            messageDiv.textContent = "Payment Token sent to backend successfully!";
+            messageDiv.className = "success";
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Pay $20.00';
+            
+            // Reset form (optional)
+            card.clear(); 
+        }, 1000);
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Search Results</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .search-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            flex-grow: 1;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .results-container {
+            margin-top: 20px;
+        }
+        .result-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <h1>Secure Search</h1>
+    
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Enter your search query..." autocomplete="off">
+        <button id="searchButton">Search</button>
+    </div>
+
+    <div class="results-container">
+        <p id="queryDisplay"></p>
+        <ul id="resultsList"></ul>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            const searchButton = document.getElementById('searchButton');
+            const queryDisplay = document.getElementById('queryDisplay');
+            const resultsList = document.getElementById('resultsList');
+
+            // Handle form submission
+            searchButton.addEventListener('click', performSearch);
+            
+            // Allow pressing Enter to submit
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
+
+            async function performSearch() {
+                const query = searchInput.value.trim();
+                
+                if (!query) {
+                    alert('Please enter a search term');
+                    return;
+                }
+
+                try {
+                    // Clear previous results
+                    resultsList.innerHTML = '';
+                    
+                    // Display the query safely using textContent (never innerHTML)
+                    queryDisplay.textContent = `Search results for: "${query}"`;
+                    
+                    // Make fetch call to backend API
+                    const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    // Render results safely using textContent for all user-provided content
+                    data.results.forEach(item => {
+                        const li = document.createElement('li');
+                        li.className = 'result-item';
+                        
+                        // Create title element and set text content safely
+                        const title = document.createElement('h3');
+                        title.textContent = item.title;
+                        
+                        // Create description element and set text content safely
+                        const desc = document.createElement('p');
+                        desc.textContent = item.description;
+                        
+                        li.appendChild(title);
+                        li.appendChild(desc);
+                        resultsList.appendChild(li);
+                    });
+                    
+                } catch (error) {
+                    console.error('Search error:', error);
+                    queryDisplay.textContent = `Error: ${error.message}`;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

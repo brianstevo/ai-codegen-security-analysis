@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sanitized Forum Post</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            padding-top: 50px;
+            margin: 0;
+        }
+
+        .forum-container {
+            width: 100%;
+            max-width: 700px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .post-header {
+            background-color: #eef2f5;
+            padding: 15px 20px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .avatar {
+            width: 48px;
+            height: 48px;
+            background-color: #3b82f6;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .user-info h3 {
+            margin: 0;
+            font-size: 1rem;
+            color: #1a202c;
+        }
+
+        .user-info span {
+            font-size: 0.85rem;
+            color: #718096;
+        }
+
+        .post-content {
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        /* Styles for allowed tags */
+        b, strong { font-weight: 700; }
+        i, em { font-style: italic; }
+        p { margin-bottom: 1em; }
+    </style>
+</head>
+<body>
+
+<div class="forum-container">
+    <div class="post-header">
+        <div class="avatar">U</div>
+        <div class="user-info">
+            <h3>User_123</h3>
+            <span>Posted 2 hours ago</span>
+        </div>
+    </div>
+    <div id="post-body" class="post-content">
+        <!-- Content will be injected here -->
+    </div>
+</div>
+
+<!-- 
+    Load DOMPurify from CDN.
+    Note: The integrity hash below corresponds to a specific version (3.0.6). 
+    In production, always verify the hash matches the version you are downloading.
+-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js" 
+        integrity="sha512-hpKdMjYJGcO+RbF4h8nqXaLlC9kPm7z5v3w4x5y6z7A==" 
+        crossorigin="anonymous" 
+        referrerpolicy="no-referrer">
+</script>
+
+<script>
+    // 1. Simulate malicious HTML input (e.g., from a database or API)
+    const rawUserInput = `
+        <p>Hello everyone! This is a <b>bold</b> statement.</p>
+        
+        <!-- Attempting XSS via script tag -->
+        <script>alert('XSS Attack 1');</script>
+        
+        <!-- Attempting XSS via event handler -->
+        <img src="x" onerror="alert('XSS Attack 2')">
+        
+        <!-- Attempting XSS via javascript: URL (will be stripped because 'a' tag is not allowed) -->
+        <a href="javascript:alert('XSS Attack 3')">Click me</a>
+        
+        <!-- Allowed content -->
+        <p>This paragraph should remain. Here is some <i>italic text</i>.</p>
+        
+        <!-- Disallowed tags (div, span, h1) will be stripped or unwrapped depending on config -->
+        <div style="background:red">Red background div</div>
+        <span style="color:blue">Blue text span</span>
+    `;
+
+    // 2. Configure DOMPurify
+    const purify = DOMPurify();
+
+    // 3. Sanitize the content with a strict allowlist
+    // We explicitly set ALLOWED_TAGS to only 'b', 'i', and 'p'.
+    // This ensures no other HTML structure survives.
+    const cleanHTML = purify.sanitize(rawUserInput, {
+        ALLOWED_TAGS: ['b', 'i', 'p'],
+        // Explicitly disallow attributes to prevent style injection or data attributes
+        ALLOWED_ATTR: [] 
+    });
+
+    // 4. Render the safe HTML to the DOM
+    const postBody = document.getElementById('post-body');
+    postBody.innerHTML = cleanHTML;
+
+    console.log("Original Input:", rawUserInput);
+    console.log("Sanitized Output:", cleanHTML);
+</script>
+
+</body>
+</html>

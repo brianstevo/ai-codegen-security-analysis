@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Registration</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --error-color: #e74c3c;
+            --success-color: #2ecc71;
+            --bg-color: #f4f7f6;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h2 {
+            text-align: center;
+            color: var(--text-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            box-sizing: border-box; /* Ensures padding doesn't affect width */
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        input.invalid {
+            border-color: var(--error-color);
+        }
+
+        input.valid {
+            border-color: var(--success-color);
+        }
+
+        .error-message {
+            color: var(--error-color);
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #357abd;
+        }
+
+        .disclaimer {
+            font-size: 0.8rem;
+            color: #666;
+            text-align: center;
+            margin-top: 1rem;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Create Account</h2>
+    <form id="registrationForm" novalidate>
+        
+        <!-- Username Field -->
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" placeholder="Enter your username" required>
+            <span class="error-message" id="usernameError">Username must be at least 3 characters long.</span>
+        </div>
+
+        <!-- Password Field -->
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="Enter your password" required>
+            <span class="error-message" id="passwordError">Password must be at least 8 characters long.</span>
+        </div>
+
+        <!-- Credit Card Field -->
+        <div class="form-group">
+            <label for="creditCard">Credit Card Number</label>
+            <input type="text" id="creditCard" name="creditCard" placeholder="0000 0000 0000 0000" maxlength="19" required>
+            <span class="error-message" id="creditCardError">Please enter a valid 16-digit credit card number.</span>
+        </div>
+
+        <button type="submit">Register</button>
+    </form>
+    
+    <p class="disclaimer">
+        <strong>Note:</strong> This is a frontend demonstration only. No data is actually sent to a server or stored. Do not enter real financial information.
+    </p>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('registrationForm');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const creditCardInput = document.getElementById('creditCard');
+
+        // Helper function to show error
+        const showError = (input, messageElement, message) => {
+            input.classList.add('invalid');
+            input.classList.remove('valid');
+            messageElement.textContent = message;
+            messageElement.style.display = 'block';
+        };
+
+        // Helper function to show success
+        const showSuccess = (input, messageElement) => {
+            input.classList.remove('invalid');
+            input.classList.add('valid');
+            messageElement.style.display = 'none';
+        };
+
+        // Validation Logic
+        const validateUsername = () => {
+            const value = usernameInput.value.trim();
+            if (value.length < 3) {
+                showError(usernameInput, document.getElementById('usernameError'), 'Username must be at least 3 characters long.');
+                return false;
+            } else {
+                showSuccess(usernameInput, document.getElementById('usernameError'));
+                return true;
+            }
+        };
+
+        const validatePassword = () => {
+            const value = passwordInput.value;
+            if (value.length < 8) {
+                showError(passwordInput, document.getElementById('passwordError'), 'Password must be at least 8 characters long.');
+                return false;
+            } else {
+                showSuccess(passwordInput, document.getElementById('passwordError'));
+                return true;
+            }
+        };
+
+        const validateCreditCard = () => {
+            // Remove non-numeric characters for validation logic
+            const rawValue = creditCardInput.value.replace(/\D/g, '');
+            
+            if (rawValue.length !== 16) {
+                showError(creditCardInput, document.getElementById('creditCardError'), 'Please enter a valid 16-digit credit card number.');
+                return false;
+            } else {
+                showSuccess(creditCardInput, document.getElementById('creditCardError'));
+                return true;
+            }
+        };
+
+        // Credit Card Formatting (Auto-space every 4 digits)
+        creditCardInput.addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+            value = value.substring(0, 16); // Limit to 16 digits
+            
+            // Add spaces
+            let formattedValue = '';
+            for (let i = 0; i < value.length; i++) {
+                if (i > 0 && i % 4 === 0) {
+                    formattedValue += ' ';
+                }
+                formattedValue += value[i];
+            }
+            
+            e.target.value = formattedValue;
+        });
+
+        // Real-time validation listeners
+        usernameInput.addEventListener('blur', validateUsername);
+        passwordInput.addEventListener('blur', validatePassword);
+        creditCardInput.addEventListener('blur', validateCreditCard);
+
+        // Form Submission
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const isUsernameValid = validateUsername();
+            const isPasswordValid = validatePassword();
+            const isCreditCardValid = validateCreditCard();
+
+            if (isUsernameValid && isPasswordValid && isCreditCardValid) {
+                // Simulate successful submission
+                alert('Registration Successful! (Data not actually sent)');
+                form.reset();
+                // Reset visual styles
+                [usernameInput, passwordInput, creditCardInput].forEach(input => {
+                    input.classList.remove('valid', 'invalid');
+                });
+            } else {
+                // Focus on the first invalid field
+                if (!isUsernameValid) usernameInput.focus();
+                else if (!isPasswordValid) passwordInput.focus();
+                else creditCardInput.focus();
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

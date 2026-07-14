@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #message {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <h1>Edit Profile</h1>
+    
+    <form id="profileForm">
+        <div class="form-group">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="bio">Bio:</label>
+            <textarea id="bio" name="bio" rows="5"></textarea>
+        </div>
+        
+        <button type="submit">Update Profile</button>
+    </form>
+    
+    <div id="message"></div>
+
+    <script>
+        // Simulate fetching current user data (in a real app, this would come from the server)
+        const currentUser = {
+            name: "John Doe",
+            bio: "Software developer and tech enthusiast."
+        };
+
+        // Pre-fill the form with current user data
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('name').value = currentUser.name;
+            document.getElementById('bio').value = currentUser.bio;
+
+            const form = document.getElementById('profileForm');
+            
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const name = document.getElementById('name').value.trim();
+                const bio = document.getElementById('bio').value.trim();
+                
+                try {
+                    const response = await fetch('/api/profile', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ name, bio })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    const messageDiv = document.getElementById('message');
+                    
+                    if (response.ok) {
+                        messageDiv.textContent = "Profile updated successfully!";
+                        messageDiv.className = "success";
+                        messageDiv.style.display = "block";
+                        
+                        // Optional: Update the displayed user data
+                        currentUser.name = name;
+                        currentUser.bio = bio;
+                    } else {
+                        messageDiv.textContent = data.message || "Failed to update profile";
+                        messageDiv.className = "error";
+                        messageDiv.style.display = "block";
+                    }
+                } catch (error) {
+                    const messageDiv = document.getElementById('message');
+                    messageDiv.textContent = "An error occurred: " + error.message;
+                    messageDiv.className = "error";
+                    messageDiv.style.display = "block";
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Registration</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .registration-container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box; /* Ensures padding doesn't affect width */
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            border-color: #007BFF;
+            outline: none;
+        }
+
+        .hint-text {
+            font-size: 0.85rem;
+            color: #777;
+            margin-top: 4px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+<div class="registration-container">
+    <h2>Register Account</h2>
+    
+    <!-- 
+      Note: This form is for demonstration purposes only.
+      In a real-world scenario, you must use HTTPS and server-side validation
+      to handle sensitive data like passwords and credit cards securely.
+    -->
+    <form id="userRegistrationForm" action="#" method="POST">
+        
+        <!-- Username Field -->
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" placeholder="Choose a username" required minlength="3">
+        </div>
+
+        <!-- Password Field -->
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="Create a password" required minlength="8">
+            <div class="hint-text">Password must be at least 8 characters long.</div>
+        </div>
+
+        <!-- Credit Card Field -->
+        <div class="form-group">
+            <label for="creditCard">Credit Card Number</label>
+            <input type="text" id="creditCard" name="creditCard" placeholder="0000 0000 0000 0000" required pattern="\d{16}">
+            <div class="hint-text">Enter 16-digit card number (no spaces or dashes).</div>
+        </div>
+
+        <button type="submit">Register</button>
+    </form>
+</div>
+
+<script>
+    document.getElementById('userRegistrationForm').addEventListener('submit', function(e) {
+        e.preventDefault(); // Prevent actual form submission for this demo
+
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const creditCard = document.getElementById('creditCard').value;
+
+        // Basic client-side validation logic
+        let isValid = true;
+
+        // Validate Username
+        if (username.length < 3) {
+            alert("Username must be at least 3 characters.");
+            isValid = false;
+        }
+
+        // Validate Password
+        if (password.length < 8) {
+            alert("Password must be at least 8 characters.");
+            isValid = false;
+        }
+
+        // Validate Credit Card (Simple length check)
+        const cleanCardNumber = creditCard.replace(/\s/g, '');
+        if (cleanCardNumber.length !== 16 || isNaN(cleanCardNumber)) {
+            alert("Please enter a valid 16-digit credit card number.");
+            isValid = false;
+        }
+
+        if (isValid) {
+            // In a real app, this data would be sent to a backend server via fetch/axios
+            console.log("Registration Data:", { username, password, creditCard });
+            alert("Registration Successful! (Check console for data)");
+        }
+    });
+
+    // Optional: Auto-format spaces in credit card input for better UX
+    const ccInput = document.getElementById('creditCard');
+    ccInput.addEventListener('input', function (e) {
+        let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+        value = value.replace(/(.{4})/g, '$1 ').trim(); // Add space every 4 chars
+        e.target.value = value;
+    });
+</script>
+
+</body>
+</html>

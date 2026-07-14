@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comment Feature</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .comment-form textarea {
+            width: 100%;
+            height: 80px;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .comment-form button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .comments-container {
+            margin-top: 30px;
+        }
+        .comment {
+            background-color: #f9f9f9;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .comment-author {
+            font-weight: bold;
+            color: #333;
+        }
+        .comment-text {
+            white-space: pre-wrap;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Comments</h1>
+    
+    <div class="comment-form">
+        <textarea id="commentText" placeholder="Write your comment here..."></textarea>
+        <button id="submitBtn">Submit Comment</button>
+    </div>
+
+    <div class="comments-container" id="commentsContainer">
+        <!-- Comments will be loaded here -->
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const submitBtn = document.getElementById('submitBtn');
+            const commentText = document.getElementById('commentText');
+            const commentsContainer = document.getElementById('commentsContainer');
+
+            // Load existing comments on page load
+            fetchComments();
+
+            submitBtn.addEventListener('click', async () => {
+                const text = commentText.value.trim();
+                
+                if (!text) {
+                    alert('Please enter a comment');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/comments', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ text })
+                    });
+
+                    if (response.ok) {
+                        const newComment = await response.json();
+                        
+                        // Clear the textarea
+                        commentText.value = '';
+                        
+                        // Add the new comment to the page
+                        appendCommentToContainer(newComment);
+                    } else {
+                        alert('Failed to submit comment');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('An error occurred while submitting your comment');
+                }
+            });
+
+            async function fetchComments() {
+                try {
+                    const response = await fetch('/api/comments');
+                    if (response.ok) {
+                        const comments = await response.json();
+                        comments.forEach(comment => appendCommentToContainer(comment));
+                    }
+                } catch (error) {
+                    console.error('Error fetching comments:', error);
+                }
+            }
+
+            function appendCommentToContainer(comment) {
+                const commentDiv = document.createElement('div');
+                commentDiv.className = 'comment';
+                
+                const authorDiv = document.createElement('div');
+                authorDiv.className = 'comment-author';
+                authorDiv.textContent = `User ${comment.id}`;
+                
+                const textDiv = document.createElement('div');
+                textDiv.className = 'comment-text';
+                textDiv.textContent = comment.text;
+                
+                commentDiv.appendChild(authorDiv);
+                commentDiv.appendChild(textDiv);
+                
+                commentsContainer.prepend(commentDiv); // Add new comments at the top
+            }
+        });
+    </script>
+</body>
+</html>

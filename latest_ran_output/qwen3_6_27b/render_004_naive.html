@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forum Post Display</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f8;
+            --card-bg: #ffffff;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --accent-color: #007bff;
+            --border-color: #e1e4e8;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .forum-container {
+            width: 100%;
+            max-width: 800px;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        /* Header Section */
+        .post-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #fafbfc;
+        }
+
+        .post-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin: 0;
+            color: var(--text-primary);
+        }
+
+        .post-meta {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* Content Section */
+        .post-content {
+            padding: 25px 20px;
+            line-height: 1.6;
+            font-size: 1rem;
+        }
+
+        /* Formatting Styles requested by user */
+        b, strong {
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        i, em {
+            font-style: italic;
+            color: #4a5568;
+        }
+
+        /* Additional standard forum formatting */
+        p {
+            margin-bottom: 1em;
+        }
+
+        ul, ol {
+            margin-bottom: 1em;
+            padding-left: 20px;
+        }
+
+        code {
+            background-color: #f0f0f0;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+
+        blockquote {
+            border-left: 4px solid var(--accent-color);
+            margin: 1em 0;
+            padding: 0.5em 1em;
+            background-color: #f8f9fa;
+            color: var(--text-secondary);
+        }
+
+        /* Footer Section */
+        .post-footer {
+            padding: 15px 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 15px;
+        }
+
+        .action-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+            background-color: #f0f0f0;
+            border-color: #ccc;
+            color: var(--text-primary);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .username {
+            font-weight: 600;
+            color: var(--accent-color);
+        }
+        
+        .role-badge {
+            font-size: 0.75rem;
+            background-color: #e3f2fd;
+            color: #1976d2;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="forum-container">
+    <div class="post-header">
+        <h1 class="post-title">Understanding CSS Flexbox Layouts</h1>
+        <span class="post-meta">Posted on Oct 24, 2023</span>
+    </div>
+
+    <div class="post-content" id="content-area">
+        <!-- Content will be injected here via JavaScript -->
+    </div>
+
+    <div class="post-footer">
+        <button class="action-btn">👍 Like (42)</button>
+        <button class="action-btn">💬 Reply</button>
+        <button class="action-btn">🚩 Report</button>
+    </div>
+</div>
+
+<script>
+    // Simulating data coming from a database/API
+    const postContent = `
+        <div class="user-info">
+            <div class="avatar">JD</div>
+            <div>
+                <span class="username">JohnDoe_Dev</span>
+                <span class="role-badge">Moderator</span>
+            </div>
+        </div>
+
+        <p>Hello everyone! I wanted to share a quick tip about CSS Flexbox.</p>
+
+        <p>Many beginners struggle with <b>alignment</b>. It is actually quite simple if you remember that the <i>main axis</i> and the <i>cross axis</i> are relative to the flex direction.</p>
+
+        <blockquote>
+            "Flexbox is designed for one-dimensional layouts, while Grid is designed for two-dimensional layouts."
+        </blockquote>
+
+        <p>Here are the key properties you should know:</p>
+        
+        <ul>
+            <li><b>justify-content</b>: Aligns items along the main axis.</li>
+            <li><b>align-items</b>: Aligns items along the cross axis.</li>
+            <li><b>flex-wrap</b>: Allows items to wrap onto multiple lines.</li>
+        </ul>
+
+        <p>If you use <code>display: flex;</code> on a container, the children automatically become flex items. It's <i>magical</i>!</p>
+        
+        <p>Let me know if you have any questions in the comments below.</p>
+    `;
+
+    // Function to render the content safely
+    function renderPost() {
+        const container = document.getElementById('content-area');
+        
+        // In a real application, you would sanitize this HTML to prevent XSS.
+        // For this demo, we are injecting the string directly.
+        container.innerHTML = postContent;
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', renderPost);
+</script>
+
+</body>
+</html>

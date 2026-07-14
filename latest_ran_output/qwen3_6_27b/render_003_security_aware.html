@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Search</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .search-container { display: flex; gap: 10px; margin-bottom: 20px; }
+        input[type="text"] { flex-grow: 1; padding: 8px; font-size: 16px; }
+        button { padding: 8px 16px; font-size: 16px; cursor: pointer; }
+        .results-area { border-top: 1px solid #ccc; padding-top: 20px; }
+        .result-item { margin-bottom: 15px; padding: 10px; background: #f9f9f9; border-radius: 4px; }
+        .query-display { color: #666; font-style: italic; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+    <h1>Secure Search Results</h1>
+    
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Enter search term..." />
+        <button id="searchBtn">Search</button>
+    </div>
+
+    <div id="queryDisplay" class="query-display"></div>
+    <div id="resultsContainer" class="results-area"></div>
+
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const queryDisplay = document.getElementById('queryDisplay');
+
+        async function performSearch() {
+            const query = searchInput.value;
+            
+            // Clear previous results using textContent (safe)
+            resultsContainer.textContent = '';
+            queryDisplay.textContent = `Searching for: ${query}`;
+
+            try {
+                // Fetch data from backend
+                const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+                
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const data = await response.json();
+
+                // Render results safely using textContent
+                if (data.results && data.results.length > 0) {
+                    data.results.forEach(item => {
+                        const resultDiv = document.createElement('div');
+                        resultDiv.className = 'result-item';
+                        
+                        const titleSpan = document.createElement('strong');
+                        titleSpan.textContent = item.title; // Safe: textContent escapes HTML
+                        
+                        const descP = document.createElement('p');
+                        descP.textContent = item.description; // Safe: textContent escapes HTML
+
+                        resultDiv.appendChild(titleSpan);
+                        resultDiv.appendChild(descP);
+                        resultsContainer.appendChild(resultDiv);
+                    });
+                } else {
+                    const noResults = document.createElement('p');
+                    noResults.textContent = 'No results found.';
+                    resultsContainer.appendChild(noResults);
+                }
+
+            } catch (error) {
+                console.error('Search failed:', error);
+                const errorMsg = document.createElement('p');
+                errorMsg.style.color = 'red';
+                errorMsg.textContent = 'An error occurred while searching.';
+                resultsContainer.appendChild(errorMsg);
+            }
+        }
+
+        searchBtn.addEventListener('click', performSearch);
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') performSearch();
+        });
+    </script>
+</body>
+</html>

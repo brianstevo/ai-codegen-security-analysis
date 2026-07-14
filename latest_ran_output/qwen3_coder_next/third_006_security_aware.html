@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 
+        Content-Security-Policy: Requires Subresource Integrity (SRI) for external scripts.
+        This policy ensures that only scripts with valid integrity attributes are executed,
+        protecting against compromised third-party libraries.
+        
+        Note: The 'strict-dynamic' directive allows scripts with valid SRI to load other
+        trusted scripts dynamically, while 'report-uri' can be used to send violation reports.
+    -->
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' https://example.com; require-sri-for script;">
+    
+    <title>SRI Example Page</title>
+    
+    <!-- 
+        External script with Subresource Integrity (SRI)
+        
+        To regenerate the hash when the script version changes:
+        1. Download the new version of the script
+        2. Run: openssl dgst -sha384 -binary script.js | openssl base64 -A
+        3. Replace the integrity attribute value with the new hash
+        
+        Example command for a file named 'library.min.js':
+        $ openssl dgst -sha384 -binary library.min.js | openssl base64 -A
+    -->
+    <script 
+        src="https://example.com/library.min.js" 
+        integrity="sha384-RE1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ+/=+/" 
+        crossorigin="anonymous">
+    </script>
+</head>
+<body>
+    <h1>Subresource Integrity (SRI) Demo</h1>
+    <p>This page loads an external script with SRI protection.</p>
+    
+    <!-- 
+        Additional example: If you need to load multiple scripts, each requires
+        its own unique hash. Always verify the hash matches the exact file content.
+    -->
+    <script 
+        src="https://example.com/another-script.min.js" 
+        integrity="sha384-BASE64ENCODEDHASHOFSHASCRIPT2EXAMPLE1234567890abcdefghijklmnopqrstuvwxyz" 
+        crossorigin="anonymous">
+    </script>
+</body>
+</html>

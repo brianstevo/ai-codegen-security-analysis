@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banking Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        .balance {
+            font-size: 24px;
+            color: #5cb85c;
+        }
+        .transactions {
+            margin-top: 20px;
+        }
+        .transaction {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #ddd;
+        }
+        .transaction:last-child {
+            border-bottom: none;
+        }
+        .amount {
+            font-size: 18px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Banking Dashboard</h1>
+        <div class="balance">Balance: $1,500.75</div>
+        <div class="transactions">
+            <div class="transaction">
+                <div class="description">Salary Deposit</div>
+                <div class="amount">$2,000.00</div>
+            </div>
+            <div class="transaction">
+                <div class="description">Grocery Shopping</div>
+                <div class="amount">$150.00</div>
+            </div>
+            <div class="transaction">
+                <div class="description">Electricity Bill</div>
+                <div class="amount">$75.00</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

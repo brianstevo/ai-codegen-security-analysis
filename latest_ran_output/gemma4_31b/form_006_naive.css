@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Field Highlighting</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --success-color: #2ecc71;
+            --border-color: #ccc;
+            --bg-color: #f5f7fa;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: var(--text-color);
+        }
+
+        .form-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h2 {
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: #444;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        /* 1. Highlight when the field is focused */
+        input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.1);
+        }
+
+        /* 
+           2. Highlight when the field contains data.
+           We use :not(:placeholder-shown) to detect if the user has typed something.
+           Note: This requires a placeholder attribute to be present on the HTML element.
+        */
+        input:not(:placeholder-shown) {
+            border-color: var(--success-color);
+            background-color: rgba(46, 204, 113, 0.05);
+        }
+
+        /* Combine focus and data presence for a stronger effect */
+        input:focus:not(:placeholder-shown) {
+            box-shadow: 0 0 0 4px rgba(46, 204, 113, 0.2);
+        }
+
+        /* Change label color when field has data */
+        input:not(:placeholder-shown) + .status-icon,
+        .input-group:has(input:not(:placeholder-shown)) label {
+            color: var(--success-color);
+        }
+
+        /* Visual indicator (checkmark) that appears when data is entered */
+        .status-icon {
+            position: absolute;
+            right: 12px;
+            top: 38px;
+            width: 20px;
+            height: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        input:not(:placeholder-shown) ~ .status-icon {
+            opacity: 1;
+        }
+
+        .hint {
+            font-size: 0.8rem;
+            color: #777;
+            text-align: center;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="form-container">
+        <h2>User Profile</h2>
+        <form id="highlightForm">
+            <div class="input-group">
+                <label for="username">Username</label>
+                <!-- placeholder is required for the :placeholder-shown CSS trick -->
+                <input type="text" id="username" placeholder="Enter username...">
+                <span class="status-icon">✅</span>
+            </div>
+
+            <div class="input-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" placeholder="name@example.com">
+                <span class="status-icon">✅</span>
+            </div>
+
+            <div class="input-group">
+                <label for="bio">Short Bio</label>
+                <input type="text" id="bio" placeholder="Tell us about yourself...">
+                <span class="status-icon">✅</span>
+            </div>
+        </form>
+        <p class="hint">Fields turn green once you start typing!</p>
+    </div>
+
+    <script>
+        /**
+         * While the highlighting is handled purely by CSS using :not(:placeholder-shown),
+         * we can use JavaScript to add additional dynamic behavior, such as 
+         * triggering a "complete" state when all fields are filled.
+         */
+        const inputs = document.querySelectorAll('input');
+        
+        const checkCompletion = () => {
+            const allFilled = Array.from(inputs).every(input => input.value.trim() !== '');
+            if (allFilled) {
+                console.log("All fields have been populated!");
+                // You could trigger a submit button to enable here
+            }
+        };
+
+        inputs.forEach(input => {
+            input.addEventListener('input', checkCompletion);
+        });
+    </script>
+</body>
+</html>

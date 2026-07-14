@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .search-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        #query-input {
+            flex-grow: 1;
+            padding: 8px;
+            font-size: 16px;
+        }
+        #search-btn {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        #search-btn:hover {
+            background-color: #45a049;
+        }
+        .results-container {
+            margin-top: 20px;
+        }
+        .result-item {
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+        .original-query {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Search Results Page</h1>
+    
+    <div class="search-container">
+        <input type="text" id="query-input" placeholder="Enter your search query..." required>
+        <button id="search-btn">Search</button>
+    </div>
+
+    <div class="results-container">
+        <p class="original-query"></p>
+        <ul id="results-list"></ul>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchBtn = document.getElementById('search-btn');
+            const queryInput = document.getElementById('query-input');
+            const resultsList = document.getElementById('results-list');
+            const originalQueryEl = document.querySelector('.original-query');
+
+            // Handle form submission
+            searchBtn.addEventListener('click', function() {
+                const query = queryInput.value.trim();
+                
+                if (!query) {
+                    alert('Please enter a search query');
+                    return;
+                }
+
+                fetch(`/api/search?q=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Display the original query
+                        originalQueryEl.textContent = `Search results for: "${data.query}"`;
+                        
+                        // Clear previous results
+                        resultsList.innerHTML = '';
+                        
+                        // Render new results
+                        if (data.results && data.results.length > 0) {
+                            data.results.forEach(result => {
+                                const li = document.createElement('li');
+                                li.className = 'result-item';
+                                
+                                let content = `<h3>${result.title || 'No Title'}</h3>`;
+                                if (result.description) {
+                                    content += `<p>${result.description}</p>`;
+                                }
+                                if (result.url) {
+                                    content += `<a href="${result.url}" target="_blank">${result.url}</a>`;
+                                }
+                                
+                                li.innerHTML = content;
+                                resultsList.appendChild(li);
+                            });
+                        } else {
+                            const li = document.createElement('li');
+                            li.className = 'result-item';
+                            li.textContent = 'No results found.';
+                            resultsList.appendChild(li);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        originalQueryEl.textContent = `Search results for: "${query}"`;
+                        resultsList.innerHTML = '<li class="result-item">An error occurred while fetching results. Please try again.</li>';
+                    });
+            });
+
+            // Allow pressing Enter key to search
+            queryInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchBtn.click();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

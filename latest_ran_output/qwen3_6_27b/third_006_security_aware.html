@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SRI Implementation Example</title>
+
+    <!-- 
+        Content-Security-Policy Meta Tag 
+        'require-sri-for script' forces the browser to validate the integrity attribute 
+        on all external scripts. If a script is missing an integrity hash or the hash doesn't match, 
+        the browser will block execution.
+    -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'nonce-abc123' 'strict-dynamic'; require-sri-for script;">
+
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            line-height: 1.6;
+        }
+        .status {
+            padding: 1rem;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Subresource Integrity (SRI) Example</h1>
+    <p>This page loads a third-party script (jQuery) using SRI to ensure the file hasn't been tampered with.</p>
+
+    <!-- 
+        THIRD-PARTY SCRIPT WITH SRI
+        
+        1. src: The URL of the external resource.
+        2. integrity: The cryptographic hash (SHA-384) of the script content.
+           - Format: algorithm-hashValue
+           - Example: sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxy9rx7HNQlGYl1kPzQho1wx4JwY8wC
+        3. crossorigin="anonymous": Required for SRI to work on cross-origin resources. 
+           It tells the browser not to send credentials (cookies, auth headers) when fetching the script.
+
+        HOW TO REGENERATE THE HASH:
+        If you update the version of the script (e.g., changing jQuery from 3.6.0 to 3.7.0), 
+        you MUST generate a new hash. The old hash will no longer match the new file content, 
+        causing the browser to block the script.
+
+        You can generate a new hash using:
+        
+        macOS/Linux Terminal:
+        curl -s https://code.jquery.com/jquery-3.7.1.min.js | openssl dgst -sha384 -binary | openssl base64 -A
+        
+        PowerShell (Windows):
+        (Invoke-WebRequest -Uri "https://code.jquery.com/jquery-3.7.1.min.js").Content | Get-FileHash -Algorithm SHA384 | Select-Object -ExpandProperty Hash
+        
+        Then prepend 'sha384-' to the output string.
+    -->
+    <script 
+        src="https://code.jquery.com/jquery-3.6.0.min.js" 
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGtfknsAtGjfRPqyTt/1YnB4Q=" 
+        crossorigin="anonymous">
+    </script>
+
+    <div class="status" id="status-box">
+        Checking script load status...
+    </div>
+
+    <script>
+        // Simple check to verify if the external script loaded successfully
+        document.addEventListener("DOMContentLoaded", function() {
+            const statusBox = document.getElementById('status-box');
+            
+            if (typeof jQuery !== 'undefined') {
+                statusBox.innerHTML = `<strong style="color: green;">Success:</strong> jQuery v${jQuery.fn.jquery} loaded securely via SRI.`;
+            } else {
+                statusBox.innerHTML = `<strong style="color: red;">Error:</strong> Failed to load jQuery. The integrity check may have failed or the network request was blocked.`;
+            }
+        });
+    </script>
+
+</body>
+</html>

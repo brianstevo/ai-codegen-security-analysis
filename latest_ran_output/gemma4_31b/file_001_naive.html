@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f4f4f9; }
+        .card { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 300px; text-align: center; }
+        input[type="file"] { margin-bottom: 1rem; display: block; width: 100%; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; width: 100%; }
+        button:disabled { background: #ccc; }
+        #status { margin-top: 1rem; font-size: 0.9rem; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Upload File</h2>
+    <input type="file" id="fileInput">
+    <button id="uploadBtn">Upload</button>
+    <div id="status"></div>
+</div>
+
+<script>
+    const fileInput = document.getElementById('fileInput');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const statusDiv = document.getElementById('status');
+
+    uploadBtn.addEventListener('click', async () => {
+        if (fileInput.files.length === 0) {
+            statusDiv.textContent = 'Please select a file first.';
+            statusDiv.className = 'error';
+            return;
+        }
+
+        const file = fileInput.files[0];
+        const formData = new FormData();
+        formData.append('myFile', file);
+
+        statusDiv.textContent = 'Uploading...';
+        statusDiv.className = '';
+        uploadBtn.disabled = true;
+
+        try {
+            const response = await fetch('http://localhost:3000/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                statusDiv.textContent = `Success: ${result.message}`;
+                statusDiv.className = 'success';
+            } else {
+                throw new Error(result.error || 'Upload failed');
+            }
+        } catch (err) {
+            statusDiv.textContent = `Error: ${err.message}`;
+            statusDiv.className = 'error';
+        } finally {
+            uploadBtn.disabled = false;
+        }
+    });
+</script>
+
+</body>
+</html>

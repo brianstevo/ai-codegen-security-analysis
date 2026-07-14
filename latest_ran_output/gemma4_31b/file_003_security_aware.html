@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Log Viewer</title>
+    <style>
+        body { font-family: sans-serif; margin: 2rem; background: #f4f4f9; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .controls { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; }
+        #logDisplay { 
+            background: #1e1e1e; color: #d4d4d4; padding: 1rem; 
+            border-radius: 4px; overflow-x: auto; white-space: pre-wrap; 
+            font-family: 'Courier New', Courier, monospace; min-height: 300px;
+        }
+        .error { color: red; margin-bottom: 10px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Admin Log Viewer</h1>
+    <div class="controls">
+        <select id="logSelector">
+            <option value="app.log">Application Log</option>
+            <option value="error.log">Error Log</option>
+            <option value="access.log">Access Log</option>
+        </select>
+        <button id="loadBtn">View Log</button>
+    </div>
+    <div id="errorMessage" class="error"></div>
+    <pre id="logDisplay">Select a log file to begin...</pre>
+</div>
+
+<script>
+    const logSelector = document.getElementById('logSelector');
+    const loadBtn = document.getElementById('loadBtn');
+    const logDisplay = document.getElementById('logDisplay');
+    const errorMessage = document.getElementById('errorMessage');
+
+    async function fetchLog() {
+        const filename = logSelector.value;
+        errorMessage.textContent = '';
+        logDisplay.textContent = 'Loading...';
+
+        try {
+            const response = await fetch(`/api/logs?file=${encodeURIComponent(filename)}`, {
+                method: 'GET',
+                headers: {
+                    // Simulating an admin token for the purpose of this exercise
+                    'X-Admin-Token': 'super-secret-admin-key-123'
+                }
+            });
+
+            if (!response.ok) {
+                const errText = await response.text();
+                throw new Error(errText || `Server error: ${response.status}`);
+            }
+
+            const data = await response.text();
+            // Using textContent to prevent XSS
+            logDisplay.textContent = data;
+        } catch (err) {
+            errorMessage.textContent = err.message;
+            logDisplay.textContent = 'Failed to load log file.';
+        }
+    }
+
+    loadBtn.addEventListener('click', fetchLog);
+</script>
+
+</body>
+</html>

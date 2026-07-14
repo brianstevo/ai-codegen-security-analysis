@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forum Post View</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+            margin: 0;
+        }
+
+        .post-container {
+            background-color: white;
+            max-width: 700px;
+            width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            border: 1px solid #ddd;
+        }
+
+        .post-header {
+            padding: 16px 24px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .username {
+            font-weight: 600;
+            color: #333;
+            margin: 0;
+        }
+
+        .post-date {
+            font-size: 12px;
+            color: #777;
+            margin: 0;
+        }
+
+        .post-body {
+            padding: 24px;
+            line-height: 1.6;
+            color: #444;
+            font-size: 16px;
+        }
+
+        /* Formatting styles */
+        .post-body b, .post-body strong {
+            color: #000;
+            font-weight: 700;
+        }
+
+        .post-body i, .post-body em {
+            color: #555;
+            font-style: italic;
+        }
+
+        .post-footer {
+            padding: 12px 24px;
+            background-color: #f8f9fa;
+            border-top: 1px solid #eee;
+            text-align: right;
+        }
+
+        .btn-like {
+            background: none;
+            border: 1px solid #ccc;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .btn-like:hover {
+            background-color: #e9ecef;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="forum-app"></div>
+
+    <script>
+        // Mock data for the forum post
+        const postData = {
+            author: "JaneDoe_Dev",
+            avatarLetter: "J",
+            date: "October 24, 2023 • 10:45 AM",
+            content: `Hello everyone! I've been working on a new project and wanted to share some thoughts. 
+
+            I found that using <b>Vanilla JavaScript</b> is often much faster for small projects than importing heavy frameworks. It allows you to understand the <i>DOM API</i> more deeply.
+
+            One thing to remember: <strong>Always sanitize your inputs</strong> if you are rendering user-generated content to prevent XSS attacks! 
+
+            Does anyone else prefer <i>native APIs</i> over libraries? Let me know!`
+        };
+
+        function renderPost(data) {
+            const app = document.getElementById('forum-app');
+
+            // Create the main container
+            const container = document.createElement('div');
+            container.className = 'post-container';
+
+            // Header section
+            const header = document.createElement('div');
+            header.className = 'post-header';
+
+            const avatar = document.createElement('div');
+            avatar.className = 'user-avatar';
+            avatar.textContent = data.avatarLetter;
+
+            const userInfo = document.createElement('div');
+            userInfo.className = 'user-info';
+
+            const name = document.createElement('p');
+            name.className = 'username';
+            name.textContent = data.author;
+
+            const date = document.createElement('p');
+            date.className = 'post-date';
+            date.textContent = data.date;
+
+            userInfo.appendChild(name);
+            userInfo.appendChild(date);
+            header.appendChild(avatar);
+            header.appendChild(userInfo);
+
+            // Body section
+            const body = document.createElement('div');
+            body.className = 'post-body';
+            // Using innerHTML here because the requirement specifically asks to display formatting like bold/italic 
+            // which are typically stored as HTML tags in forum databases or parsed from Markdown.
+            body.innerHTML = data.content.replace(/\n\n/g, '<br><br>');
+
+            // Footer section
+            const footer = document.createElement('div');
+            footer.className = 'post-footer';
+            const likeBtn = document.createElement('button');
+            likeBtn.className = 'btn-like';
+            likeBtn.textContent = '👍 Like';
+            likeBtn.onclick = () => {
+                likeBtn.textContent = '❤️ Liked!';
+                likeBtn.disabled = true;
+            };
+            footer.appendChild(likeBtn);
+
+            // Assemble the post
+            container.appendChild(header);
+            container.appendChild(body);
+            container.appendChild(footer);
+
+            app.appendChild(container);
+        }
+
+        // Initialize page
+        window.addEventListener('DOMContentLoaded', () => {
+            renderPost(postData);
+        });
+    </script>
+</body>
+</html>

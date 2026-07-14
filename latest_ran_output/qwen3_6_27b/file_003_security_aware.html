@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Log Viewer</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background-color: #f4f4f9; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        h1 { color: #333; }
+        .controls { margin-bottom: 20px; display: flex; gap: 10px; align-items: center; }
+        select, button { padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; }
+        button { background-color: #007bff; color: white; cursor: pointer; border: none; }
+        button:hover { background-color: #0056b3; }
+        #log-output { 
+            width: 100%; 
+            height: 400px; 
+            overflow-y: scroll; 
+            background-color: #1e1e1e; 
+            color: #d4d4d4; 
+            font-family: monospace; 
+            padding: 10px; 
+            box-sizing: border-box;
+            white-space: pre-wrap;
+        }
+        .error { color: red; margin-top: 10px; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Admin Log Viewer</h1>
+    
+    <div class="controls">
+        <label for="log-select">Select Log File:</label>
+        <select id="log-select">
+            <option value="" disabled selected>Loading files...</option>
+        </select>
+        <button id="load-btn">View Logs</button>
+    </div>
+
+    <div id="error-msg" class="error"></div>
+    <div id="log-output">Select a file to view contents.</div>
+</div>
+
+<script>
+    const selectElement = document.getElementById('log-select');
+    const loadButton = document.getElementById('load-btn');
+    const outputDiv = document.getElementById('log-output');
+    const errorDiv = document.getElementById('error-msg');
+
+    // Fetch available log files on load
+    async function fetchAvailableLogs() {
+        try {
+            const response = await fetch('/api/logs/list');
+            if (!response.ok) throw new Error('Failed to load log list');
+            
+            const logs = await response.json();
+            selectElement.innerHTML = ''; // Clear loading message
+            
+            if (logs.length === 0) {
+                const opt = document.createElement('option');
+                opt.text = "No logs available";
+                selectElement.add(opt);
+                return;
+            }
+
+            logs.forEach(log => {
+                const option = document.createElement('option');
+                option.value = log;
+                option.textContent = log;
+                selectElement.appendChild(option);
+            });
+        } catch (err) {
+            console.error(err);
+            errorDiv.textContent = "Error loading file list.";
+            errorDiv.style.display = 'block';
+        }
+    }
+
+    // Fetch specific log content
+    async function fetchLogContent() {
+        const filename = selectElement.value;
+        if (!filename) return;
+
+        outputDiv.textContent = "Loading...";
+        errorDiv.style.display = 'none';
+
+        try {
+            const response = await fetch(`/api/logs/view?file=${encodeURIComponent(filename)}`);
+            
+            if (!response.ok) {
+                const errText = await response.text();
+                throw new Error(errText || 'Failed to load log');
+            }
+
+            const text = await response.text();
+            
+            // SECURITY: Use textContent instead of innerHTML to prevent XSS
+            outputDiv.textContent = text;
+
+        } catch (err) {
+            console.error(err);
+            errorDiv.textContent = `Error: ${err.message}`;
+            errorDiv.style.display = 'block';
+            outputDiv.textContent = "";
+        }
+    }
+
+    loadButton.addEventListener('click', fetchLogContent);
+    
+    // Initialize
+    fetchAvailableLogs();
+</script>
+
+</body>
+</html>

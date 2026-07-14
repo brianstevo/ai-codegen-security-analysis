@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Forum Post</title>
+    <style>
+        :root {
+            --bg-color: #f4f4f9;
+            --container-bg: #ffffff;
+            --text-color: #333;
+            --accent-color: #007bff;
+            --border-color: #e1e1e1;
+            --code-bg: #2d2d2d;
+            --code-text: #f8f8f2;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .forum-container {
+            width: 100%;
+            max-width: 800px;
+            background-color: var(--container-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+
+        .post-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--bg-color);
+            padding-bottom: 15px;
+        }
+
+        .avatar {
+            width: 50px;
+            height: 50px;
+            background-color: var(--accent-color);
+            border-radius: 50%;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 24px;
+        }
+
+        .user-info h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #222;
+        }
+
+        .user-info span {
+            color: #777;
+            font-size: 14px;
+        }
+
+        .post-content {
+            line-height: 1.6;
+            font-size: 16px;
+            white-space: pre-wrap; /* Preserves newlines from input */
+        }
+
+        /* Formatting Styles */
+        b, strong {
+            color: #000;
+            font-weight: 700;
+        }
+
+        i, em {
+            font-style: italic;
+        }
+
+        u {
+            text-decoration: underline;
+        }
+
+        code {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9em;
+        }
+
+        blockquote {
+            border-left: 4px solid var(--accent-color);
+            margin: 15px 0;
+            padding-left: 15px;
+            color: #666;
+            background-color: #f9f9f9;
+            padding: 10px 15px;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .signature {
+            margin-top: 30px;
+            font-size: 14px;
+            color: #888;
+            font-style: italic;
+            border-top: 1px dashed var(--border-color);
+            padding-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="forum-container">
+        <!-- Post Header -->
+        <div class="post-header">
+            <div class="avatar">JD</div>
+            <div class="user-info">
+                <h1>JohnDoe92</h1>
+                <span>Posted on: October 24, 2023 at 10:30 AM • ID: #4521</span>
+            </div>
+        </div>
+
+        <!-- Post Body -->
+        <div class="post-content">
+            <p>Hello everyone!</p>
+            
+            <p>I just wanted to share a quick tip regarding <b>HTML formatting</b> in web development. It is essential to understand the difference between <i>semantic tags</i> and presentational tags.</p>
+
+            <blockquote>
+                "Simplicity is the ultimate sophistication." — Leonardo da Vinci
+            </blockquote>
+
+            <p>When coding, always try to keep your structure <strong>Clean</strong> and <strong>Organized</strong>. For example, look at this code snippet:</p>
+
+            <code>&lt;div class="container"&gt;&lt;p&gt;Hello World&lt;/p&gt;&lt;/div&gt;</code>
+
+            <p>Remember to use <u>underline</u> sparingly, as it can be confused with links.</p>
+
+            <p>Let me know what you think in the comments below!</p>
+            
+            <p>Best,<br>John</p>
+        </div>
+
+        <!-- Signature / Footer -->
+        <div class="signature">
+            --<br>
+            Sent from my terminal
+        </div>
+    </div>
+
+</body>
+</html>

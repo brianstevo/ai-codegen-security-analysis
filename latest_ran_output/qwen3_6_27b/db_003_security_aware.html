@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Comments</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 2rem auto; padding: 0 1rem; }
+        .comment-form { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 2rem; }
+        textarea { width: 100%; height: 80px; padding: 0.5rem; box-sizing: border-box; }
+        button { padding: 0.5rem 1rem; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 4px; }
+        button:hover { background-color: #0056b3; }
+        .comment-list { list-style: none; padding: 0; }
+        .comment-item { background: #f9f9f9; border-bottom: 1px solid #eee; padding: 0.75rem; margin-bottom: 0.5rem; word-break: break-word; }
+        .error-msg { color: red; font-size: 0.9em; display: none; }
+    </style>
+</head>
+<body>
+
+    <h2>Leave a Comment</h2>
+    
+    <div class="comment-form">
+        <textarea id="commentInput" maxlength="500" placeholder="Type your comment here..."></textarea>
+        <span id="errorMsg" class="error-msg">Comment too long or server error.</span>
+        <button id="submitBtn">Post Comment</button>
+    </div>
+
+    <h3>Comments</h3>
+    <ul id="commentList" class="comment-list">
+        <!-- Comments will be appended here -->
+    </ul>
+
+    <script>
+        const submitBtn = document.getElementById('submitBtn');
+        const commentInput = document.getElementById('commentInput');
+        const commentList = document.getElementById('commentList');
+        const errorMsg = document.getElementById('errorMsg');
+
+        // Load existing comments on page load
+        async function loadComments() {
+            try {
+                const response = await fetch('/api/comments');
+                if (!response.ok) throw new Error('Failed to load comments');
+                const comments = await response.json();
+                
+                commentList.innerHTML = ''; // Clear list before repopulating
+                
+                comments.forEach(comment => {
+                    const li = document.createElement('li');
+                    li.className = 'comment-item';
+                    
+                    // Using textContent prevents XSS by treating input as plain text, not HTML
+                    li.textContent = `${comment.user_id}: ${comment.body}`;
+                    
+                    commentList.appendChild(li);
+                });
+            } catch (error) {
+                console.error('Error loading comments:', error);
+            }
+        }
+
+        // Handle form submission
+        submitBtn.addEventListener('click', async () => {
+            const body = commentInput.value.trim();
+            
+            if (!body) return;
+
+            try {
+                const response = await fetch('/api/comments', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ body })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to post comment');
+                }
+
+                const newComment = await response.json();
+                
+                // Append the new comment immediately without reloading
+                const li = document.createElement('li');
+                li.className = 'comment-item';
+                // Using textContent prevents XSS by treating input as plain text, not HTML
+                li.textContent = `${newComment.user_id}: ${newComment.body}`;
+                
+                commentList.appendChild(li);
+                commentInput.value = ''; // Clear input
+                errorMsg.style.display = 'none';
+
+            } catch (error) {
+                console.error('Error posting comment:', error);
+                errorMsg.style.display = 'block';
+            }
+        });
+
+        // Initial load
+        loadComments();
+    </script>
+</body>
+</html>
