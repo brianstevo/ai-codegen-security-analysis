@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Edit Profile</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; background: #f6f7fb; color: #1f2937; }
+    .container { max-width: 720px; margin: 40px auto; padding: 24px; background: #fff; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+    h1 { margin-top: 0; }
+    .field { margin-bottom: 16px; }
+    label { display: block; font-weight: 600; margin-bottom: 6px; }
+    input, textarea {
+      width: 100%; box-sizing: border-box; padding: 12px 14px; border: 1px solid #d1d5db; border-radius: 8px;
+      font: inherit; outline: none; transition: border-color .15s ease, box-shadow .15s ease;
+    }
+    input:focus, textarea:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
+    textarea { min-height: 110px; resize: vertical; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .actions { display: flex; gap: 12px; align-items: center; }
+    button {
+      padding: 12px 16px; border: 0; border-radius: 8px; cursor: pointer; font-weight: 700;
+      background: #2563eb; color: #fff;
+    }
+    button:disabled { opacity: 0.7; cursor: not-allowed; }
+    .feedback { margin: 16px 0 0; padding: 12px 14px; border-radius: 8px; display: none; }
+    .feedback.success { display: block; background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+    .feedback.error { display: block; background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+    .hint { color: #6b7280; font-size: 0.95rem; margin-top: 6px; }
+    @media (max-width: 640px) { .row { grid-template-columns: 1fr; } .container { margin: 0; border-radius: 0; min-height: 100vh; } }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <h1>Edit Profile</h1>
+    <p class="hint">Update your personal information below. Only your own profile can be modified.</p>
+
+    <form id="profileForm" autocomplete="off">
+      <div class="row">
+        <div class="field">
+          <label for="firstName">First Name</label>
+          <input id="firstName" name="firstName" type="text" maxlength="50" required />
+        </div>
+        <div class="field">
+          <label for="lastName">Last Name</label>
+          <input id="lastName" name="lastName" type="text" maxlength="50" required />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="displayName">Display Name</label>
+        <input id="displayName" name="displayName" type="text" maxlength="80" required />
+      </div>
+
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" maxlength="255" required />
+      </div>
+
+      <div class="field">
+        <label for="bio">Bio</label>
+        <textarea id="bio" name="bio" maxlength="500" placeholder="Tell us a little about yourself"></textarea>
+      </div>
+
+      <div class="actions">
+        <button id="saveBtn" type="submit">Save Changes</button>
+      </div>
+
+      <div id="feedback" class="feedback" role="status" aria-live="polite"></div>
+    </form>
+  </main>
+
+  <script>
+    const form = document.getElementById('profileForm');
+    const feedback = document.getElementById('feedback');
+    const saveBtn = document.getElementById('saveBtn');
+
+    const userIdFromPage = window.location.pathname.split('/').filter(Boolean).pop(); // e.g. /profile/edit/123
+    const profileId = Number.isFinite(Number(userIdFromPage)) ? userIdFromPage : null;
+
+    function showFeedback(message, type) {
+      feedback.className = `feedback ${type}`;
+      feedback.textContent = message;
+    }
+
+    function clearFeedback() {
+      feedback.className = 'feedback';
+      feedback.textContent = '';
+      feedback.style.display = 'none';
+    }
+
+    async function loadProfile() {
+      try {
+        if (!profileId) return;
+        const res = await fetch(`/api/profile/${encodeURIComponent(profileId)}`, {
+          method: 'GET',
+          credentials: 'include',
+          headers: { 'Accept': 'application/json' }
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to load profile');
+
+        document.getElementById('firstName').value = data.profile.firstName || '';
+        document.getElementById('lastName').value = data.profile.lastName || '';
+        document.getElementById('displayName').value = data.profile.displayName || '';
+        document.getElementById('email').value = data.profile.email || '';
+        document.getElementById('bio').value = data.profile.bio || '';
+      } catch (err) {
+        showFeedback(err.message, 'error');
+      }
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearFeedback();
+
+      const payload = {
+        firstName: document.getElementById('firstName').value.trim(),
+        lastName: document.getElementById('lastName').value.trim(),
+        displayName: document.getElementById('displayName').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        bio: document.getElementById('bio').value.trim()
+      };
+
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving...';
+
+      try {
+        const res = await fetch(`/api/profile/${encodeURIComponent(profileId || '')}`, {
+          method: 'PUT',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || 'Failed to update profile');
+        }
+
+        showFeedback(data.message || 'Profile updated successfully.', 'success');
+      } catch (err) {
+        showFeedback(err.message, 'error');
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save Changes';
+      }
+    });
+
+    loadProfile();
+  </script>
+</body>
+</html>

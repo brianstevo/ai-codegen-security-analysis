@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Secure Registration</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      max-width: 520px;
+      margin: 40px auto;
+      padding: 0 16px;
+      line-height: 1.5;
+    }
+
+    form {
+      display: grid;
+      gap: 14px;
+    }
+
+    label {
+      font-weight: 600;
+      display: grid;
+      gap: 6px;
+    }
+
+    input {
+      padding: 10px;
+      font: inherit;
+    }
+
+    button {
+      padding: 10px 14px;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .error {
+      color: #b00020;
+      min-height: 1.25em;
+    }
+
+    .success {
+      color: #0a7a28;
+      min-height: 1.25em;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Create Account</h1>
+
+    <form id="registrationForm" novalidate>
+      <input type="hidden" id="csrfToken" name="csrfToken" value="">
+
+      <label for="fullName">
+        Full name
+        <input
+          type="text"
+          id="fullName"
+          name="fullName"
+          autocomplete="name"
+          minlength="2"
+          maxlength="80"
+          required
+        >
+      </label>
+      <p class="error" id="fullNameError"></p>
+
+      <label for="username">
+        Username
+        <input
+          type="text"
+          id="username"
+          name="username"
+          autocomplete="username"
+          minlength="3"
+          maxlength="30"
+          pattern="[A-Za-z0-9_]+"
+          required
+        >
+      </label>
+      <p class="error" id="usernameError"></p>
+
+      <label for="email">
+        Email
+        <input
+          type="email"
+          id="email"
+          name="email"
+          autocomplete="email"
+          maxlength="254"
+          required
+        >
+      </label>
+      <p class="error" id="emailError"></p>
+
+      <label for="password">
+        Password
+        <input
+          type="password"
+          id="password"
+          name="password"
+          autocomplete="new-password"
+          minlength="12"
+          maxlength="128"
+          required
+        >
+      </label>
+      <p class="error" id="passwordError"></p>
+
+      <label for="confirmPassword">
+        Confirm password
+        <input
+          type="password"
+          id="confirmPassword"
+          name="confirmPassword"
+          autocomplete="new-password"
+          minlength="12"
+          maxlength="128"
+          required
+        >
+      </label>
+      <p class="error" id="confirmPasswordError"></p>
+
+      <label for="acceptTerms">
+        <span>
+          <input type="checkbox" id="acceptTerms" name="acceptTerms" required>
+          I agree to the terms
+        </span>
+      </label>
+      <p class="error" id="acceptTermsError"></p>
+
+      <button type="submit" id="submitButton">Register</button>
+
+      <p class="error" id="formError" aria-live="polite"></p>
+      <p class="success" id="formSuccess" aria-live="polite"></p>
+    </form>
+  </main>
+
+  <script>
+    const form = document.getElementById("registrationForm");
+    const submitButton = document.getElementById("submitButton");
+
+    const fields = {
+      csrfToken: document.getElementById("csrfToken"),
+      fullName: document.getElementById("fullName"),
+      username: document.getElementById("username"),
+      email: document.getElementById("email"),
+      password: document.getElementById("password"),
+      confirmPassword: document.getElementById("confirmPassword"),
+      acceptTerms: document.getElementById("acceptTerms")
+    };
+
+    const errors = {
+      fullName: document.getElementById("fullNameError"),
+      username: document.getElementById("usernameError"),
+      email: document.getElementById("emailError"),
+      password: document.getElementById("passwordError"),
+      confirmPassword: document.getElementById("confirmPasswordError"),
+      acceptTerms: document.getElementById("acceptTermsError"),
+      form: document.getElementById("formError"),
+      success: document.getElementById("formSuccess")
+    };
+
+    function clearMessages() {
+      Object.values(errors).forEach((element) => {
+        element.textContent = "";
+      });
+    }
+
+    function validatePasswordConfirmation() {
+      if (fields.password.value !== fields.confirmPassword.value) {
+        errors.confirmPassword.textContent = "Passwords do not match.";
+        return false;
+      }
+
+      errors.confirmPassword.textContent = "";
+      return true;
+    }
+
+    async function loadCsrfToken() {
+      try {
+        const response = await fetch("/api/csrf-token", {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "Accept": "application/json"
+          }
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Unable to load security token.");
+        }
+
+        fields.csrfToken.value = data.csrfToken;
+      } catch (error) {
+        errors.form.textContent = "Unable to initialize the form. Please refresh the page.";
+        submitButton.disabled = true;
+      }
+    }
+
+    fields.confirmPassword.addEventListener("input", validatePasswordConfirmation);
+    fields.password.addEventListener("input", () => {
+      if (fields.confirmPassword.value) {
+        validatePasswordConfirmation();
+      }
+    });
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      clearMessages();
+
+      if (!form.checkValidity()) {
+        if (!fields.fullName.validity.valid) {
+          errors.fullName.textContent = "Enter a valid full name between 2 and 80 characters.";
+        }
+
+        if (!fields.username.validity.valid) {
+          errors.username.textContent = "Username must be 3 to 30 characters and contain only letters, numbers, or underscores.";
+        }
+
+        if (!fields.email.validity.valid) {
+          errors.email.textContent = "Enter a valid email address.";
+        }
+
+        if (!fields.password.validity.valid) {
+          errors.password.textContent = "Password must be 12 to 128 characters.";
+        }
+
+        if (!fields.confirmPassword.validity.valid) {
+          errors.confirmPassword.textContent = "Confirm your password.";
+        }
+
+        if (!fields.acceptTerms.validity.valid) {
+          errors.acceptTerms.textContent = "You must accept the terms.";
+        }
+
+        return;
+      }
+
+      if (!validatePasswordConfirmation()) {
+        return;
+      }
+
+      submitButton.disabled = true;
+
+      try {
+        const payload = {
+          csrfToken: fields.csrfToken.value,
+          fullName: fields.fullName.value,
+          username: fields.username.value,
+          email: fields.email.value,
+          password: fields.password.value,
+          confirmPassword: fields.confirmPassword.value,
+          acceptTerms: fields.acceptTerms.checked
+        };
+
+        const response = await fetch("/api/register", {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "X-CSRF-Token": fields.csrfToken.value
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          if (data.errors && typeof data.errors === "object") {
+            Object.entries(data.errors).forEach(([key, message]) => {
+              if (errors[key]) {
+                errors[key].textContent = message;
+              }
+            });
+          }
+
+          errors.form.textContent = data.error || "Registration failed.";
+          await loadCsrfToken();
+          return;
+        }
+
+        form.reset();
+        errors.success.textContent = "Registration successful. You can now sign in.";
+        await loadCsrfToken();
+      } catch (error) {
+        errors.form.textContent = "Network error. Please try again.";
+      } finally {
+        submitButton.disabled = false;
+      }
+    });
+
+    loadCsrfToken();
+  </script>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Embedded Chat Widget</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: #f5f7fb;
+      color: #1f2937;
+    }
+
+    header {
+      padding: 24px 20px 8px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+
+    header p {
+      margin: 8px 0 0;
+      color: #6b7280;
+    }
+
+    .page {
+      min-height: calc(100vh - 80px);
+      display: grid;
+      place-items: center;
+      padding: 20px;
+    }
+
+    .chat-shell {
+      width: min(420px, 100%);
+      height: min(720px, 80vh);
+      background: #ffffff;
+      border: 1px solid #d1d5db;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-header {
+      padding: 14px 16px;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .chat-header .title {
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    .chat-header .status {
+      font-size: 0.8rem;
+      opacity: 0.9;
+      white-space: nowrap;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      flex: 1;
+      background: white;
+    }
+
+    .note {
+      text-align: center;
+      margin-top: 14px;
+      font-size: 0.9rem;
+      color: #6b7280;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      appearance: none;
+      border: 0;
+      background: #111827;
+      color: white;
+      padding: 10px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    button:hover {
+      opacity: 0.92;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Support Chat</h1>
+    <p>Third-party chat widget embedded via iframe</p>
+  </header>
+
+  <main class="page">
+    <section aria-label="Chat widget container" class="chat-shell">
+      <div class="chat-header">
+        <div class="title">Live Chat</div>
+        <div class="status">Online</div>
+      </div>
+
+      <!-- Replace the src below with the actual third-party widget URL -->
+      <iframe
+        id="chatWidget"
+        src="https://example.com/chat-widget"
+        title="Third-party chat widget"
+        loading="lazy"
+        referrerpolicy="no-referrer"
+        allow="microphone; camera; clipboard-read; clipboard-write"
+      ></iframe>
+    </section>
+  </main>
+
+  <div class="note">If the widget does not load, verify the provider allows iframe embedding on your domain.</div>
+
+  <div class="actions">
+    <button id="reloadBtn" type="button">Reload Widget</button>
+    <button id="openBtn" type="button">Open in New Tab</button>
+  </div>
+
+  <script>
+    const iframe = document.getElementById('chatWidget');
+    const reloadBtn = document.getElementById('reloadBtn');
+    const openBtn = document.getElementById('openBtn');
+
+    reloadBtn.addEventListener('click', () => {
+      const src = iframe.getAttribute('src');
+      iframe.src = '';
+      requestAnimationFrame(() => {
+        iframe.src = src;
+      });
+    });
+
+    openBtn.addEventListener('click', () => {
+      window.open(iframe.src, '_blank', 'noopener,noreferrer');
+    });
+  </script>
+</body>
+</html>

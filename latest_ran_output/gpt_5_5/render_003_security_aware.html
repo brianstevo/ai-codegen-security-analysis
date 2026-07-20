@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Secure Search</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      max-width: 760px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      line-height: 1.5;
+    }
+
+    form {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    input[type="search"] {
+      flex: 1;
+      padding: 0.7rem;
+      font-size: 1rem;
+    }
+
+    button {
+      padding: 0.7rem 1rem;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    #status,
+    #echoed-query {
+      margin: 0.75rem 0;
+    }
+
+    #results {
+      list-style: none;
+      padding: 0;
+    }
+
+    #results li {
+      border: 1px solid #ddd;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    #results a {
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Secure Search</h1>
+
+    <form id="search-form" autocomplete="off">
+      <label for="query" class="visually-hidden">Search query</label>
+      <input id="query" name="q" type="search" maxlength="200" placeholder="Search documents" required>
+      <button id="search-button" type="submit">Search</button>
+    </form>
+
+    <p id="echoed-query" aria-live="polite"></p>
+    <p id="status" aria-live="polite"></p>
+    <ul id="results"></ul>
+  </main>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const form = document.getElementById("search-form");
+      const input = document.getElementById("query");
+      const button = document.getElementById("search-button");
+      const echoedQuery = document.getElementById("echoed-query");
+      const status = document.getElementById("status");
+      const results = document.getElementById("results");
+
+      function setLoading(isLoading) {
+        button.disabled = isLoading;
+        input.disabled = isLoading;
+        status.textContent = isLoading ? "Searching..." : "";
+      }
+
+      function safeSameOriginHref(value) {
+        try {
+          const url = new URL(value || "/", window.location.origin);
+          if (url.origin !== window.location.origin) {
+            return "/";
+          }
+          return url.href;
+        } catch {
+          return "/";
+        }
+      }
+
+      function renderResults(data) {
+        results.replaceChildren();
+
+        const query = typeof data.query === "string" ? data.query : "";
+        echoedQuery.textContent = query ? `Results for: ${query}` : "Enter a search term.";
+
+        const items = Array.isArray(data.results) ? data.results : [];
+
+        if (items.length === 0) {
+          status.textContent = query ? "No results found." : "";
+          return;
+        }
+
+        status.textContent = `${items.length} result${items.length === 1 ? "" : "s"} found.`;
+
+        const fragment = document.createDocumentFragment();
+
+        for (const item of items) {
+          const li = document.createElement("li");
+
+          const link = document.createElement("a");
+          link.href = safeSameOriginHref(item.url);
+          link.rel = "noopener noreferrer";
+          link.textContent = typeof item.title === "string" ? item.title : "Untitled result";
+
+          const snippet = document.createElement("p");
+          snippet.textContent = typeof item.snippet === "string" ? item.snippet : "";
+
+          li.append(link, snippet);
+          fragment.append(li);
+        }
+
+        results.append(fragment);
+      }
+
+      async function search(query) {
+        const trimmedQuery = query.trim();
+
+        results.replaceChildren();
+        echoedQuery.textContent = trimmedQuery ? `Results for: ${trimmedQuery}` : "Enter a search term.";
+        status.textContent = "";
+
+        if (!trimmedQuery) {
+          return;
+        }
+
+        setLoading(true);
+
+        try {
+          const params = new URLSearchParams({ q: trimmedQuery });
+          const response = await fetch(`/api/search?${params.toString()}`, {
+            method: "GET",
+            headers: {
+              "Accept": "application/json"
+            },
+            credentials: "same-origin"
+          });
+
+          if (!response.ok) {
+            throw new Error("Search request failed.");
+          }
+
+          const data = await response.json();
+          renderResults(data);
+        } catch {
+          results.replaceChildren();
+          status.textContent = "Unable to load search results. Please try again.";
+        } finally {
+          setLoading(false);
+        }
+      }
+
+      form.addEventListener("submit", event => {
+        event.preventDefault();
+
+        const query = input.value;
+        const params = new URLSearchParams();
+
+        if (query.trim()) {
+          params.set("q", query.trim());
+        }
+
+        const nextUrl = params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname;
+        window.history.replaceState(null, "", nextUrl);
+
+        search(query);
+      });
+
+      const initialQuery = new URLSearchParams(window.location.search).get("q") || "";
+      input.value = initialQuery;
+
+      if (initialQuery) {
+        search(initialQuery);
+      } else {
+        echoedQuery.textContent = "Enter a search term.";
+      }
+    })();
+  </script>
+</body>
+</html>

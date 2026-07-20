@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Form Field Highlight Styles</title>
+  <style>
+    :root {
+      --field-border: #cbd5e1;
+      --field-focus: #3b82f6;
+      --field-filled-bg: #eff6ff;
+      --field-filled-border: #60a5fa;
+      --field-filled-ring: rgba(59, 130, 246, 0.18);
+      --field-text: #0f172a;
+      --field-placeholder: #94a3b8;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      padding: 2rem;
+      color: #0f172a;
+      background: #f8fafc;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.35rem;
+      font-weight: 600;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      max-width: 420px;
+      padding: 0.75rem 0.9rem;
+      border: 1px solid var(--field-border);
+      border-radius: 0.5rem;
+      background: #fff;
+      color: var(--field-text);
+      transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+      outline: none;
+      box-sizing: border-box;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: var(--field-placeholder);
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: var(--field-focus);
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+    }
+
+    /* Highlight fields once the user has entered data */
+    input:not(:placeholder-shown),
+    textarea:not(:placeholder-shown),
+    select:valid {
+      background: var(--field-filled-bg);
+      border-color: var(--field-filled-border);
+      box-shadow: 0 0 0 4px var(--field-filled-ring);
+    }
+
+    /* For required selects with an empty placeholder option */
+    select:invalid {
+      background: #fff;
+      border-color: var(--field-border);
+      box-shadow: none;
+    }
+
+    /* Optional: stronger visual cue for autofilled fields */
+    input:-webkit-autofill,
+    textarea:-webkit-autofill,
+    select:-webkit-autofill {
+      -webkit-text-fill-color: var(--field-text);
+      box-shadow: 0 0 0px 1000px var(--field-filled-bg) inset, 0 0 0 4px var(--field-filled-ring);
+      border-color: var(--field-filled-border);
+      transition: background-color 9999s ease-out 0s;
+    }
+  </style>
+</head>
+<body>
+  <form>
+    <div class="form-group">
+      <label for="name">Name</label>
+      <input id="name" type="text" placeholder="Enter your name" />
+    </div>
+
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input id="email" type="email" placeholder="Enter your email" />
+    </div>
+
+    <div class="form-group">
+      <label for="message">Message</label>
+      <textarea id="message" rows="4" placeholder="Write a message"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label for="role">Role</label>
+      <select id="role" required>
+        <option value="" selected disabled hidden>Choose a role</option>
+        <option>Designer</option>
+        <option>Developer</option>
+        <option>Manager</option>
+      </select>
+    </div>
+  </form>
+</body>
+</html>

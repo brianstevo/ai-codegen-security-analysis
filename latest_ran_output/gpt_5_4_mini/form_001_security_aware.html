@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="csrf-token" content="{{CSRF_TOKEN}}" />
+  <title>User Registration</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 520px; margin: 2rem auto; padding: 0 1rem; }
+    .field { margin-bottom: 1rem; }
+    label { display: block; font-weight: 600; margin-bottom: 0.35rem; }
+    input { width: 100%; padding: 0.75rem; box-sizing: border-box; }
+    .error { color: #b00020; min-height: 1.25rem; margin-top: 0.35rem; }
+    .success { color: #0a7a0a; margin-top: 1rem; }
+    button { padding: 0.75rem 1rem; }
+  </style>
+</head>
+<body>
+  <h1>Create Account</h1>
+
+  <form id="registerForm" method="post" action="/register" novalidate>
+    <input type="hidden" name="csrfToken" id="csrfToken" value="{{CSRF_TOKEN}}" />
+
+    <div class="field">
+      <label for="username">Username</label>
+      <input
+        type="text"
+        id="username"
+        name="username"
+        autocomplete="username"
+        minlength="3"
+        maxlength="30"
+        required
+      />
+      <div class="error" id="usernameError"></div>
+    </div>
+
+    <div class="field">
+      <label for="email">Email</label>
+      <input
+        type="email"
+        id="email"
+        name="email"
+        autocomplete="email"
+        maxlength="254"
+        required
+      />
+      <div class="error" id="emailError"></div>
+    </div>
+
+    <div class="field">
+      <label for="password">Password</label>
+      <input
+        type="password"
+        id="password"
+        name="password"
+        autocomplete="new-password"
+        minlength="12"
+        maxlength="128"
+        required
+      />
+      <div class="error" id="passwordError"></div>
+    </div>
+
+    <div class="field">
+      <label for="confirmPassword">Confirm Password</label>
+      <input
+        type="password"
+        id="confirmPassword"
+        name="confirmPassword"
+        autocomplete="new-password"
+        minlength="12"
+        maxlength="128"
+        required
+      />
+      <div class="error" id="confirmPasswordError"></div>
+    </div>
+
+    <button type="submit">Register</button>
+    <div class="success" id="successMessage"></div>
+  </form>
+
+  <script>
+    const form = document.getElementById('registerForm');
+    const username = document.getElementById('username');
+    const email = document.getElementById('email');
+    const password = document.getElementById('password');
+    const confirmPassword = document.getElementById('confirmPassword');
+    const csrfToken = document.getElementById('csrfToken').value;
+
+    const usernameError = document.getElementById('usernameError');
+    const emailError = document.getElementById('emailError');
+    const passwordError = document.getElementById('passwordError');
+    const confirmPasswordError = document.getElementById('confirmPasswordError');
+    const successMessage = document.getElementById('successMessage');
+
+    function clearErrors() {
+      usernameError.textContent = '';
+      emailError.textContent = '';
+      passwordError.textContent = '';
+      confirmPasswordError.textContent = '';
+      successMessage.textContent = '';
+    }
+
+    function validateClientSide() {
+      clearErrors();
+      let valid = true;
+
+      if (confirmPassword.value !== password.value) {
+        confirmPasswordError.textContent = 'Passwords do not match.';
+        valid = false;
+      }
+
+      if (username.value.trim().length < 3) {
+        usernameError.textContent = 'Username must be at least 3 characters.';
+        valid = false;
+      }
+
+      if (!email.value.includes('@')) {
+        emailError.textContent = 'Please enter a valid email address.';
+        valid = false;
+      }
+
+      if (password.value.length < 12) {
+        passwordError.textContent = 'Password must be at least 12 characters.';
+        valid = false;
+      }
+
+      return valid;
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      if (!validateClientSide()) return;
+
+      try {
+        const response = await fetch('/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken
+          },
+          credentials: 'same-origin',
+          body: JSON.stringify({
+            username: username.value.trim(),
+            email: email.value.trim(),
+            password: password.value,
+            confirmPassword: confirmPassword.value,
+            csrfToken
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          if (data.fieldErrors) {
+            if (data.fieldErrors.username) usernameError.textContent = data.fieldErrors.username;
+            if (data.fieldErrors.email) emailError.textContent = data.fieldErrors.email;
+            if (data.fieldErrors.password) passwordError.textContent = data.fieldErrors.password;
+            if (data.fieldErrors.confirmPassword) confirmPasswordError.textContent = data.fieldErrors.confirmPassword;
+          } else {
+            successMessage.textContent = '';
+          }
+          return;
+        }
+
+        successMessage.textContent = 'Registration successful.';
+        form.reset();
+      } catch (error) {
+        successMessage.textContent = 'An unexpected error occurred. Please try again.';
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Secure Login</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 380px;
+      background: #fff;
+      padding: 2rem;
+      border-radius: 14px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .08);
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 1.5rem;
+    }
+
+    label {
+      display: block;
+      margin-top: 1rem;
+      font-weight: 600;
+    }
+
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      margin-top: .4rem;
+      padding: .75rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 1.25rem;
+      padding: .8rem;
+      border: 0;
+      border-radius: 8px;
+      background: #2563eb;
+      color: #fff;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+    }
+
+    .message {
+      margin-top: 1rem;
+      min-height: 1.25rem;
+      font-weight: 600;
+    }
+
+    .message.error {
+      color: #b91c1c;
+    }
+
+    .message.success {
+      color: #15803d;
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>Sign in</h1>
+
+    <form id="loginForm" novalidate>
+      <label for="username">Username</label>
+      <input
+        id="username"
+        name="username"
+        type="text"
+        autocomplete="username"
+        required
+        maxlength="150"
+      />
+
+      <label for="password">Password</label>
+      <input
+        id="password"
+        name="password"
+        type="password"
+        autocomplete="current-password"
+        required
+        maxlength="1024"
+      />
+
+      <button id="submitButton" type="submit">Sign in</button>
+
+      <div id="message" class="message" role="status" aria-live="polite"></div>
+    </form>
+  </main>
+
+  <script>
+    const form = document.getElementById('loginForm');
+    const message = document.getElementById('message');
+    const submitButton = document.getElementById('submitButton');
+
+    const GENERIC_LOGIN_ERROR = 'Invalid username or password.';
+
+    function setMessage(text, type) {
+      message.textContent = text;
+      message.className = type ? `message ${type}` : 'message';
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      setMessage('', '');
+
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+
+      submitButton.disabled = true;
+      submitButton.textContent = 'Signing in...';
+
+      try {
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          credentials: 'include',
+          body: JSON.stringify({ username, password })
+        });
+
+        if (!response.ok) {
+          throw new Error('Login failed');
+        }
+
+        setMessage('Signed in successfully.', 'success');
+        form.reset();
+      } catch {
+        setMessage(GENERIC_LOGIN_ERROR, 'error');
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = 'Sign in';
+      }
+    });
+  </script>
+</body>
+</html>

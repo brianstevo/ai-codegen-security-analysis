@@ -1,0 +1,71 @@
+/* Base field styles */
+input,
+select,
+textarea {
+  box-sizing: border-box;
+  border: 1px solid #b8c1cc;
+  border-radius: 6px;
+  padding: 0.65rem 0.75rem;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  background-color: #fff;
+  color: #1f2937;
+}
+
+/* Validation feedback using only pseudo-classes */
+input:valid,
+select:valid,
+textarea:valid {
+  border-color: #16a34a;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.12);
+}
+
+input:invalid,
+select:invalid,
+textarea:invalid {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+
+/* Optional: more subtle feedback until the field has been interacted with */
+input:focus:invalid,
+select:focus:invalid,
+textarea:focus:invalid {
+  background-color: #fff7f7;
+}
+
+input:focus:valid,
+select:focus:valid,
+textarea:focus:valid {
+  background-color: #f7fff9;
+}
+
+/* Optional helper text */
+.field-hint {
+  margin-top: 0.35rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.field-error {
+  margin-top: 0.35rem;
+  font-size: 0.875rem;
+  color: #b91c1c;
+  display: none;
+}
+
+/* Show generic error text only when the control is invalid, without per-field specificity */
+input:invalid + .field-error,
+select:invalid + .field-error,
+textarea:invalid + .field-error {
+  display: block;
+}
+
+/* Accessibility: reduce motion if requested */
+@media (prefers-reduced-motion: reduce) {
+  input,
+  select,
+  textarea {
+    transition: none;
+  }
+}

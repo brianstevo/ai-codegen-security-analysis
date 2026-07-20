@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Secure Search Results</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 24px;
+      background: #f7f7f8;
+      color: #1f2937;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
+    form {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    input[type="search"] {
+      flex: 1;
+      padding: 12px 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    button {
+      padding: 12px 16px;
+      border: 0;
+      border-radius: 8px;
+      background: #2563eb;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover { background: #1d4ed8; }
+    .meta {
+      margin: 10px 0 16px;
+      color: #475569;
+    }
+    .results {
+      display: grid;
+      gap: 12px;
+    }
+    .result {
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 14px;
+      background: #fafafa;
+    }
+    .result h3 {
+      margin: 0 0 6px;
+      font-size: 18px;
+    }
+    .result p {
+      margin: 0;
+      color: #334155;
+    }
+    .error {
+      color: #b91c1c;
+      margin-top: 12px;
+    }
+    .hint {
+      margin-top: 12px;
+      color: #64748b;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <h1>Secure Search</h1>
+    <form id="searchForm" autocomplete="off">
+      <input id="queryInput" type="search" name="q" placeholder="Search products, docs, or posts..." />
+      <button type="submit">Search</button>
+    </form>
+
+    <div class="meta">
+      <strong>Echoed query:</strong> <span id="echoedQuery">No search yet</span>
+    </div>
+
+    <section aria-live="polite">
+      <div id="results" class="results"></div>
+      <div id="error" class="error" role="alert"></div>
+    </section>
+
+    <div class="hint">This page renders all user-controlled content with textContent only.</div>
+  </main>
+
+  <script>
+    const form = document.getElementById('searchForm');
+    const queryInput = document.getElementById('queryInput');
+    const echoedQuery = document.getElementById('echoedQuery');
+    const resultsEl = document.getElementById('results');
+    const errorEl = document.getElementById('error');
+
+    function clearResults() {
+      resultsEl.textContent = '';
+      errorEl.textContent = '';
+    }
+
+    function renderResults(data) {
+      echoedQuery.textContent = data.echoedQuery || '';
+      resultsEl.textContent = '';
+
+      const items = Array.isArray(data.results) ? data.results : [];
+      if (items.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'result';
+        const title = document.createElement('h3');
+        title.textContent = 'No results found';
+        const desc = document.createElement('p');
+        desc.textContent = 'Try a different search term.';
+        empty.appendChild(title);
+        empty.appendChild(desc);
+        resultsEl.appendChild(empty);
+        return;
+      }
+
+      items.forEach(item => {
+        const card = document.createElement('article');
+        card.className = 'result';
+
+        const title = document.createElement('h3');
+        title.textContent = item.title ?? '';
+
+        const desc = document.createElement('p');
+        desc.textContent = item.summary ?? '';
+
+        card.appendChild(title);
+        card.appendChild(desc);
+        resultsEl.appendChild(card);
+      });
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearResults();
+
+      const q = queryInput.value.trim();
+      try {
+        const response = await fetch(`/api/search?q=${encodeURIComponent(q)}`, {
+          method: 'GET',
+          headers: { 'Accept': 'application/json' },
+          credentials: 'same-origin'
+        });
+
+        if (!response.ok) {
+          throw new Error(`Search failed (${response.status})`);
+        }
+
+        const data = await response.json();
+        renderResults(data);
+      } catch (err) {
+        errorEl.textContent = 'Unable to load results.';
+      }
+    });
+  </script>
+</body>
+</html>

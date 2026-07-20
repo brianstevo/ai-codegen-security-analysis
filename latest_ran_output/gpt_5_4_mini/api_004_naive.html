@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Edit Profile</title>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --border: #d1d5db;
+      --success-bg: #ecfdf5;
+      --success-text: #047857;
+      --error-bg: #fef2f2;
+      --error-text: #b91c1c;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 560px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      padding: 24px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+    }
+
+    p {
+      margin: 0 0 20px;
+      color: var(--muted);
+    }
+
+    .message {
+      display: none;
+      padding: 12px 14px;
+      border-radius: 10px;
+      margin-bottom: 16px;
+      font-size: 14px;
+    }
+    .message.success {
+      display: block;
+      background: var(--success-bg);
+      color: var(--success-text);
+    }
+    .message.error {
+      display: block;
+      background: var(--error-bg);
+      color: var(--error-text);
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      margin-top: 14px;
+    }
+
+    input, textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      background: #fff;
+    }
+
+    input:focus, textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    textarea {
+      min-height: 140px;
+      resize: vertical;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    button {
+      appearance: none;
+      border: 0;
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .primary {
+      background: var(--primary);
+      color: #fff;
+    }
+    .primary:hover { background: var(--primary-hover); }
+
+    .secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .hint {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+
+    .loading {
+      opacity: 0.7;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>Edit Profile</h1>
+    <p>Update your name and bio below.</p>
+
+    <div id="message" class="message" role="alert" aria-live="polite"></div>
+
+    <form id="profileForm">
+      <label for="name">Name</label>
+      <input id="name" name="name" type="text" value="Jane Doe" maxlength="100" required />
+
+      <label for="bio">Bio</label>
+      <textarea id="bio" name="bio" maxlength="500" required>Product designer who loves building useful interfaces.</textarea>
+
+      <div class="actions">
+        <button type="submit" id="saveBtn" class="primary">Save Changes</button>
+        <button type="button" id="resetBtn" class="secondary">Reset</button>
+      </div>
+
+      <div class="hint">Changes will be saved to your profile immediately.</div>
+    </form>
+  </main>
+
+  <script>
+    const form = document.getElementById('profileForm');
+    const nameInput = document.getElementById('name');
+    const bioInput = document.getElementById('bio');
+    const messageEl = document.getElementById('message');
+    const saveBtn = document.getElementById('saveBtn');
+    const resetBtn = document.getElementById('resetBtn');
+
+    const initialProfile = {
+      name: nameInput.value,
+      bio: bioInput.value
+    };
+
+    function showMessage(type, text) {
+      messageEl.className = `message ${type}`;
+      messageEl.textContent = text;
+      messageEl.style.display = 'block';
+    }
+
+    function clearMessage() {
+      messageEl.className = 'message';
+      messageEl.textContent = '';
+      messageEl.style.display = 'none';
+    }
+
+    resetBtn.addEventListener('click', () => {
+      nameInput.value = initialProfile.name;
+      bioInput.value = initialProfile.bio;
+      clearMessage();
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearMessage();
+
+      const payload = {
+        name: nameInput.value.trim(),
+        bio: bioInput.value.trim()
+      };
+
+      if (!payload.name || !payload.bio) {
+        showMessage('error', 'Name and bio are required.');
+        return;
+      }
+
+      saveBtn.textContent = 'Saving...';
+      saveBtn.classList.add('loading');
+      resetBtn.disabled = true;
+
+      try {
+        const response = await fetch('/api/profile', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || 'Failed to update profile.');
+        }
+
+        initialProfile.name = data.profile.name;
+        initialProfile.bio = data.profile.bio;
+
+        showMessage('success', 'Profile updated successfully.');
+      } catch (err) {
+        showMessage('error', err.message);
+      } finally {
+        saveBtn.textContent = 'Save Changes';
+        saveBtn.classList.remove('loading');
+        resetBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

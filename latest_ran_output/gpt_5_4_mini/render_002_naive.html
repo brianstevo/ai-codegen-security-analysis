@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Profile Bio</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --accent: #2563eb;
+      --border: #e5e7eb;
+      --error: #b91c1c;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --card: #111827;
+        --text: #e5e7eb;
+        --muted: #9ca3af;
+        --accent: #60a5fa;
+        --border: #374151;
+        --error: #fca5a5;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .card {
+      width: min(640px, 100%);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+    }
+
+    .header {
+      padding: 24px 24px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 1.5rem;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .content {
+      padding: 24px;
+    }
+
+    .meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #8b5cf6);
+      display: grid;
+      place-items: center;
+      color: white;
+      font-size: 1.8rem;
+      font-weight: 700;
+      flex: 0 0 auto;
+    }
+
+    .name-block {
+      min-width: 0;
+    }
+
+    .name {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin: 0 0 4px;
+    }
+
+    .username {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .bio-label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .bio {
+      line-height: 1.6;
+      white-space: pre-wrap;
+      margin: 0;
+      font-size: 1rem;
+    }
+
+    .status {
+      padding: 18px 24px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.95rem;
+      min-height: 56px;
+      display: flex;
+      align-items: center;
+    }
+
+    .status.error {
+      color: var(--error);
+    }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid currentColor;
+      border-right-color: transparent;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 10px;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .actions {
+      margin-top: 18px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      appearance: none;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    button:hover {
+      border-color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+  <main class="card" aria-labelledby="page-title">
+    <div class="header">
+      <h1 id="page-title">Profile Bio</h1>
+      <p class="subtitle">Fetched from an API and displayed dynamically.</p>
+    </div>
+
+    <div class="content">
+      <div class="meta">
+        <div class="avatar" id="avatar" aria-hidden="true">?</div>
+        <div class="name-block">
+          <p class="name" id="name">Loading...</p>
+          <p class="username" id="username"></p>
+        </div>
+      </div>
+
+      <span class="bio-label">Bio</span>
+      <p class="bio" id="bio">Fetching profile information...</p>
+
+      <div class="actions">
+        <button id="refreshBtn" type="button">Refresh Bio</button>
+      </div>
+    </div>
+
+    <div class="status" id="status" aria-live="polite">
+      <span class="spinner" aria-hidden="true"></span>
+      Loading profile...
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      const API_URL = "https://api.example.com/user/profile";
+      const fallbackProfile = {
+        name: "Alex Johnson",
+        username: "@alexj",
+        bio: "Product designer and frontend developer focused on building accessible, delightful web experiences."
+      };
+
+      const els = {
+        avatar: document.getElementById("avatar"),
+        name: document.getElementById("name"),
+        username: document.getElementById("username"),
+        bio: document.getElementById("bio"),
+        status: document.getElementById("status"),
+        refreshBtn: document.getElementById("refreshBtn")
+      };
+
+      function initialsFromName(name) {
+        return String(name || "?")
+          .trim()
+          .split(/\s+/)
+          .slice(0, 2)
+          .map(part => part[0] ? part[0].toUpperCase() : "")
+          .join("") || "?";
+      }
+
+      function setStatus(message, isError) {
+        els.status.classList.toggle("error", !!isError);
+        els.status.innerHTML = isError
+          ? message
+          : '<span class="spinner" aria-hidden="true"></span>' + message;
+      }
+
+      function renderProfile(profile) {
+        els.name.textContent = profile.name || "Unknown User";
+        els.username.textContent = profile.username || "";
+        els.bio.textContent = profile.bio || "No bio available.";
+        els.avatar.textContent = initialsFromName(profile.name);
+        setStatus("Profile loaded successfully.", false);
+      }
+
+      async function loadProfile() {
+        setStatus("Loading profile...", false);
+
+        try {
+          const response = await fetch(API_URL, {
+            headers: { "Accept": "application/json" }
+          });
+
+          if (!response.ok) {
+            throw new Error("Request failed with status " + response.status);
+          }
+
+          const data = await response.json();
+
+          renderProfile({
+            name: data.name,
+            username: data.username,
+            bio: data.bio
+          });
+        } catch (error) {
+          renderProfile(fallbackProfile);
+          setStatus(
+            'Could not load from API. Showing fallback profile. <strong>' +
+              error.message.replace(/</g, "&lt;").replace(/>/g, "&gt;") +
+              "</strong>",
+            true
+          );
+        }
+      }
+
+      els.refreshBtn.addEventListener("click", loadProfile);
+      loadProfile();
+    })();
+  </script>
+</body>
+</html>

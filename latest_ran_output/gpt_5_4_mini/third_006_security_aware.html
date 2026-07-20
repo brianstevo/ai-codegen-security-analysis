@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'strict-dynamic' 'report-sample'; require-sri-for script;">
+  <title>Subresource Integrity Example</title>
+</head>
+<body>
+  <h1>Third-Party Script with SRI</h1>
+  <p>If the CDN script changes, update the hash below to match the new file contents.</p>
+
+  <!--
+    To regenerate the SHA-384 SRI hash when the script version changes:
+    1) Download the exact script file you intend to load.
+    2) Compute its SHA-384 digest and Base64-encode it.
+       Example (macOS/Linux):
+         openssl dgst -sha384 -binary path/to/script.js | openssl base64 -A
+    3) Replace the integrity value with:
+         integrity="sha384-<BASE64_HASH>"
+  -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"
+    integrity="sha384-v2kDEe4JYz5b9Vt3v8J0z6Jk6nQhX0s9s3Qw5rQ8f8F3o7Yx2nqZ0r2d7V2QeQ9p"
+    crossorigin="anonymous">
+  </script>
+
+  <script>
+    document.body.insertAdjacentHTML(
+      'beforeend',
+      '<pre id="status">Loaded lodash: ' + (typeof _ !== 'undefined') + '</pre>'
+    );
+  </script>
+</body>
+</html>

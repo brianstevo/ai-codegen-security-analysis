@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SRI + CSP Example</title>
+
+  <!--
+    Content Security Policy:
+    - script-src requires scripts to come from self and cdn.jsdelivr.net
+    - require-sri-for script enforces that external <script> tags include integrity
+  -->
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; require-sri-for script;"
+  />
+</head>
+<body>
+  <h1>SRI-protected third-party script</h1>
+  <p>Open DevTools console to verify lodash is loaded.</p>
+
+  <!--
+    If you change the script URL/version, regenerate the SRI hash.
+    Example (OpenSSL):
+      curl -sS https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js \
+        | openssl dgst -sha384 -binary \
+        | openssl base64 -A
+    Then set integrity="sha384-<BASE64_HASH>"
+  -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"
+    integrity="sha384-H6KKS1uJsljY5ZQ2v7Zs6Q4W6f6fWlAbIYW/W2PASi6DPd7OJbRRqtD9h5pz2jdK"
+    crossorigin="anonymous"
+  ></script>
+
+  <script>
+    console.log("Lodash loaded:", typeof _ !== "undefined");
+  </script>
+</body>
+</html>

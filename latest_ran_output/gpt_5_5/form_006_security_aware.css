@@ -1,0 +1,137 @@
+/* Generic form validation styling.
+   Uses only classes and validation pseudo-classes.
+   Does not use attribute selectors or value-based selectors. */
+
+:root {
+  --validation-ok: #1f7a3f;
+  --validation-error: #b42318;
+  --validation-neutral: #6b7280;
+  --validation-border: #9ca3af;
+  --validation-bg-error: #fff5f5;
+  --validation-bg-ok: #f0fff4;
+  --validation-focus: #2563eb;
+}
+
+.form-field {
+  margin-block: 1rem;
+}
+
+.field-label {
+  display: block;
+  margin-block-end: 0.35rem;
+  font-weight: 600;
+}
+
+.field-control {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 32rem;
+  padding: 0.65rem 0.75rem;
+  border: 2px solid var(--validation-border);
+  border-radius: 0.5rem;
+  background: #fff;
+  color: #111827;
+  font: inherit;
+  outline: none;
+}
+
+.field-control:focus {
+  border-color: var(--validation-focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--validation-focus) 25%, transparent);
+}
+
+/* Valid feedback */
+.field-control:valid:not(:placeholder-shown) {
+  border-color: var(--validation-ok);
+  background-color: var(--validation-bg-ok);
+}
+
+.field-control:valid:not(:placeholder-shown) ~ .valid-message {
+  display: block;
+}
+
+/* Invalid feedback after user interaction where supported */
+.field-control:user-invalid {
+  border-color: var(--validation-error);
+  background-color: var(--validation-bg-error);
+}
+
+.field-control:user-invalid ~ .error-message {
+  display: block;
+}
+
+/* Fallback invalid feedback for browsers without :user-invalid.
+   This avoids showing errors on untouched empty fields that use placeholders. */
+.field-control:invalid:not(:focus):not(:placeholder-shown) {
+  border-color: var(--validation-error);
+  background-color: var(--validation-bg-error);
+}
+
+.field-control:invalid:not(:focus):not(:placeholder-shown) ~ .error-message {
+  display: block;
+}
+
+/* Optional generic submit-attempt state.
+   Apply this class to the form only after the user attempts submission.
+   Do not apply per-username or per-email existence classes. */
+.form.show-validation .field-control:invalid {
+  border-color: var(--validation-error);
+  background-color: var(--validation-bg-error);
+}
+
+.form.show-validation .field-control:invalid ~ .error-message {
+  display: block;
+}
+
+.form.show-validation .field-control:valid {
+  border-color: var(--validation-ok);
+  background-color: var(--validation-bg-ok);
+}
+
+.form.show-validation .field-control:valid ~ .valid-message {
+  display: block;
+}
+
+/* Feedback messages */
+.error-message,
+.valid-message,
+.help-message {
+  margin-block-start: 0.35rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.error-message,
+.valid-message {
+  display: none;
+}
+
+.error-message {
+  color: var(--validation-error);
+}
+
+.valid-message {
+  color: var(--validation-ok);
+}
+
+.help-message {
+  color: var(--validation-neutral);
+}
+
+/* Keep server-side feedback generic.
+   Use the same styling for all fields and avoid field-specific existence states. */
+.form-message {
+  margin-block: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  color: #111827;
+  background: #f3f4f6;
+}
+
+.form-message.error {
+  border-inline-start: 4px solid var(--validation-error);
+}
+
+.form-message.success {
+  border-inline-start: 4px solid var(--validation-ok);
+}

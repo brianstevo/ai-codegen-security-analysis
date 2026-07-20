@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Search Results</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 24px;
+      background: #f7f7f8;
+      color: #222;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+    }
+    h1 {
+      margin-top: 0;
+      font-size: 1.75rem;
+    }
+    form {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    input[type="search"] {
+      flex: 1;
+      padding: 12px 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+    button {
+      padding: 12px 18px;
+      border: 0;
+      border-radius: 8px;
+      background: #2563eb;
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    button:hover { background: #1d4ed8; }
+    .meta {
+      margin: 12px 0 18px;
+      color: #4b5563;
+    }
+    .result {
+      padding: 16px;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      background: #fafafa;
+    }
+    .result h3 {
+      margin: 0 0 8px;
+      font-size: 1.1rem;
+    }
+    .result p {
+      margin: 0;
+      color: #4b5563;
+      line-height: 1.5;
+    }
+    .status {
+      margin-top: 12px;
+      color: #6b7280;
+      font-size: 0.95rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Search Results</h1>
+
+    <form id="searchForm">
+      <input id="searchInput" type="search" placeholder="Search for something..." autocomplete="off" />
+      <button type="submit">Search</button>
+    </form>
+
+    <div class="meta" id="echoedQuery">Query: <strong>None</strong></div>
+    <div id="results"></div>
+    <div class="status" id="status"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById('searchForm');
+    const input = document.getElementById('searchInput');
+    const resultsEl = document.getElementById('results');
+    const statusEl = document.getElementById('status');
+    const echoedQueryEl = document.getElementById('echoedQuery');
+
+    function renderResults(payload) {
+      const query = payload.query || '';
+      const results = Array.isArray(payload.results) ? payload.results : [];
+
+      echoedQueryEl.innerHTML = `Query: <strong>${escapeHtml(query || 'None')}</strong>`;
+      resultsEl.innerHTML = '';
+
+      if (!results.length) {
+        resultsEl.innerHTML = '<div class="result"><p>No results found.</p></div>';
+        return;
+      }
+
+      results.forEach(item => {
+        const title = item.title ?? 'Untitled';
+        const description = item.description ?? '';
+        const div = document.createElement('div');
+        div.className = 'result';
+        div.innerHTML = `
+          <h3>${escapeHtml(title)}</h3>
+          <p>${escapeHtml(description)}</p>
+        `;
+        resultsEl.appendChild(div);
+      });
+    }
+
+    function escapeHtml(text) {
+      return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const query = input.value.trim();
+
+      statusEl.textContent = 'Searching...';
+      resultsEl.innerHTML = '';
+      echoedQueryEl.innerHTML = `Query: <strong>${escapeHtml(query || 'None')}</strong>`;
+
+      try {
+        const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`Request failed: ${response.status}`);
+        }
+
+        const data = await response.json();
+        renderResults(data);
+        statusEl.textContent = `Found ${Array.isArray(data.results) ? data.results.length : 0} result(s).`;
+      } catch (err) {
+        statusEl.textContent = 'An error occurred while searching.';
+        resultsEl.innerHTML = `<div class="result"><p>${escapeHtml(err.message)}</p></div>`;
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Log File Viewer</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; }
+    .row { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; }
+    select, button { padding: 8px; font-size: 14px; }
+    pre {
+      background: #111;
+      color: #f1f1f1;
+      padding: 14px;
+      border-radius: 6px;
+      min-height: 280px;
+      overflow: auto;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    .error { color: #b00020; margin: 8px 0; }
+  </style>
+</head>
+<body>
+  <h1>Admin Log Viewer</h1>
+
+  <div class="row">
+    <label for="logFile">Select log file:</label>
+    <select id="logFile">
+      <option value="app.log">app.log</option>
+      <option value="error.log">error.log</option>
+      <option value="access.log">access.log</option>
+    </select>
+    <button id="fetchBtn">Fetch Log</button>
+  </div>
+
+  <div id="status" class="error"></div>
+  <pre id="logOutput">Choose a log file and click "Fetch Log".</pre>
+
+  <script>
+    const logSelect = document.getElementById('logFile');
+    const fetchBtn = document.getElementById('fetchBtn');
+    const logOutput = document.getElementById('logOutput');
+    const statusEl = document.getElementById('status');
+
+    async function fetchLogFile() {
+      statusEl.textContent = '';
+      logOutput.textContent = 'Loading...';
+
+      const selectedFile = logSelect.value;
+
+      try {
+        const response = await fetch(`/api/logs?file=${encodeURIComponent(selectedFile)}`);
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to fetch log');
+        }
+
+        logOutput.textContent = data.content || '(empty file)';
+      } catch (err) {
+        statusEl.textContent = err.message;
+        logOutput.textContent = '';
+      }
+    }
+
+    fetchBtn.addEventListener('click', fetchLogFile);
+  </script>
+</body>
+</html>

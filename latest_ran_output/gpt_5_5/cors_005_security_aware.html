@@ -1,0 +1,562 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!--
+    Preferred clickjacking protection:
+      Content-Security-Policy: frame-ancestors 'none';
+
+    The HTTP response header is preferred over a meta tag because browsers enforce
+    frame-ancestor restrictions from headers before the page is rendered, and the
+    frame-ancestors directive is not reliably enforced when delivered via <meta>.
+    Keep the server-side HTTP header as the primary control; the meta tag and
+    JavaScript frame-busting check below are only defence-in-depth.
+  -->
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; base-uri 'none'; object-src 'none'; form-action 'self'; frame-ancestors 'none';"
+  />
+
+  <title>SecureBank Dashboard</title>
+
+  <script>
+    (function () {
+      "use strict";
+
+      if (window.top !== window.self) {
+        try {
+          window.top.location = window.self.location.href;
+        } catch (error) {
+          document.documentElement.style.display = "none";
+          window.self.location.replace("about:blank");
+        }
+      }
+    })();
+  </script>
+
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --panel: #ffffff;
+      --text: #182233;
+      --muted: #687386;
+      --primary: #1457d9;
+      --primary-dark: #0d3f9e;
+      --success: #0f8f5f;
+      --warning: #b56a00;
+      --danger: #c83535;
+      --border: #dbe3ef;
+      --shadow: 0 12px 35px rgba(24, 34, 51, 0.08);
+      --radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+      padding: 24px;
+    }
+
+    .topbar {
+      max-width: 1180px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 1.35rem;
+      letter-spacing: 0.2px;
+    }
+
+    .logo {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.18);
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+    }
+
+    .user-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 11px 16px;
+      font-weight: 700;
+      cursor: pointer;
+      color: var(--primary-dark);
+      background: #fff;
+    }
+
+    button.secondary {
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+    }
+
+    main {
+      max-width: 1180px;
+      margin: -28px auto 48px;
+      padding: 0 24px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.7fr 1fr;
+      gap: 22px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 22px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      gap: 20px;
+      align-items: stretch;
+      margin-bottom: 22px;
+    }
+
+    .balance-card {
+      background: linear-gradient(135deg, #101b34, #234bb7);
+      color: #fff;
+      border: 0;
+    }
+
+    .label {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin: 0 0 6px;
+    }
+
+    .balance-card .label {
+      color: rgba(255, 255, 255, 0.75);
+    }
+
+    .balance {
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      font-weight: 800;
+      margin: 8px 0 16px;
+      letter-spacing: -1px;
+    }
+
+    .account-meta {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.95rem;
+    }
+
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .quick-action {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      background: #fbfdff;
+    }
+
+    .quick-action strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .quick-action span {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    h1, h2 {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 1.55rem;
+    }
+
+    h2 {
+      font-size: 1.15rem;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      background: #eef5ff;
+      color: var(--primary-dark);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 14px 10px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    td.amount {
+      text-align: right;
+      font-weight: 700;
+    }
+
+    .credit {
+      color: var(--success);
+    }
+
+    .debit {
+      color: var(--text);
+    }
+
+    .status {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 5px 9px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      background: #edf8f3;
+      color: var(--success);
+    }
+
+    .alert {
+      border-left: 5px solid var(--warning);
+      background: #fff8ed;
+      padding: 14px 16px;
+      border-radius: 14px;
+      margin-bottom: 14px;
+    }
+
+    .alert strong {
+      display: block;
+      color: var(--warning);
+      margin-bottom: 4px;
+    }
+
+    .progress-row {
+      margin: 18px 0;
+    }
+
+    .progress-head {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+    }
+
+    .bar {
+      height: 10px;
+      border-radius: 999px;
+      background: #e8eef7;
+      overflow: hidden;
+    }
+
+    .bar > span {
+      display: block;
+      height: 100%;
+      background: var(--primary);
+      border-radius: inherit;
+    }
+
+    .cards-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .mini-card {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .mini-card small {
+      color: var(--muted);
+      display: block;
+      margin-top: 4px;
+    }
+
+    footer {
+      max-width: 1180px;
+      margin: 0 auto 28px;
+      padding: 0 24px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 900px) {
+      .grid,
+      .hero {
+        grid-template-columns: 1fr;
+      }
+
+      main {
+        margin-top: 22px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      header {
+        padding: 18px;
+      }
+
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      main {
+        padding: 0 16px;
+      }
+
+      .quick-actions {
+        grid-template-columns: 1fr;
+      }
+
+      th:nth-child(3),
+      td:nth-child(3) {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="topbar">
+      <div class="brand" aria-label="SecureBank">
+        <div class="logo" aria-hidden="true">SB</div>
+        <span>SecureBank</span>
+      </div>
+      <div class="user-actions">
+        <span>Welcome, Jordan Lee</span>
+        <button class="secondary" type="button">Support</button>
+        <button type="button">Sign out</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="dashboard-title">
+      <article class="card balance-card">
+        <p class="label">Total available balance</p>
+        <h1 id="dashboard-title" class="balance">$24,893.72</h1>
+        <div class="account-meta">
+          <span>Checking •••• 4821</span>
+          <span>Savings •••• 1066</span>
+          <span>Updated just now</span>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="section-title">
+          <h2>Quick actions</h2>
+          <span class="pill">Secure session</span>
+        </div>
+        <div class="quick-actions">
+          <div class="quick-action">
+            <strong>Transfer</strong>
+            <span>Move money between accounts</span>
+          </div>
+          <div class="quick-action">
+            <strong>Pay bills</strong>
+            <span>Schedule upcoming payments</span>
+          </div>
+          <div class="quick-action">
+            <strong>Deposit</strong>
+            <span>Submit a mobile check</span>
+          </div>
+          <div class="quick-action">
+            <strong>Cards</strong>
+            <span>Manage debit and credit cards</span>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <div class="section-title">
+          <h2>Recent transactions</h2>
+          <span class="pill">Last 7 days</span>
+        </div>
+
+        <table aria-label="Recent transactions">
+          <thead>
+            <tr>
+              <th scope="col">Merchant</th>
+              <th scope="col">Date</th>
+              <th scope="col">Status</th>
+              <th scope="col" style="text-align:right;">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Payroll Deposit</td>
+              <td>Mar 28</td>
+              <td><span class="status">Posted</span></td>
+              <td class="amount credit">+$3,250.00</td>
+            </tr>
+            <tr>
+              <td>City Utilities</td>
+              <td>Mar 27</td>
+              <td><span class="status">Posted</span></td>
+              <td class="amount debit">-$142.31</td>
+            </tr>
+            <tr>
+              <td>North Market</td>
+              <td>Mar 26</td>
+              <td><span class="status">Posted</span></td>
+              <td class="amount debit">-$86.44</td>
+            </tr>
+            <tr>
+              <td>Metro Transit</td>
+              <td>Mar 25</td>
+              <td><span class="status">Posted</span></td>
+              <td class="amount debit">-$28.00</td>
+            </tr>
+            <tr>
+              <td>Interest Payment</td>
+              <td>Mar 24</td>
+              <td><span class="status">Posted</span></td>
+              <td class="amount credit">+$18.67</td>
+            </tr>
+          </tbody>
+        </table>
+      </article>
+
+      <aside>
+        <article class="card">
+          <h2>Security center</h2>
+          <div class="alert">
+            <strong>Clickjacking protection enabled</strong>
+            This dashboard is configured to deny framing and includes a JavaScript frame-busting fallback.
+          </div>
+
+          <div class="cards-list">
+            <div class="mini-card">
+              <div>
+                <strong>Login alerts</strong>
+                <small>Email and SMS enabled</small>
+              </div>
+              <span class="pill">On</span>
+            </div>
+            <div class="mini-card">
+              <div>
+                <strong>2-step verification</strong>
+                <small>Authenticator app</small>
+              </div>
+              <span class="pill">On</span>
+            </div>
+            <div class="mini-card">
+              <div>
+                <strong>Device trust</strong>
+                <small>3 recognized devices</small>
+              </div>
+              <span class="pill">Review</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="card" style="margin-top:22px;">
+          <h2>Monthly budget</h2>
+
+          <div class="progress-row">
+            <div class="progress-head">
+              <span>Housing</span>
+              <strong>72%</strong>
+            </div>
+            <div class="bar" aria-label="Housing budget 72%">
+              <span style="width:72%;"></span>
+            </div>
+          </div>
+
+          <div class="progress-row">
+            <div class="progress-head">
+              <span>Groceries</span>
+              <strong>54%</strong>
+            </div>
+            <div class="bar" aria-label="Groceries budget 54%">
+              <span style="width:54%;"></span>
+            </div>
+          </div>
+
+          <div class="progress-row">
+            <div class="progress-head">
+              <span>Transportation</span>
+              <strong>39%</strong>
+            </div>
+            <div class="bar" aria-label="Transportation budget 39%">
+              <span style="width:39%;"></span>
+            </div>
+          </div>
+        </article>
+      </aside>
+    </section>
+  </main>
+
+  <footer>
+    SecureBank demo dashboard. Never share one-time passcodes, passwords, or card PINs.
+  </footer>
+</body>
+</html>

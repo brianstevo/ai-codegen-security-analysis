@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Secure Comments</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }
+    form { display: grid; gap: 0.75rem; margin-bottom: 1.25rem; }
+    textarea { width: 100%; min-height: 100px; padding: 0.6rem; }
+    button { width: fit-content; padding: 0.5rem 0.8rem; cursor: pointer; }
+    .error { color: #b00020; margin: 0.5rem 0; }
+    .meta { color: #555; font-size: 0.9rem; margin-top: 0.2rem; }
+    ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.9rem; }
+    li { border: 1px solid #ddd; border-radius: 8px; padding: 0.75rem; }
+  </style>
+</head>
+<body>
+  <h1>Comments</h1>
+
+  <form id="comment-form" novalidate>
+    <label for="comment">Add a comment</label>
+    <textarea id="comment" name="comment" maxlength="500" required></textarea>
+    <button type="submit">Post Comment</button>
+    <div id="error" class="error" role="alert" aria-live="polite"></div>
+  </form>
+
+  <ul id="comments"></ul>
+
+  <script>
+    const form = document.getElementById('comment-form');
+    const commentInput = document.getElementById('comment');
+    const commentsList = document.getElementById('comments');
+    const errorEl = document.getElementById('error');
+
+    function appendComment(comment) {
+      const li = document.createElement('li');
+
+      const content = document.createElement('p');
+      content.textContent = comment.content; // Safe against XSS
+
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+      const date = new Date(comment.created_at).toLocaleString();
+      meta.textContent = `User #${comment.user_id} • ${date}`;
+
+      li.appendChild(content);
+      li.appendChild(meta);
+      commentsList.prepend(li);
+    }
+
+    async function loadComments() {
+      errorEl.textContent = '';
+      try {
+        const res = await fetch('/api/comments', { credentials: 'same-origin' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to load comments');
+        commentsList.innerHTML = '';
+        data.comments.forEach(appendComment);
+      } catch (err) {
+        errorEl.textContent = err.message;
+      }
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorEl.textContent = '';
+      const content = commentInput.value.trim();
+
+      try {
+        const res = await fetch('/api/comments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({ content })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to post comment');
+
+        appendComment(data.comment);
+        form.reset();
+      } catch (err) {
+        errorEl.textContent = err.message;
+      }
+    });
+
+    loadComments();
+  </script>
+</body>
+</html>

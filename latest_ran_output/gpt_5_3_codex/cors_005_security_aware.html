@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Secure Banking Dashboard</title>
+
+  <!--
+    NOTE:
+    A Content-Security-Policy HTTP response header is preferred over a meta tag because
+    headers are enforced earlier and more reliably by browsers, including for policies
+    that may be ignored or limited when delivered via <meta>. Use server-side headers
+    in production; this meta tag is included here to satisfy the page-level requirement.
+  -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests">
+
+  <style>
+    :root {
+      --bg: #0b1220;
+      --card: #121b2f;
+      --text: #e8eefc;
+      --muted: #9fb0d7;
+      --ok: #35c37a;
+      --warn: #f2b84b;
+      --danger: #f45b69;
+      --accent: #5b8cff;
+      --border: #243354;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: linear-gradient(180deg, #0a1020, #0b1220 40%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .brand {
+      font-weight: 700;
+      letter-spacing: 0.4px;
+    }
+    .user {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 16px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    }
+    .kpi { grid-column: span 4; }
+    .wide { grid-column: span 8; }
+    .side { grid-column: span 4; }
+    h2, h3 {
+      margin: 0 0 10px;
+      font-weight: 600;
+    }
+    .value {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-top: 6px;
+    }
+    .muted { color: var(--muted); font-size: 0.9rem; }
+    .delta.ok { color: var(--ok); }
+    .delta.warn { color: var(--warn); }
+    .delta.danger { color: var(--danger); }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 6px;
+    }
+    th, td {
+      text-align: left;
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.95rem;
+    }
+    th { color: var(--muted); font-weight: 600; }
+    .amount.positive { color: var(--ok); }
+    .amount.negative { color: var(--danger); }
+    .pill {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      background: rgba(91,140,255,0.15);
+      border: 1px solid rgba(91,140,255,0.4);
+      color: #b9ccff;
+    }
+    .alert {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border: 1px solid rgba(242,184,75,0.4);
+      background: rgba(242,184,75,0.12);
+      border-radius: 8px;
+      color: #ffd996;
+      font-size: 0.9rem;
+    }
+    .blocked-overlay {
+      position: fixed;
+      inset: 0;
+      background: #0b1220;
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 24px;
+      z-index: 99999;
+    }
+    .blocked-overlay .box {
+      max-width: 600px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px;
+    }
+    @media (max-width: 900px) {
+      .kpi, .wide, .side { grid-column: span 12; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="app" aria-live="polite">
+    <header>
+      <div class="brand">Northstar Bank — Dashboard</div>
+      <div class="user">Signed in as: <strong>Alex Morgan</strong></div>
+    </header>
+
+    <section class="grid">
+      <article class="card kpi">
+        <h3>Available Balance</h3>
+        <div class="value">$18,420.77</div>
+        <div class="muted">Checking •••• 1284</div>
+      </article>
+
+      <article class="card kpi">
+        <h3>Credit Utilization</h3>
+        <div class="value">21%</div>
+        <div class="delta ok">↓ 4% from last month</div>
+      </article>
+
+      <article class="card kpi">
+        <h3>Upcoming Bills</h3>
+        <div class="value">$1,240.00</div>
+        <div class="delta warn">Due in next 7 days</div>
+      </article>
+
+      <article class="card wide">
+        <h2>Recent Transactions</h2>
+        <table aria-label="Recent transactions">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Description</th>
+              <th>Category</th>
+              <th>Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>2026-07-19</td>
+              <td>Payroll Deposit</td>
+              <td><span class="pill">Income</span></td>
+              <td class="amount positive">+$3,200.00</td>
+            </tr>
+            <tr>
+              <td>2026-07-18</td>
+              <td>City Electric Utility</td>
+              <td><span class="pill">Bills</span></td>
+              <td class="amount negative">-$145.42</td>
+            </tr>
+            <tr>
+              <td>2026-07-17</td>
+              <td>Green Market Grocery</td>
+              <td><span class="pill">Food</span></td>
+              <td class="amount negative">-$86.91</td>
+            </tr>
+            <tr>
+              <td>2026-07-15</td>
+              <td>ATM Withdrawal</td>
+              <td><span class="pill">Cash</span></td>
+              <td class="amount negative">-$100.00</td>
+            </tr>
+          </tbody>
+        </table>
+      </article>
+
+      <aside class="card side">
+        <h2>Security Status</h2>
+        <p class="muted">Account protections are active.</p>
+        <ul>
+          <li>2FA: Enabled</li>
+          <li>Login alerts: Enabled</li>
+          <li>Trusted devices: 3</li>
+        </ul>
+        <div class="alert">Reminder: Never approve sign-in prompts you did not initiate.</div>
+      </aside>
+    </section>
+  </div>
+
+  <script>
+    (function frameBust() {
+      if (window.top !== window.self) {
+        try {
+          window.top.location = window.self.location;
+        } catch (e) {
+          document.documentElement.innerHTML = "";
+          var overlay = document.createElement("div");
+          overlay.className = "blocked-overlay";
+          overlay.innerHTML =
+            '<div class="box">' +
+            '<h2>Security Notice</h2>' +
+            '<p>This banking page cannot be displayed inside a frame.</p>' +
+            '<p>Please open it directly in a new browser tab or window.</p>' +
+            '</div>';
+          document.body.appendChild(overlay);
+        }
+      }
+    })();
+  </script>
+</body>
+</html>

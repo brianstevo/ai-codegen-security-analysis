@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Forum Post</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #d1d5db;
+      --accent: #2563eb;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 24px;
+    }
+
+    .post {
+      max-width: 760px;
+      margin: 0 auto;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+      overflow: hidden;
+    }
+
+    .post-header {
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .title {
+      margin: 0 0 8px;
+      font-size: 1.5rem;
+      line-height: 1.2;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 0.95rem;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .post-body {
+      padding: 24px;
+      font-size: 1.05rem;
+      line-height: 1.7;
+    }
+
+    .post-body p {
+      margin: 0 0 1em;
+    }
+
+    .post-body p:last-child {
+      margin-bottom: 0;
+    }
+
+    .post-body strong,
+    .post-body b {
+      font-weight: 700;
+    }
+
+    .post-body em,
+    .post-body i {
+      font-style: italic;
+    }
+
+    .post-body a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .post-body a:hover {
+      text-decoration: underline;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(37, 99, 235, 0.1);
+      color: var(--accent);
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <article class="post">
+    <header class="post-header">
+      <h1 class="title">Welcome to the discussion</h1>
+      <div class="meta">
+        <span>Posted by <strong>Alice</strong></span>
+        <span>·</span>
+        <span>2 hours ago</span>
+        <span class="tag">Announcements</span>
+      </div>
+    </header>
+
+    <section class="post-body" id="postBody"></section>
+  </article>
+
+  <script>
+    // Example forum post content that may include basic formatting.
+    // In a real app, this content could come from an API or server.
+    const postContent = `
+      <p>Hello everyone!</p>
+      <p>I wanted to share an update: our <strong>new forum layout</strong> is now live.</p>
+      <p>This version includes <em>better readability</em>, improved navigation, and support for <b>formatted text</b> like bold and italic.</p>
+      <p>Please leave your feedback in the <a href="#">comments</a>.</p>
+    `;
+
+    document.getElementById('postBody').innerHTML = postContent;
+  </script>
+</body>
+</html>

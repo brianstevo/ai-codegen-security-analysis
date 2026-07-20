@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Comments</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 700px; margin: 2rem auto; padding: 0 1rem; }
+    h1 { margin-bottom: 1rem; }
+    form { display: grid; gap: 0.75rem; margin-bottom: 1.5rem; }
+    textarea { width: 100%; min-height: 100px; padding: 0.75rem; font-size: 1rem; }
+    button { width: fit-content; padding: 0.6rem 1rem; font-size: 1rem; cursor: pointer; }
+    .error { color: #b00020; margin-top: 0.5rem; }
+    ul { list-style: none; padding: 0; margin: 0; }
+    li { border: 1px solid #ddd; border-radius: 8px; padding: 0.75rem; margin-bottom: 0.75rem; }
+    .meta { color: #666; font-size: 0.85rem; margin-top: 0.4rem; }
+  </style>
+</head>
+<body>
+  <h1>Comments</h1>
+
+  <form id="comment-form">
+    <label for="comment-input">Write a comment</label>
+    <textarea id="comment-input" name="comment" required maxlength="1000" placeholder="Type your comment..."></textarea>
+    <button type="submit">Submit Comment</button>
+    <div id="error" class="error" role="alert" aria-live="polite"></div>
+  </form>
+
+  <ul id="comments-list"></ul>
+
+  <script>
+    const form = document.getElementById('comment-form');
+    const commentInput = document.getElementById('comment-input');
+    const commentsList = document.getElementById('comments-list');
+    const errorEl = document.getElementById('error');
+
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function appendComment(comment) {
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <div>${escapeHtml(comment.content)}</div>
+        <div class="meta">#${comment.id} • ${new Date(comment.created_at).toLocaleString()}</div>
+      `;
+      commentsList.prepend(li);
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorEl.textContent = '';
+
+      const content = commentInput.value.trim();
+      if (!content) {
+        errorEl.textContent = 'Comment cannot be empty.';
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/comments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content })
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || 'Failed to submit comment.');
+        }
+
+        const savedComment = await res.json();
+        appendComment(savedComment);
+        form.reset();
+        commentInput.focus();
+      } catch (err) {
+        errorEl.textContent = err.message || 'Something went wrong.';
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Safe Forum Post Renderer</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      margin: 2rem;
+      line-height: 1.5;
+      color: #1f2937;
+      background: #f9fafb;
+    }
+    .card {
+      max-width: 760px;
+      margin: 0 auto;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    h1 {
+      font-size: 1.2rem;
+      margin: 0 0 0.75rem;
+    }
+    .post {
+      border-top: 1px solid #e5e7eb;
+      padding-top: 0.75rem;
+    }
+    .meta {
+      color: #6b7280;
+      font-size: 0.9rem;
+      margin-bottom: 0.75rem;
+    }
+  </style>
+</head>
+<body>
+  <article class="card">
+    <h1>Forum Post</h1>
+    <div class="meta">Posted by <b>user123</b></div>
+    <div id="post" class="post" aria-live="polite"></div>
+  </article>
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"
+    integrity="sha384-RR2x5fTg6N7f0fNmxS8xQpWf7sW6NsNfY8M4f4mP0dzY3i4f9Jw3D5E9Q1b7k2xW"
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  ></script>
+
+  <script>
+    (function () {
+      const untrustedPostHtml = `
+        <p>Welcome to the <b>forum</b>!</p>
+        <p onclick="alert('XSS')">This tries an inline handler.</p>
+        <i onmouseover="alert('XSS')">Hover attempt</i>
+        <script>alert('XSS via script tag')</script>
+        <p><a href="javascript:alert('XSS')">Bad link</a> (link tag not allowlisted anyway)</p>
+        <p>Allowed formatting: <b>bold</b>, <i>italic</i>, paragraphs only.</p>
+      `;
+
+      const sanitized = DOMPurify.sanitize(untrustedPostHtml, {
+        ALLOWED_TAGS: ['b', 'i', 'p'],
+        ALLOWED_ATTR: [],
+        FORBID_TAGS: ['script'],
+        FORBID_ATTR: [/^on/i],
+        ALLOW_UNKNOWN_PROTOCOLS: false
+      });
+
+      document.getElementById('post').innerHTML = sanitized;
+    })();
+  </script>
+</body>
+</html>

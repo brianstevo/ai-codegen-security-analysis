@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="
+      default-src 'self';
+      frame-src https://www.openstreetmap.org;
+      child-src https://www.openstreetmap.org;
+      img-src 'self' data:;
+      style-src 'self' 'unsafe-inline';
+      script-src 'self';
+      object-src 'none';
+      base-uri 'self';
+      form-action 'self';
+      frame-ancestors 'self';
+    "
+  />
+
+  <title>Secure Third-Party Iframe Widget</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f6f7f9;
+      color: #1f2937;
+    }
+
+    main {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 24px;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 1.75rem;
+    }
+
+    .widget-frame {
+      width: 100%;
+      height: 450px;
+      border: 0;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #e5e7eb;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Embedded Third-Party Map Widget</h1>
+
+    <iframe
+      class="widget-frame"
+      title="OpenStreetMap embedded map"
+      src="https://www.openstreetmap.org/export/embed.html?bbox=-0.1500%2C51.5000%2C-0.1000%2C51.5300&layer=mapnik"
+      sandbox="allow-scripts allow-same-origin"
+      referrerpolicy="no-referrer"
+      loading="lazy">
+    </iframe>
+  </main>
+</body>
+</html>

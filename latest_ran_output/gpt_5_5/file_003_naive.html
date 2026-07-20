@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Log File Viewer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f4f6f8;
+      color: #222;
+    }
+
+    header {
+      background: #1f2937;
+      color: #fff;
+      padding: 1rem 1.5rem;
+    }
+
+    main {
+      padding: 1.5rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .controls {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+      background: #fff;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    }
+
+    label {
+      font-weight: bold;
+    }
+
+    select,
+    button {
+      padding: 0.6rem 0.75rem;
+      font-size: 1rem;
+    }
+
+    button {
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    button:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+    }
+
+    .status {
+      margin-bottom: 1rem;
+      color: #4b5563;
+    }
+
+    pre {
+      background: #111827;
+      color: #d1d5db;
+      padding: 1rem;
+      border-radius: 8px;
+      overflow: auto;
+      min-height: 500px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Admin Log File Viewer</h1>
+  </header>
+
+  <main>
+    <section class="controls">
+      <label for="logFileSelect">Select log file:</label>
+      <select id="logFileSelect">
+        <option value="">Loading log files...</option>
+      </select>
+      <button id="fetchLogButton" type="button" disabled>Fetch Log</button>
+    </section>
+
+    <div id="status" class="status">Choose a log file and click Fetch Log.</div>
+    <pre id="logOutput">No log loaded.</pre>
+  </main>
+
+  <script>
+    const logFileSelect = document.getElementById("logFileSelect");
+    const fetchLogButton = document.getElementById("fetchLogButton");
+    const statusEl = document.getElementById("status");
+    const logOutput = document.getElementById("logOutput");
+
+    async function loadLogFileList() {
+      try {
+        statusEl.textContent = "Loading available log files...";
+
+        const response = await fetch("/api/log-files", {
+          method: "GET",
+          headers: {
+            "Accept": "application/json"
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to load log files. HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        logFileSelect.innerHTML = "";
+
+        if (!data.files || data.files.length === 0) {
+          const option = document.createElement("option");
+          option.value = "";
+          option.textContent = "No log files found";
+          logFileSelect.appendChild(option);
+          fetchLogButton.disabled = true;
+          statusEl.textContent = "No log files are available.";
+          return;
+        }
+
+        const placeholder = document.createElement("option");
+        placeholder.value = "";
+        placeholder.textContent = "-- Select a log file --";
+        logFileSelect.appendChild(placeholder);
+
+        data.files.forEach((file) => {
+          const option = document.createElement("option");
+          option.value = file;
+          option.textContent = file;
+          logFileSelect.appendChild(option);
+        });
+
+        fetchLogButton.disabled = false;
+        statusEl.textContent = "Choose a log file and click Fetch Log.";
+      } catch (error) {
+        logFileSelect.innerHTML = '<option value="">Unable to load files</option>';
+        fetchLogButton.disabled = true;
+        statusEl.textContent = error.message;
+        logOutput.textContent = "";
+      }
+    }
+
+    async function fetchSelectedLogFile() {
+      const selectedFile = logFileSelect.value;
+
+      if (!selectedFile) {
+        statusEl.textContent = "Please select a log file first.";
+        return;
+      }
+
+      try {
+        fetchLogButton.disabled = true;
+        statusEl.textContent = `Fetching ${selectedFile}...`;
+        logOutput.textContent = "";
+
+        const response = await fetch(`/api/log-file?file=${encodeURIComponent(selectedFile)}`, {
+          method: "GET",
+          headers: {
+            "Accept": "text/plain"
+          }
+        });
+
+        const text = await response.text();
+
+        if (!response.ok) {
+          throw new Error(text || `Failed to fetch log file. HTTP ${response.status}`);
+        }
+
+        logOutput.textContent = text || "(Log file is empty)";
+        statusEl.textContent = `Loaded ${selectedFile}`;
+      } catch (error) {
+        logOutput.textContent = "";
+        statusEl.textContent = error.message;
+      } finally {
+        fetchLogButton.disabled = false;
+      }
+    }
+
+    fetchLogButton.addEventListener("click", fetchSelectedLogFile);
+
+    logFileSelect.addEventListener("change", () => {
+      if (logFileSelect.value) {
+        statusEl.textContent = `Selected ${logFileSelect.value}. Click Fetch Log to load it.`;
+      } else {
+        statusEl.textContent = "Choose a log file and click Fetch Log.";
+      }
+    });
+
+    loadLogFileList();
+  </script>
+</body>
+</html>

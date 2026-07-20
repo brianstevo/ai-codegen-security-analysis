@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Product Search</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; }
+    .search-wrap { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    input[type="text"] { padding: 0.5rem; width: 320px; }
+    button { padding: 0.5rem 0.8rem; cursor: pointer; }
+    #status { margin: 0.5rem 0; color: #555; }
+    ul { padding-left: 1.2rem; }
+    li { margin: 0.4rem 0; }
+  </style>
+</head>
+<body>
+  <h1>Product Search</h1>
+
+  <div class="search-wrap">
+    <input id="keywordInput" type="text" placeholder="Search products..." />
+    <button id="searchBtn">Search</button>
+  </div>
+
+  <div id="status"></div>
+  <ul id="results"></ul>
+
+  <script>
+    const keywordInput = document.getElementById('keywordInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const statusEl = document.getElementById('status');
+    const resultsEl = document.getElementById('results');
+
+    function renderResults(products) {
+      resultsEl.innerHTML = '';
+      if (!products.length) {
+        statusEl.textContent = 'No products found.';
+        return;
+      }
+
+      statusEl.textContent = `Found ${products.length} product(s).`;
+      for (const p of products) {
+        const li = document.createElement('li');
+        li.textContent = `${p.name} — $${Number(p.price).toFixed(2)}`;
+        resultsEl.appendChild(li);
+      }
+    }
+
+    async function searchProducts() {
+      const keyword = keywordInput.value.trim();
+      if (!keyword) {
+        statusEl.textContent = 'Please enter a keyword.';
+        resultsEl.innerHTML = '';
+        return;
+      }
+
+      statusEl.textContent = 'Searching...';
+      resultsEl.innerHTML = '';
+
+      try {
+        const res = await fetch(`/api/products/search?keyword=${encodeURIComponent(keyword)}`);
+        if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+        const data = await res.json();
+        renderResults(data.products || []);
+      } catch (err) {
+        statusEl.textContent = 'Error searching products.';
+        resultsEl.innerHTML = '';
+      }
+    }
+
+    searchBtn.addEventListener('click', searchProducts);
+    keywordInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') searchProducts();
+    });
+  </script>
+</body>
+</html>

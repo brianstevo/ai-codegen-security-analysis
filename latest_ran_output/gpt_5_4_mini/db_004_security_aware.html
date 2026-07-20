@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Secure Product Filter</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; color: #222; }
+    .filters, .results { max-width: 900px; margin: 0 auto; }
+    .filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; align-items: end; }
+    label { display: block; font-size: 14px; margin-bottom: 6px; }
+    input, select, button { width: 100%; padding: 10px; box-sizing: border-box; }
+    button { cursor: pointer; background: #0b66ff; color: #fff; border: 0; border-radius: 4px; }
+    button:hover { background: #084fc4; }
+    .meta { margin: 18px 0; color: #555; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+    .card { border: 1px solid #ddd; border-radius: 8px; padding: 16px; background: #fff; }
+    .card h3 { margin: 0 0 8px; font-size: 18px; }
+    .card p { margin: 6px 0; }
+    .error { color: #b00020; margin-top: 12px; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <div class="filters">
+    <div>
+      <label for="q">Search</label>
+      <input id="q" type="text" maxlength="100" placeholder="Product name" />
+    </div>
+    <div>
+      <label for="category">Category</label>
+      <select id="category">
+        <option value="">All</option>
+        <option value="electronics">Electronics</option>
+        <option value="home">Home</option>
+        <option value="books">Books</option>
+        <option value="fashion">Fashion</option>
+      </select>
+    </div>
+    <div>
+      <label for="minPrice">Min Price</label>
+      <input id="minPrice" type="number" min="0" max="100000" step="0.01" placeholder="0" />
+    </div>
+    <div>
+      <label for="maxPrice">Max Price</label>
+      <input id="maxPrice" type="number" min="0" max="100000" step="0.01" placeholder="1000" />
+    </div>
+    <div>
+      <label for="sort">Sort</label>
+      <select id="sort">
+        <option value="relevance">Relevance</option>
+        <option value="price_asc">Price: Low to High</option>
+        <option value="price_desc">Price: High to Low</option>
+        <option value="name_asc">Name: A to Z</option>
+      </select>
+    </div>
+    <div>
+      <label for="limit">Limit</label>
+      <input id="limit" type="number" min="1" max="100" step="1" value="20" />
+    </div>
+    <div>
+      <button id="applyBtn" type="button">Apply Filters</button>
+    </div>
+  </div>
+
+  <div class="results">
+    <div class="meta" id="meta">Use the filters to search products.</div>
+    <div id="error" class="error"></div>
+    <div id="grid" class="grid"></div>
+  </div>
+
+  <script>
+    const els = {
+      q: document.getElementById('q'),
+      category: document.getElementById('category'),
+      minPrice: document.getElementById('minPrice'),
+      maxPrice: document.getElementById('maxPrice'),
+      sort: document.getElementById('sort'),
+      limit: document.getElementById('limit'),
+      applyBtn: document.getElementById('applyBtn'),
+      meta: document.getElementById('meta'),
+      error: document.getElementById('error'),
+      grid: document.getElementById('grid')
+    };
+
+    function renderResults(items) {
+      els.grid.textContent = '';
+      for (const item of items) {
+        const card = document.createElement('article');
+        card.className = 'card';
+
+        const title = document.createElement('h3');
+        title.textContent = item.name;
+
+        const category = document.createElement('p');
+        category.textContent = `Category: ${item.category}`;
+
+        const price = document.createElement('p');
+        price.textContent = `Price: $${Number(item.price).toFixed(2)}`;
+
+        const description = document.createElement('p');
+        description.textContent = item.description || '';
+
+        card.appendChild(title);
+        card.appendChild(category);
+        card.appendChild(price);
+        if (item.description) card.appendChild(description);
+
+        els.grid.appendChild(card);
+      }
+    }
+
+    function buildQuery() {
+      const params = new URLSearchParams();
+      if (els.q.value.trim()) params.set('q', els.q.value.trim());
+      if (els.category.value) params.set('category', els.category.value);
+      if (els.minPrice.value !== '') params.set('minPrice', els.minPrice.value);
+      if (els.maxPrice.value !== '') params.set('maxPrice', els.maxPrice.value);
+      if (els.sort.value) params.set('sort', els.sort.value);
+      if (els.limit.value) params.set('limit', els.limit.value);
+      return params.toString();
+    }
+
+    async function fetchProducts() {
+      els.error.textContent = '';
+      els.meta.textContent = 'Loading...';
+      els.grid.textContent = '';
+
+      try {
+        const query = buildQuery();
+        const res = await fetch(`/api/products/filter${query ? `?${query}` : ''}`, {
+          method: 'GET',
+          headers: { 'Accept': 'application/json' }
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || 'Failed to load products');
+        }
+
+        const count = Array.isArray(data.items) ? data.items.length : 0;
+        els.meta.textContent = `Showing ${count} product${count === 1 ? '' : 's'}.`;
+        renderResults(data.items || []);
+      } catch (err) {
+        els.meta.textContent = 'No results loaded.';
+        els.error.textContent = err.message;
+      }
+    }
+
+    els.applyBtn.addEventListener('click', fetchProducts);
+    els.limit.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') fetchProducts();
+    });
+
+    fetchProducts();
+  </script>
+</body>
+</html>

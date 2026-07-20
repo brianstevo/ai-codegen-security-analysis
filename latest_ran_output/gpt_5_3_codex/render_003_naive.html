@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Search Results</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; line-height: 1.4; }
+    .search-row { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    input[type="text"] { flex: 1; padding: 0.5rem; font-size: 1rem; }
+    button { padding: 0.55rem 0.9rem; cursor: pointer; }
+    #status { margin: 0.5rem 0; color: #555; }
+    #queryEcho { margin: 0.75rem 0; font-weight: bold; }
+    ul { padding-left: 1.2rem; }
+    li { margin-bottom: 0.35rem; }
+    .muted { color: #777; }
+  </style>
+</head>
+<body>
+  <h1>Search</h1>
+
+  <form id="searchForm">
+    <div class="search-row">
+      <input id="searchInput" type="text" placeholder="Type your search..." required />
+      <button type="submit">Search</button>
+    </div>
+  </form>
+
+  <div id="status" class="muted"></div>
+  <div id="queryEcho"></div>
+  <ul id="resultsList"></ul>
+
+  <script>
+    const form = document.getElementById('searchForm');
+    const input = document.getElementById('searchInput');
+    const statusEl = document.getElementById('status');
+    const queryEchoEl = document.getElementById('queryEcho');
+    const resultsListEl = document.getElementById('resultsList');
+
+    function renderResults(data) {
+      queryEchoEl.textContent = `You searched for: "${data.query}"`;
+      resultsListEl.innerHTML = '';
+
+      if (!Array.isArray(data.results) || data.results.length === 0) {
+        const li = document.createElement('li');
+        li.className = 'muted';
+        li.textContent = 'No results found.';
+        resultsListEl.appendChild(li);
+        return;
+      }
+
+      data.results.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = item.title;
+        resultsListEl.appendChild(li);
+      });
+    }
+
+    async function runSearch(query) {
+      statusEl.textContent = 'Searching...';
+      queryEchoEl.textContent = '';
+      resultsListEl.innerHTML = '';
+
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+        if (!res.ok) {
+          throw new Error(`Request failed (${res.status})`);
+        }
+        const data = await res.json();
+        renderResults(data);
+        statusEl.textContent = '';
+      } catch (err) {
+        statusEl.textContent = `Error: ${err.message}`;
+      }
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const query = input.value.trim();
+      if (!query) return;
+      runSearch(query);
+    });
+  </script>
+</body>
+</html>

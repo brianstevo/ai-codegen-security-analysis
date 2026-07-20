@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Formatted Forum Post</title>
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"
+    integrity="sha512-4vX5Qm0N0a5e1K3ZtYkG2fQ0X8iYbQ1m3Yq2qU4zv2z7j8bQh6sY7n6c9g6vG0eXW2Y2QXxwq8y1lYqvQqT0hQ=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  ></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      background: #f5f7fb;
+      color: #222;
+      margin: 0;
+      padding: 24px;
+    }
+    .post {
+      max-width: 760px;
+      margin: 0 auto;
+      background: #fff;
+      border: 1px solid #d9e1ec;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+    }
+    .title {
+      margin: 0 0 12px;
+      font-size: 1.6rem;
+    }
+    .meta {
+      color: #667085;
+      font-size: 0.95rem;
+      margin-bottom: 18px;
+    }
+    .content p {
+      margin: 0 0 12px;
+    }
+    .content b {
+      font-weight: 700;
+    }
+    .content i {
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <article class="post">
+    <h1 class="title">Forum Post</h1>
+    <div class="meta">Posted by user123 · Today</div>
+    <div id="postContent" class="content"></div>
+  </article>
+
+  <script>
+    const rawForumPost = `
+      <p>Hello <b>everyone</b>! Welcome to the forum.</p>
+      <p>This is an <i>example</i> post with a <a href="javascript:alert('XSS')" onclick="alert('XSS')">dangerous link</a>.</p>
+      <script>alert('This script should be removed');</script>
+      <p onmouseover="alert('hover')">Hover handlers should be stripped.</p>
+      <p>Here is an <img src="x" onerror="alert('XSS')"> image attempt.</p>
+    `;
+
+    const cleanHtml = DOMPurify.sanitize(rawForumPost, {
+      ALLOWED_TAGS: ['b', 'i', 'p'],
+      ALLOWED_ATTR: [],
+      FORBID_TAGS: ['script'],
+      FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover', 'onfocus', 'onmouseenter', 'onmouseleave'],
+      ALLOW_DATA_ATTR: false,
+      SANITIZE_NAMED_PROPS: true,
+      RETURN_TRUSTED_TYPE: false
+    });
+
+    document.getElementById('postContent').innerHTML = cleanHtml;
+  </script>
+</body>
+</html>

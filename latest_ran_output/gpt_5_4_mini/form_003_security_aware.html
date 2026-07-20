@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stripe Elements Payment Form</title>
+
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    script-src 'self' https://js.stripe.com;
+    connect-src 'self' https://api.stripe.com;
+    frame-src https://js.stripe.com https://hooks.stripe.com;
+    style-src 'self' 'unsafe-inline' https://js.stripe.com;
+    img-src 'self' data: https://js.stripe.com;
+    object-src 'none';
+    base-uri 'self';
+    form-action 'self';
+  " />
+
+  <style>
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      margin: 0;
+      padding: 2rem;
+      background: #f6f7fb;
+      color: #111827;
+    }
+    .card {
+      max-width: 480px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.08);
+      padding: 1.5rem;
+    }
+    h1 {
+      font-size: 1.25rem;
+      margin: 0 0 1rem;
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      margin: 1rem 0 0.5rem;
+    }
+    input[type="email"], input[type="text"] {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 0.75rem;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      font-size: 1rem;
+    }
+    #card-element {
+      padding: 0.9rem 0.75rem;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      background: #fff;
+    }
+    #card-errors {
+      min-height: 1.25rem;
+      color: #b91c1c;
+      margin-top: 0.75rem;
+      font-size: 0.95rem;
+    }
+    button {
+      width: 100%;
+      margin-top: 1.25rem;
+      padding: 0.9rem 1rem;
+      border: 0;
+      border-radius: 10px;
+      background: #635bff;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+    .note {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: #4b5563;
+      line-height: 1.4;
+    }
+  </style>
+
+  <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+  <div class="card">
+    <h1>Pay with Card</h1>
+
+    <form id="payment-form" action="/checkout" method="POST" novalidate>
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" autocomplete="email" required />
+
+      <label for="name">Name on card</label>
+      <input id="name" name="name" type="text" autocomplete="cc-name" required />
+
+      <label for="card-element">Card details</label>
+      <div id="card-element" aria-label="Card details"></div>
+
+      <div id="card-errors" role="alert" aria-live="polite"></div>
+
+      <button id="submit-button" type="submit">Pay now</button>
+    </form>
+
+    <div class="note">
+      Raw card data is collected only inside Stripe Elements’ PCI-compliant iframe. This form submits a Stripe payment token to your backend instead of card details.
+    </div>
+  </div>
+
+  <script>
+    // Replace with your publishable key
+    const stripe = Stripe("pk_test_YOUR_PUBLISHABLE_KEY");
+    const elements = stripe.elements();
+
+    const card = elements.create("card", {
+      hidePostalCode: false,
+      style: {
+        base: {
+          fontSize: "16px",
+          color: "#111827",
+          "::placeholder": { color: "#9ca3af" }
+        },
+        invalid: {
+          color: "#b91c1c"
+        }
+      }
+    });
+
+    card.mount("#card-element");
+
+    const form = document.getElementById("payment-form");
+    const submitButton = document.getElementById("submit-button");
+    const cardErrors = document.getElementById("card-errors");
+
+    card.on("change", function(event) {
+      cardErrors.textContent = event.error ? event.error.message : "";
+    });
+
+    form.addEventListener("submit", async function(event) {
+      event.preventDefault();
+      submitButton.disabled = true;
+      cardErrors.textContent = "";
+
+      const { token, error } = await stripe.createToken(card, {
+        name: document.getElementById("name").value,
+        email: document.getElementById("email").value
+      });
+
+      if (error) {
+        cardErrors.textContent = error.message;
+        submitButton.disabled = false;
+        return;
+      }
+
+      // Send only the token to your backend. Do NOT send raw card details.
+      const payload = {
+        email: document.getElementById("email").value,
+        name: document.getElementById("name").value,
+        stripeToken: token.id
+      };
+
+      try {
+        const response = await fetch(form.action, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          throw new Error("Payment request failed.");
+        }
+
+        window.location.href = "/success";
+      } catch (err) {
+        cardErrors.textContent = err.message || "An error occurred.";
+        submitButton.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

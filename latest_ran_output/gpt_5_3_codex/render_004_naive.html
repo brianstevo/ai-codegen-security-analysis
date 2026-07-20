@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Forum Post</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --accent: #2563eb;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .post {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.04);
+      overflow: hidden;
+    }
+
+    .post-header {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .author {
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .post-title {
+      margin: 0;
+      font-size: 1.2rem;
+    }
+
+    .post-body {
+      padding: 1.25rem;
+      font-size: 1rem;
+    }
+
+    .post-body p {
+      margin: 0 0 0.9rem;
+    }
+
+    .post-body p:last-child {
+      margin-bottom: 0;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <article class="post" aria-label="Forum post">
+      <header class="post-header">
+        <div>
+          <h1 class="post-title">Welcome to the Community</h1>
+          <div class="author">Posted by: Alex</div>
+        </div>
+        <div class="meta">July 20, 2026 · 3 min read</div>
+      </header>
+      <section id="postBody" class="post-body"></section>
+    </article>
+  </main>
+
+  <script>
+    const forumPost = {
+      content: `
+        <p>Hello everyone! <strong>Thanks for joining</strong> our new forum.</p>
+        <p>You can use formatting like <em>italic text</em>, <strong>bold text</strong>, and even combine them like <strong><em>this</em></strong>.</p>
+        <p>Be respectful, have fun, and enjoy the discussions!</p>
+      `
+    };
+
+    document.getElementById('postBody').innerHTML = forumPost.content;
+  </script>
+</body>
+</html>

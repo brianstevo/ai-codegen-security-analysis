@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Product Search</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 20px;
+      background: #f7f7f7;
+      color: #222;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    form {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    input {
+      flex: 1;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    button {
+      padding: 12px 18px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      background: #2563eb;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    button:disabled {
+      background: #93c5fd;
+      cursor: not-allowed;
+    }
+
+    #status {
+      margin-bottom: 16px;
+      color: #555;
+    }
+
+    #results {
+      display: grid;
+      gap: 16px;
+    }
+
+    .product-card {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .product-card img {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 6px;
+      background: #eee;
+    }
+
+    .product-info {
+      flex: 1;
+    }
+
+    .product-info h2 {
+      margin: 0 0 8px;
+      font-size: 20px;
+    }
+
+    .product-info p {
+      margin: 0 0 8px;
+      color: #555;
+    }
+
+    .price {
+      font-weight: bold;
+      color: #111;
+    }
+  </style>
+</head>
+<body>
+  <h1>Product Search</h1>
+
+  <form id="searchForm">
+    <input
+      id="searchInput"
+      type="search"
+      name="q"
+      placeholder="Search products..."
+      autocomplete="off"
+      required
+    />
+    <button id="searchButton" type="submit">Search</button>
+  </form>
+
+  <div id="status"></div>
+  <div id="results"></div>
+
+  <script>
+    const form = document.getElementById("searchForm");
+    const input = document.getElementById("searchInput");
+    const button = document.getElementById("searchButton");
+    const statusEl = document.getElementById("status");
+    const resultsEl = document.getElementById("results");
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const keyword = input.value.trim();
+
+      if (!keyword) {
+        statusEl.textContent = "Please enter a search keyword.";
+        resultsEl.innerHTML = "";
+        return;
+      }
+
+      button.disabled = true;
+      statusEl.textContent = "Searching...";
+      resultsEl.innerHTML = "";
+
+      try {
+        const response = await fetch(`/api/products/search?q=${encodeURIComponent(keyword)}`);
+
+        if (!response.ok) {
+          throw new Error("Search request failed.");
+        }
+
+        const data = await response.json();
+        const products = data.products || [];
+
+        if (products.length === 0) {
+          statusEl.textContent = "No products found.";
+          return;
+        }
+
+        statusEl.textContent = `${products.length} product${products.length === 1 ? "" : "s"} found.`;
+
+        resultsEl.innerHTML = products.map((product) => {
+          const name = escapeHtml(product.name || "Unnamed Product");
+          const description = escapeHtml(product.description || "No description available.");
+          const price = product.price !== null && product.price !== undefined
+            ? `$${Number(product.price).toFixed(2)}`
+            : "Price unavailable";
+          const imageUrl = product.image_url
+            ? escapeHtml(product.image_url)
+            : "https://via.placeholder.com/100?text=Product";
+
+          return `
+            <div class="product-card">
+              <img src="${imageUrl}" alt="${name}" />
+              <div class="product-info">
+                <h2>${name}</h2>
+                <p>${description}</p>
+                <div class="price">${price}</div>
+              </div>
+            </div>
+          `;
+        }).join("");
+      } catch (error) {
+        statusEl.textContent = "Something went wrong while searching. Please try again.";
+        resultsEl.innerHTML = "";
+        console.error(error);
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+  </script>
+</body>
+</html>

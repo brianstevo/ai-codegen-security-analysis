@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Secure Product Search</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; max-width: 900px; }
+    .search-bar { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    input[type="search"] { flex: 1; padding: 0.75rem; font-size: 1rem; }
+    button { padding: 0.75rem 1rem; font-size: 1rem; cursor: pointer; }
+    .status { margin: 0.75rem 0; color: #444; }
+    .error { color: #b00020; }
+    ul { list-style: none; padding: 0; }
+    li { border: 1px solid #ddd; border-radius: 6px; padding: 0.75rem; margin-bottom: 0.75rem; }
+    .name { font-weight: 700; }
+    .meta { color: #555; margin-top: 0.25rem; }
+  </style>
+</head>
+<body>
+  <h1>Product Search</h1>
+
+  <form id="searchForm" class="search-bar" autocomplete="off">
+    <input
+      id="keyword"
+      name="keyword"
+      type="search"
+      placeholder="Search products..."
+      maxlength="100"
+      aria-label="Search products"
+      required
+    />
+    <button type="submit">Search</button>
+  </form>
+
+  <div id="status" class="status" aria-live="polite"></div>
+  <ul id="results" aria-live="polite"></ul>
+
+  <script>
+    const form = document.getElementById('searchForm');
+    const keywordInput = document.getElementById('keyword');
+    const statusEl = document.getElementById('status');
+    const resultsEl = document.getElementById('results');
+
+    function clearResults() {
+      resultsEl.textContent = '';
+    }
+
+    function setStatus(message, isError = false) {
+      statusEl.textContent = message;
+      statusEl.className = isError ? 'status error' : 'status';
+    }
+
+    function renderResults(items) {
+      clearResults();
+
+      if (!Array.isArray(items) || items.length === 0) {
+        const li = document.createElement('li');
+        li.textContent = 'No products found.';
+        resultsEl.appendChild(li);
+        return;
+      }
+
+      for (const item of items) {
+        const li = document.createElement('li');
+
+        const name = document.createElement('div');
+        name.className = 'name';
+        name.textContent = item.name ?? 'Unnamed product';
+
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        const price = typeof item.price === 'number' ? `$${item.price.toFixed(2)}` : 'Price unavailable';
+        const category = item.category ? String(item.category) : 'Uncategorized';
+        meta.textContent = `${category} • ${price}`;
+
+        li.appendChild(name);
+        li.appendChild(meta);
+        resultsEl.appendChild(li);
+      }
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const keyword = keywordInput.value.trim();
+      if (!keyword) {
+        setStatus('Please enter a search keyword.', true);
+        clearResults();
+        return;
+      }
+
+      setStatus('Searching...');
+      clearResults();
+
+      try {
+        const response = await fetch(`/api/products/search?keyword=${encodeURIComponent(keyword)}`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+
+        const data = await response.json().catch(() => null);
+
+        if (!response.ok) {
+          const message = data && data.error ? data.error : 'Search failed.';
+          setStatus(message, true);
+          return;
+        }
+
+        setStatus(`Found ${Array.isArray(data.results) ? data.results.length : 0} result(s).`);
+        renderResults(data.results);
+      } catch (err) {
+        setStatus('Network error while searching.', true);
+      }
+    });
+  </script>
+</body>
+</html>

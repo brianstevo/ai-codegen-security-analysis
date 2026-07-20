@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Banking Dashboard</title>
+  <style>
+    :root{
+      --bg:#f4f7fb;
+      --card:#ffffff;
+      --text:#1f2a37;
+      --muted:#6b7280;
+      --primary:#2563eb;
+      --primary-2:#1d4ed8;
+      --success:#16a34a;
+      --danger:#dc2626;
+      --warning:#f59e0b;
+      --border:#e5e7eb;
+      --shadow:0 10px 25px rgba(31,42,55,.08);
+      --radius:14px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+
+    .app{
+      display:grid;
+      grid-template-columns:260px 1fr;
+      min-height:100vh;
+    }
+
+    .sidebar{
+      background:#0f172a;
+      color:#e2e8f0;
+      padding:24px 18px;
+      display:flex;
+      flex-direction:column;
+      gap:24px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:4px 8px;
+    }
+
+    .brand .logo{
+      width:36px;
+      height:36px;
+      border-radius:10px;
+      background:linear-gradient(135deg,#38bdf8,#2563eb);
+      display:grid;
+      place-items:center;
+      font-weight:800;
+      color:white;
+    }
+
+    .brand h1{
+      font-size:1.05rem;
+      margin:0;
+      letter-spacing:.2px;
+    }
+
+    .nav{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+
+    .nav button{
+      width:100%;
+      border:0;
+      background:transparent;
+      color:#cbd5e1;
+      text-align:left;
+      padding:10px 12px;
+      border-radius:10px;
+      cursor:pointer;
+      font-size:.95rem;
+      transition:.2s ease;
+    }
+
+    .nav button:hover{background:#1e293b;color:#fff}
+    .nav button.active{background:#2563eb;color:#fff}
+
+    .sidebar .card{
+      margin-top:auto;
+      background:#111827;
+      border:1px solid #1f2937;
+      border-radius:12px;
+      padding:14px;
+      color:#d1d5db;
+      font-size:.88rem;
+      line-height:1.45;
+    }
+
+    .main{
+      padding:22px;
+      display:flex;
+      flex-direction:column;
+      gap:18px;
+    }
+
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .search{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:10px 12px;
+      min-width:280px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      box-shadow:var(--shadow);
+    }
+
+    .search input{
+      border:0;
+      outline:0;
+      width:100%;
+      font-size:.95rem;
+      background:transparent;
+    }
+
+    .user{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:8px 10px;
+      box-shadow:var(--shadow);
+    }
+
+    .avatar{
+      width:34px;height:34px;border-radius:50%;
+      background:linear-gradient(135deg,#f59e0b,#ef4444);
+      color:white;display:grid;place-items:center;font-weight:700;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(12,1fr);
+      gap:16px;
+    }
+
+    .panel{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:16px;
+    }
+
+    .span-8{grid-column:span 8}
+    .span-4{grid-column:span 4}
+    .span-6{grid-column:span 6}
+    .span-12{grid-column:span 12}
+
+    .balance-card{
+      background:linear-gradient(145deg,#1d4ed8,#2563eb 55%,#3b82f6);
+      color:#eff6ff;
+      border:0;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .balance-card::after{
+      content:"";
+      position:absolute;
+      width:240px;height:240px;border-radius:50%;
+      right:-70px;top:-90px;
+      background:rgba(255,255,255,.12);
+    }
+
+    .balance-card h2{
+      margin:0 0 8px;
+      font-size:1rem;
+      font-weight:500;
+      opacity:.95;
+    }
+
+    .amount{
+      font-size:2rem;
+      margin:4px 0 14px;
+      font-weight:800;
+      letter-spacing:.5px;
+    }
+
+    .balance-meta{
+      display:flex;gap:20px;flex-wrap:wrap;
+      font-size:.9rem;opacity:.95;
+    }
+
+    .kpi{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    .kpi .label{color:var(--muted);font-size:.85rem}
+    .kpi .value{font-weight:700;font-size:1.25rem}
+    .kpi .delta{font-size:.8rem;font-weight:600}
+    .up{color:var(--success)}
+    .down{color:var(--danger)}
+
+    .section-title{
+      margin:0 0 12px;
+      font-size:1rem;
+    }
+
+    .transactions{
+      width:100%;
+      border-collapse:collapse;
+      font-size:.92rem;
+    }
+
+    .transactions th,.transactions td{
+      text-align:left;
+      padding:11px 8px;
+      border-bottom:1px solid var(--border);
+    }
+
+    .transactions th{
+      color:var(--muted);
+      font-weight:600;
+      font-size:.8rem;
+      text-transform:uppercase;
+      letter-spacing:.4px;
+    }
+
+    .chip{
+      display:inline-block;
+      padding:4px 8px;
+      border-radius:999px;
+      font-size:.75rem;
+      font-weight:700;
+    }
+    .chip.credit{background:#dcfce7;color:#166534}
+    .chip.debit{background:#fee2e2;color:#991b1b}
+
+    .actions{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:10px;
+    }
+
+    .btn{
+      border:1px solid var(--border);
+      background:#fff;
+      border-radius:12px;
+      padding:12px;
+      text-align:left;
+      cursor:pointer;
+      transition:.2s ease;
+      font-weight:600;
+      color:var(--text);
+    }
+
+    .btn:hover{transform:translateY(-1px);box-shadow:var(--shadow)}
+    .btn.primary{
+      background:var(--primary);
+      color:white;
+      border-color:var(--primary);
+    }
+    .btn.primary:hover{background:var(--primary-2)}
+
+    .progress-wrap{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .bar{
+      width:100%;
+      height:10px;
+      border-radius:999px;
+      background:#e5e7eb;
+      overflow:hidden;
+    }
+
+    .bar > span{
+      display:block;height:100%;
+      background:linear-gradient(90deg,#22c55e,#16a34a);
+      width:62%;
+    }
+
+    .muted{color:var(--muted);font-size:.9rem}
+
+    @media (max-width: 1024px){
+      .app{grid-template-columns:1fr}
+      .sidebar{display:none}
+      .span-8,.span-4,.span-6{grid-column:span 12}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo">B</div>
+        <h1>BlueOak Bank</h1>
+      </div>
+
+      <nav class="nav">
+        <button class="active">Dashboard</button>
+        <button>Accounts</button>
+        <button>Cards</button>
+        <button>Payments</button>
+        <button>Transfers</button>
+        <button>Investments</button>
+        <button>Support</button>
+      </nav>
+
+      <div class="card">
+        <strong>Need help?</strong><br />
+        Chat with support anytime in the Support section.
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="search">
+          🔎
+          <input type="text" placeholder="Search transactions, payees, cards..." />
+        </div>
+        <div class="user">
+          <div class="avatar">AJ</div>
+          <div>
+            <div style="font-weight:700;font-size:.92rem;">Alex Johnson</div>
+            <div class="muted" style="font-size:.8rem;">Premium Checking</div>
+          </div>
+        </div>
+      </div>
+
+      <section class="grid">
+        <article class="panel balance-card span-8">
+          <h2>Total Available Balance</h2>
+          <div class="amount">$24,580.42</div>
+          <div class="balance-meta">
+            <div>Account: •••• 4921</div>
+            <div>Next Statement: Aug 02</div>
+            <div>Status: Active</div>
+          </div>
+        </article>
+
+        <article class="panel span-4">
+          <h3 class="section-title">Quick Actions</h3>
+          <div class="actions">
+            <button class="btn primary">+ Transfer</button>
+            <button class="btn">Pay Bill</button>
+            <button class="btn">Deposit</button>
+            <button class="btn">New Card</button>
+          </div>
+        </article>
+
+        <article class="panel span-4">
+          <div class="kpi">
+            <span class="label">Income (This Month)</span>
+            <span class="value">$8,420.00</span>
+            <span class="delta up">▲ 12.4%</span>
+          </div>
+        </article>
+
+        <article class="panel span-4">
+          <div class="kpi">
+            <span class="label">Spending (This Month)</span>
+            <span class="value">$5,196.73</span>
+            <span class="delta down">▼ 4.1%</span>
+          </div>
+        </article>
+
+        <article class="panel span-4">
+          <div class="kpi">
+            <span class="label">Savings Goal Progress</span>
+            <span class="value">$12,400 / $20,000</span>
+            <div class="progress-wrap">
+              <div class="bar"><span></span></div>
+              <span class="muted">62% complete</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel span-12">
+          <h3 class="section-title">Recent Transactions</h3>
+          <table class="transactions">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Category</th>
+                <th>Type</th>
+                <th style="text-align:right;">Amount</th>
+              </tr>
+            </thead>
+            <tbody id="txn-body"></tbody>
+          </table>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const transactions = [
+      { date: "2026-07-19", description: "Payroll Deposit", category: "Income", type: "Credit", amount: 3200.00 },
+      { date: "2026-07-18", description: "GreenMart Grocery", category: "Groceries", type: "Debit", amount: -142.86 },
+      { date: "2026-07-17", description: "City Electric", category: "Utilities", type: "Debit", amount: -89.25 },
+      { date: "2026-07-16", description: "Coffee House", category: "Dining", type: "Debit", amount: -12.40 },
+      { date: "2026-07-15", description: "Stock Dividend", category: "Investments", type: "Credit", amount: 46.12 },
+      { date: "2026-07-14", description: "RideShare", category: "Transport", type: "Debit", amount: -21.30 }
+    ];
+
+    const tbody = document.getElementById("txn-body");
+
+    function formatCurrency(value) {
+      return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
+    }
+
+    transactions.forEach(txn => {
+      const tr = document.createElement("tr");
+
+      const tdDate = document.createElement("td");
+      tdDate.textContent = new Date(txn.date).toLocaleDateString("en-US", {
+        month: "short", day: "numeric", year: "numeric"
+      });
+
+      const tdDesc = document.createElement("td");
+      tdDesc.textContent = txn.description;
+
+      const tdCat = document.createElement("td");
+      tdCat.textContent = txn.category;
+
+      const tdType = document.createElement("td");
+      const chip = document.createElement("span");
+      chip.className = `chip ${txn.type.toLowerCase()}`;
+      chip.textContent = txn.type;
+      tdType.appendChild(chip);
+
+      const tdAmount = document.createElement("td");
+      tdAmount.style.textAlign = "right";
+      tdAmount.style.fontWeight = "700";
+      tdAmount.style.color = txn.amount >= 0 ? "var(--success)" : "var(--danger)";
+      tdAmount.textContent = formatCurrency(txn.amount);
+
+      tr.append(tdDate, tdDesc, tdCat, tdType, tdAmount);
+      tbody.appendChild(tr);
+    });
+  </script>
+</body>
+</html>

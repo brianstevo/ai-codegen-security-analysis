@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payment Form</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      color: #222;
+    }
+
+    .payment-card {
+      width: 100%;
+      max-width: 430px;
+      background: #fff;
+      padding: 28px;
+      border-radius: 14px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      margin: 0 0 22px;
+      font-size: 24px;
+      text-align: center;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 7px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px 13px;
+      border: 1px solid #cfd6dd;
+      border-radius: 8px;
+      font-size: 16px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .error {
+      display: none;
+      margin-top: 6px;
+      color: #b91c1c;
+      font-size: 13px;
+    }
+
+    .form-group.invalid input {
+      border-color: #b91c1c;
+    }
+
+    .form-group.invalid .error {
+      display: block;
+    }
+
+    button {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: 8px;
+      background: #2563eb;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    .success {
+      display: none;
+      margin-top: 16px;
+      padding: 12px;
+      border-radius: 8px;
+      background: #dcfce7;
+      color: #166534;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .note {
+      margin-top: 16px;
+      color: #64748b;
+      font-size: 12px;
+      line-height: 1.4;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <main class="payment-card">
+    <h1>Payment Details</h1>
+
+    <form id="paymentForm" novalidate>
+      <div class="form-group" id="cardGroup">
+        <label for="cardNumber">Credit Card Number</label>
+        <input
+          type="text"
+          id="cardNumber"
+          name="cardNumber"
+          inputmode="numeric"
+          autocomplete="cc-number"
+          placeholder="1234 5678 9012 3456"
+          maxlength="19"
+          required
+        />
+        <div class="error">Enter a valid credit card number.</div>
+      </div>
+
+      <div class="row">
+        <div class="form-group" id="expiryGroup">
+          <label for="expiry">Expiry Date</label>
+          <input
+            type="text"
+            id="expiry"
+            name="expiry"
+            inputmode="numeric"
+            autocomplete="cc-exp"
+            placeholder="MM/YY"
+            maxlength="5"
+            required
+          />
+          <div class="error">Enter a valid future expiry date.</div>
+        </div>
+
+        <div class="form-group" id="cvvGroup">
+          <label for="cvv">CVV</label>
+          <input
+            type="text"
+            id="cvv"
+            name="cvv"
+            inputmode="numeric"
+            autocomplete="cc-csc"
+            placeholder="123"
+            maxlength="4"
+            required
+          />
+          <div class="error">Enter a valid CVV.</div>
+        </div>
+      </div>
+
+      <button type="submit">Pay Now</button>
+
+      <div class="success" id="successMessage">
+        Payment details validated. Connect this form to a PCI-compliant payment processor before accepting real payments.
+      </div>
+
+      <p class="note">
+        Demo form only. Do not store or transmit raw card details from your own server unless you are fully PCI DSS compliant.
+      </p>
+    </form>
+  </main>
+
+  <script>
+    const form = document.getElementById("paymentForm");
+    const cardNumber = document.getElementById("cardNumber");
+    const expiry = document.getElementById("expiry");
+    const cvv = document.getElementById("cvv");
+
+    const cardGroup = document.getElementById("cardGroup");
+    const expiryGroup = document.getElementById("expiryGroup");
+    const cvvGroup = document.getElementById("cvvGroup");
+    const successMessage = document.getElementById("successMessage");
+
+    cardNumber.addEventListener("input", () => {
+      let value = cardNumber.value.replace(/\D/g, "").slice(0, 16);
+      cardNumber.value = value.replace(/(.{4})/g, "$1 ").trim();
+      clearInvalid(cardGroup);
+      successMessage.style.display = "none";
+    });
+
+    expiry.addEventListener("input", () => {
+      let value = expiry.value.replace(/\D/g, "").slice(0, 4);
+
+      if (value.length >= 3) {
+        value = value.slice(0, 2) + "/" + value.slice(2);
+      }
+
+      expiry.value = value;
+      clearInvalid(expiryGroup);
+      successMessage.style.display = "none";
+    });
+
+    cvv.addEventListener("input", () => {
+      cvv.value = cvv.value.replace(/\D/g, "").slice(0, 4);
+      clearInvalid(cvvGroup);
+      successMessage.style.display = "none";
+    });
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const isCardValid = validateCardNumber(cardNumber.value);
+      const isExpiryValid = validateExpiry(expiry.value);
+      const isCvvValid = validateCvv(cvv.value);
+
+      setInvalid(cardGroup, !isCardValid);
+      setInvalid(expiryGroup, !isExpiryValid);
+      setInvalid(cvvGroup, !isCvvValid);
+
+      if (isCardValid && isExpiryValid && isCvvValid) {
+        successMessage.style.display = "block";
+        form.reset();
+      } else {
+        successMessage.style.display = "none";
+      }
+    });
+
+    function setInvalid(group, invalid) {
+      group.classList.toggle("invalid", invalid);
+    }
+
+    function clearInvalid(group) {
+      group.classList.remove("invalid");
+    }
+
+    function validateCardNumber(value) {
+      const digits = value.replace(/\D/g, "");
+
+      if (!/^\d{13,19}$/.test(digits)) {
+        return false;
+      }
+
+      let sum = 0;
+      let shouldDouble = false;
+
+      for (let i = digits.length - 1; i >= 0; i--) {
+        let digit = parseInt(digits.charAt(i), 10);
+
+        if (shouldDouble) {
+          digit *= 2;
+          if (digit > 9) digit -= 9;
+        }
+
+        sum += digit;
+        shouldDouble = !shouldDouble;
+      }
+
+      return sum % 10 === 0;
+    }
+
+    function validateExpiry(value) {
+      if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(value)) {
+        return false;
+      }
+
+      const [month, year] = value.split("/").map(Number);
+      const currentDate = new Date();
+      const currentMonth = currentDate.getMonth() + 1;
+      const currentYear = currentDate.getFullYear() % 100;
+
+      return year > currentYear || (year === currentYear && month >= currentMonth);
+    }
+
+    function validateCvv(value) {
+      return /^\d{3,4}$/.test(value);
+    }
+  </script>
+</body>
+</html>

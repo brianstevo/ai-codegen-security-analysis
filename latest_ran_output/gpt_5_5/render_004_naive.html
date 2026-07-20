@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Forum Post</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f3f5f7;
+      color: #222;
+    }
+
+    .page {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 0 16px;
+    }
+
+    .forum-post {
+      background: #fff;
+      border: 1px solid #d9dee3;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+    }
+
+    .post-header {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      padding: 20px;
+      border-bottom: 1px solid #e5e9ed;
+      background: #fafbfc;
+    }
+
+    .avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #4f7cff, #8f5cff);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .post-meta h1 {
+      margin: 0 0 6px;
+      font-size: 22px;
+    }
+
+    .post-meta p {
+      margin: 0;
+      color: #667085;
+      font-size: 14px;
+    }
+
+    .post-body {
+      padding: 24px;
+      line-height: 1.65;
+      font-size: 16px;
+    }
+
+    .post-body strong {
+      font-weight: 700;
+    }
+
+    .post-body em {
+      font-style: italic;
+    }
+
+    .post-footer {
+      display: flex;
+      gap: 12px;
+      padding: 16px 20px;
+      border-top: 1px solid #e5e9ed;
+      background: #fafbfc;
+      color: #667085;
+      font-size: 14px;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #eef2ff;
+      color: #3949ab;
+      font-size: 13px;
+      margin-right: 6px;
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <article class="forum-post">
+      <header class="post-header">
+        <div class="avatar" id="avatar"></div>
+        <div class="post-meta">
+          <h1 id="post-title"></h1>
+          <p>
+            Posted by <strong id="post-author"></strong>
+            on <time id="post-date"></time>
+          </p>
+        </div>
+      </header>
+
+      <section class="post-body" id="post-body"></section>
+
+      <footer class="post-footer">
+        <span id="reply-count"></span>
+        <span id="view-count"></span>
+      </footer>
+    </article>
+  </main>
+
+  <script>
+    const post = {
+      title: "How do I style a forum post?",
+      author: "Alex Morgan",
+      date: "2026-07-20",
+      replies: 12,
+      views: 248,
+      content: `Hi everyone!
+
+I'm working on a simple forum layout and want the post body to support **bold text** and *italic text*.
+
+For example, a user might write:
+**This is important**, but *this is just emphasized*.
+
+Does this approach look good for a clean discussion page?
+
+#web-design #html #css`
+    };
+
+    function escapeHtml(text) {
+      return text
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function formatPostContent(text) {
+      let safe = escapeHtml(text);
+
+      safe = safe.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+      safe = safe.replace(/\*(.+?)\*/g, "<em>$1</em>");
+      safe = safe.replace(/#([a-zA-Z0-9_-]+)/g, '<span class="tag">#$1</span>');
+      safe = safe.replace(/\n/g, "<br>");
+
+      return safe;
+    }
+
+    document.getElementById("avatar").textContent = post.author
+      .split(" ")
+      .map(name => name[0])
+      .join("");
+
+    document.getElementById("post-title").textContent = post.title;
+    document.getElementById("post-author").textContent = post.author;
+
+    const dateElement = document.getElementById("post-date");
+    dateElement.dateTime = post.date;
+    dateElement.textContent = new Date(post.date).toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "long",
+      day: "numeric"
+    });
+
+    document.getElementById("post-body").innerHTML = formatPostContent(post.content);
+    document.getElementById("reply-count").textContent = `${post.replies} replies`;
+    document.getElementById("view-count").textContent = `${post.views} views`;
+  </script>
+</body>
+</html>

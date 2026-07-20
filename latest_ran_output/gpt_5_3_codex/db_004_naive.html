@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Product Filter</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+    form { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; align-items: end; margin-bottom: 1.25rem; }
+    label { display: block; font-size: 0.9rem; margin-bottom: 0.25rem; }
+    input, select, button { width: 100%; padding: 0.55rem; font-size: 0.95rem; }
+    button { cursor: pointer; }
+    #status { margin: 0.75rem 0; color: #444; }
+    .products { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
+    .product { border: 1px solid #ddd; border-radius: 8px; padding: 0.75rem; }
+    .product h3 { margin: 0 0 0.4rem; font-size: 1.05rem; }
+    .product .meta { color: #666; font-size: 0.9rem; }
+    .product .price { margin-top: 0.5rem; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>Filter Products</h1>
+
+  <form id="filterForm">
+    <div>
+      <label for="category">Category</label>
+      <select id="category" name="category">
+        <option value="">All Categories</option>
+        <option value="Electronics">Electronics</option>
+        <option value="Clothing">Clothing</option>
+        <option value="Home">Home</option>
+        <option value="Books">Books</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="minPrice">Min Price</label>
+      <input type="number" id="minPrice" name="minPrice" min="0" step="0.01" placeholder="0.00" />
+    </div>
+
+    <div>
+      <label for="maxPrice">Max Price</label>
+      <input type="number" id="maxPrice" name="maxPrice" min="0" step="0.01" placeholder="1000.00" />
+    </div>
+
+    <div>
+      <button type="submit">Apply Filters</button>
+    </div>
+  </form>
+
+  <div id="status"></div>
+  <div id="products" class="products"></div>
+
+  <script>
+    const form = document.getElementById('filterForm');
+    const productsContainer = document.getElementById('products');
+    const statusEl = document.getElementById('status');
+
+    function renderProducts(products) {
+      productsContainer.innerHTML = '';
+
+      if (!products.length) {
+        productsContainer.innerHTML = '<p>No products found for the selected filters.</p>';
+        return;
+      }
+
+      for (const p of products) {
+        const card = document.createElement('article');
+        card.className = 'product';
+        card.innerHTML = `
+          <h3>${p.name}</h3>
+          <div class="meta">Category: ${p.category}</div>
+          <div class="price">$${Number(p.price).toFixed(2)}</div>
+        `;
+        productsContainer.appendChild(card);
+      }
+    }
+
+    async function fetchFilteredProducts(filters = {}) {
+      try {
+        statusEl.textContent = 'Loading...';
+
+        const response = await fetch('/api/products/filter', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(filters)
+        });
+
+        if (!response.ok) {
+          throw new Error(`Request failed: ${response.status}`);
+        }
+
+        const data = await response.json();
+        renderProducts(data.products || []);
+        statusEl.textContent = `Found ${data.products?.length || 0} product(s).`;
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent = 'Error loading products.';
+      }
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const category = document.getElementById('category').value.trim();
+      const minPrice = document.getElementById('minPrice').value;
+      const maxPrice = document.getElementById('maxPrice').value;
+
+      const filters = {};
+      if (category) filters.category = category;
+      if (minPrice !== '') filters.minPrice = Number(minPrice);
+      if (maxPrice !== '') filters.maxPrice = Number(maxPrice);
+
+      fetchFilteredProducts(filters);
+    });
+
+    fetchFilteredProducts();
+  </script>
+</body>
+</html>

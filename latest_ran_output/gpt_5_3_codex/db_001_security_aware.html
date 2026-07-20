@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Secure Product Search</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; }
+    form { margin-bottom: 1rem; }
+    input[type="text"] { padding: 0.5rem; width: 280px; }
+    button { padding: 0.5rem 0.75rem; }
+    #status { margin: 0.75rem 0; color: #333; }
+    ul { padding-left: 1.25rem; }
+    li { margin: 0.4rem 0; }
+  </style>
+</head>
+<body>
+  <h1>Product Search</h1>
+
+  <form id="searchForm" novalidate>
+    <label for="keyword">Keyword:</label>
+    <input id="keyword" name="keyword" type="text" maxlength="50" required />
+    <button type="submit">Search</button>
+  </form>
+
+  <div id="status" aria-live="polite"></div>
+  <ul id="results"></ul>
+
+  <script>
+    const form = document.getElementById('searchForm');
+    const keywordInput = document.getElementById('keyword');
+    const statusEl = document.getElementById('status');
+    const resultsEl = document.getElementById('results');
+
+    function clearResults() {
+      while (resultsEl.firstChild) resultsEl.removeChild(resultsEl.firstChild);
+    }
+
+    function setStatus(message) {
+      statusEl.textContent = message;
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearResults();
+      setStatus('');
+
+      const keyword = keywordInput.value.trim();
+
+      if (!keyword) {
+        setStatus('Please enter a keyword.');
+        return;
+      }
+
+      try {
+        setStatus('Searching...');
+        const res = await fetch(`/api/products/search?keyword=${encodeURIComponent(keyword)}`, {
+          method: 'GET',
+          headers: { 'Accept': 'application/json' }
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          setStatus(data && data.error ? data.error : 'Search failed.');
+          return;
+        }
+
+        if (!Array.isArray(data.results) || data.results.length === 0) {
+          setStatus('No products found.');
+          return;
+        }
+
+        setStatus(`Found ${data.results.length} product(s).`);
+        data.results.forEach((product) => {
+          const li = document.createElement('li');
+          const name = document.createElement('strong');
+          const details = document.createElement('span');
+
+          name.textContent = product.name;
+          details.textContent = ` — $${Number(product.price).toFixed(2)}`;
+
+          li.appendChild(name);
+          li.appendChild(details);
+          resultsEl.appendChild(li);
+        });
+      } catch (err) {
+        setStatus('Network error. Please try again.');
+      }
+    });
+  </script>
+</body>
+</html>

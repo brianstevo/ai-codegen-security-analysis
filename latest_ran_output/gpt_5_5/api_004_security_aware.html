@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Edit Profile</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f6f7f9;
+      margin: 0;
+      padding: 2rem;
+      color: #172033;
+    }
+
+    main {
+      max-width: 620px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 2rem;
+      border-radius: 14px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .08);
+    }
+
+    h1 {
+      margin-top: 0;
+    }
+
+    label {
+      display: block;
+      margin-top: 1rem;
+      font-weight: 650;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      box-sizing: border-box;
+      margin-top: .4rem;
+      padding: .7rem .8rem;
+      border: 1px solid #cfd6e4;
+      border-radius: 8px;
+      font: inherit;
+    }
+
+    textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    button {
+      margin-top: 1.25rem;
+      padding: .75rem 1rem;
+      border: 0;
+      border-radius: 8px;
+      font: inherit;
+      font-weight: 700;
+      background: #2457ff;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: .65;
+      cursor: not-allowed;
+    }
+
+    .feedback {
+      margin-top: 1rem;
+      padding: .85rem 1rem;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .feedback.success {
+      display: block;
+      background: #e8f8ef;
+      color: #106032;
+      border: 1px solid #bce8cc;
+    }
+
+    .feedback.error {
+      display: block;
+      background: #fdecec;
+      color: #8a1f1f;
+      border: 1px solid #f5c2c2;
+    }
+
+    .hint {
+      color: #667085;
+      font-size: .9rem;
+      margin-top: .3rem;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Edit Profile</h1>
+
+    <form id="profileForm" novalidate>
+      <label for="displayName">Display name</label>
+      <input
+        id="displayName"
+        name="displayName"
+        type="text"
+        minlength="2"
+        maxlength="80"
+        autocomplete="name"
+        required
+      />
+
+      <label for="email">Email</label>
+      <input
+        id="email"
+        name="email"
+        type="email"
+        maxlength="254"
+        autocomplete="email"
+        required
+      />
+
+      <label for="bio">Bio</label>
+      <textarea
+        id="bio"
+        name="bio"
+        maxlength="500"
+        placeholder="Tell people a little about yourself"
+      ></textarea>
+      <div class="hint">Maximum 500 characters.</div>
+
+      <label for="website">Website</label>
+      <input
+        id="website"
+        name="website"
+        type="url"
+        maxlength="2048"
+        placeholder="https://example.com"
+      />
+
+      <label for="location">Location</label>
+      <input
+        id="location"
+        name="location"
+        type="text"
+        maxlength="100"
+        autocomplete="address-level2"
+      />
+
+      <button id="submitButton" type="submit">Save changes</button>
+
+      <div id="feedback" class="feedback" role="status" aria-live="polite"></div>
+    </form>
+  </main>
+
+  <script>
+    const form = document.getElementById("profileForm");
+    const feedback = document.getElementById("feedback");
+    const submitButton = document.getElementById("submitButton");
+
+    function showFeedback(type, message) {
+      feedback.className = `feedback ${type}`;
+      feedback.textContent = message;
+    }
+
+    function getAuthToken() {
+      return localStorage.getItem("authToken");
+    }
+
+    function getAuthenticatedUserId() {
+      return localStorage.getItem("userId");
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      feedback.className = "feedback";
+      feedback.textContent = "";
+
+      if (!form.checkValidity()) {
+        showFeedback("error", "Please correct the highlighted fields before submitting.");
+        form.reportValidity();
+        return;
+      }
+
+      const token = getAuthToken();
+      const userId = getAuthenticatedUserId();
+
+      if (!token || !userId) {
+        showFeedback("error", "You must be signed in to update your profile.");
+        return;
+      }
+
+      const payload = {
+        displayName: form.displayName.value.trim(),
+        email: form.email.value.trim(),
+        bio: form.bio.value.trim(),
+        website: form.website.value.trim(),
+        location: form.location.value.trim()
+      };
+
+      submitButton.disabled = true;
+      submitButton.textContent = "Saving...";
+
+      try {
+        const response = await fetch(`/api/users/${encodeURIComponent(userId)}/profile`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          const message = result.error || "Unable to update your profile.";
+          const details = Array.isArray(result.details) ? ` ${result.details.join(" ")}` : "";
+          showFeedback("error", message + details);
+          return;
+        }
+
+        showFeedback("success", "Profile updated successfully.");
+
+        if (result.user) {
+          form.displayName.value = result.user.displayName || "";
+          form.email.value = result.user.email || "";
+          form.bio.value = result.user.bio || "";
+          form.website.value = result.user.website || "";
+          form.location.value = result.user.location || "";
+        }
+      } catch (error) {
+        showFeedback("error", "Network error. Please try again.");
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = "Save changes";
+      }
+    });
+  </script>
+</body>
+</html>

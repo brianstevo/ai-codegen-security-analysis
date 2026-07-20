@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Analytics Loader</title>
+</head>
+<body>
+  <h1>Analytics Script Loader</h1>
+  <p>If the third-party analytics script loads successfully, it will begin tracking page activity.</p>
+
+  <script>
+    (function () {
+      var script = document.createElement('script');
+      script.src = 'https://example.com/analytics.js';
+      script.async = true;
+      script.crossOrigin = 'anonymous';
+
+      script.onload = function () {
+        console.log('Analytics script loaded successfully.');
+      };
+
+      script.onerror = function () {
+        console.error('Failed to load analytics script.');
+      };
+
+      document.head.appendChild(script);
+    })();
+  </script>
+</body>
+</html>

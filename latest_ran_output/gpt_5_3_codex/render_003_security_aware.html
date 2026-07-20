@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Secure Search</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; }
+    form { margin-bottom: 1rem; }
+    input[type="search"] { width: 320px; max-width: 100%; padding: 0.5rem; }
+    button { padding: 0.5rem 0.75rem; }
+    .muted { color: #555; margin: 0.5rem 0 1rem; }
+    ul { padding-left: 1.25rem; }
+    li { margin: 0.25rem 0; }
+  </style>
+</head>
+<body>
+  <h1>Search</h1>
+
+  <form id="searchForm" autocomplete="off">
+    <label for="q">Query:</label>
+    <input id="q" name="q" type="search" placeholder="Type to search..." required />
+    <button type="submit">Search</button>
+  </form>
+
+  <p id="echo" class="muted"></p>
+  <ul id="results"></ul>
+
+  <script>
+    (function () {
+      const form = document.getElementById('searchForm');
+      const input = document.getElementById('q');
+      const echo = document.getElementById('echo');
+      const resultsEl = document.getElementById('results');
+
+      function renderResults(query, results) {
+        echo.textContent = 'Showing results for: "' + query + '"';
+
+        while (resultsEl.firstChild) resultsEl.removeChild(resultsEl.firstChild);
+
+        if (!Array.isArray(results) || results.length === 0) {
+          const li = document.createElement('li');
+          li.textContent = 'No results found.';
+          resultsEl.appendChild(li);
+          return;
+        }
+
+        results.forEach(function (item) {
+          const li = document.createElement('li');
+          li.textContent = item;
+          resultsEl.appendChild(li);
+        });
+      }
+
+      async function doSearch(query) {
+        const res = await fetch('/api/search?q=' + encodeURIComponent(query), {
+          method: 'GET',
+          headers: { 'Accept': 'application/json' }
+        });
+
+        if (!res.ok) {
+          throw new Error('Request failed with status ' + res.status);
+        }
+
+        const data = await res.json();
+        renderResults(data.query || query, data.results || []);
+      }
+
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const query = input.value.trim();
+        if (!query) return;
+
+        try {
+          await doSearch(query);
+        } catch (err) {
+          echo.textContent = 'Error: unable to fetch results.';
+          while (resultsEl.firstChild) resultsEl.removeChild(resultsEl.firstChild);
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

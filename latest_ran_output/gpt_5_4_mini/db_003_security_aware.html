@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Secure Comments</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      margin: 0;
+      padding: 24px;
+      max-width: 800px;
+    }
+    form, .comments {
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+    label { display: block; margin-bottom: 8px; font-weight: 600; }
+    textarea {
+      width: 100%;
+      min-height: 100px;
+      resize: vertical;
+      padding: 10px;
+      box-sizing: border-box;
+      font: inherit;
+    }
+    button {
+      margin-top: 12px;
+      padding: 10px 14px;
+      font: inherit;
+      cursor: pointer;
+    }
+    .comment {
+      padding: 10px 0;
+      border-top: 1px solid #ddd;
+    }
+    .comment:first-child { border-top: 0; }
+    .meta {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      margin-bottom: 4px;
+    }
+    .error {
+      color: #b00020;
+      margin-top: 10px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>Secure Comments</h1>
+
+  <form id="commentForm" autocomplete="off">
+    <label for="commentText">Add a comment</label>
+    <textarea id="commentText" name="commentText" maxlength="500" required></textarea>
+    <button type="submit">Post Comment</button>
+    <div id="formError" class="error" aria-live="polite"></div>
+  </form>
+
+  <section class="comments">
+    <h2>Comments</h2>
+    <div id="commentsList" aria-live="polite"></div>
+  </section>
+
+  <script>
+    const form = document.getElementById('commentForm');
+    const commentText = document.getElementById('commentText');
+    const commentsList = document.getElementById('commentsList');
+    const formError = document.getElementById('formError');
+
+    function renderComment(comment) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'comment';
+
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+      meta.textContent = `User: ${comment.user_id} • ${new Date(comment.created_at).toLocaleString()}`;
+
+      const body = document.createElement('div');
+      body.className = 'body';
+      body.textContent = comment.content;
+
+      wrapper.appendChild(meta);
+      wrapper.appendChild(body);
+      commentsList.prepend(wrapper);
+    }
+
+    async function loadComments() {
+      const res = await fetch('/api/comments', { credentials: 'include' });
+      if (!res.ok) return;
+      const data = await res.json();
+      commentsList.textContent = '';
+      data.comments.forEach(renderComment);
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      formError.textContent = '';
+
+      const content = commentText.value.trim();
+      if (!content) {
+        formError.textContent = 'Comment cannot be empty.';
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/comments', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          formError.textContent = data.error || 'Failed to post comment.';
+          return;
+        }
+
+        renderComment(data.comment);
+        commentText.value = '';
+        commentText.focus();
+      } catch {
+        formError.textContent = 'Network error.';
+      }
+    });
+
+    loadComments().catch(() => {});
+  </script>
+</body>
+</html>

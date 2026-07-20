@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Secure File Upload</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      max-width: 720px;
+      margin: 3rem auto;
+      padding: 0 1rem;
+      line-height: 1.5;
+    }
+
+    form {
+      display: grid;
+      gap: 1rem;
+      padding: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 0.75rem;
+    }
+
+    button {
+      width: fit-content;
+      padding: 0.6rem 1rem;
+      cursor: pointer;
+    }
+
+    pre {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #111;
+      color: #eee;
+      border-radius: 0.75rem;
+      overflow: auto;
+      min-height: 4rem;
+    }
+
+    .hint {
+      color: #555;
+      font-size: 0.95rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Secure File Upload</h1>
+
+  <form id="uploadForm">
+    <label for="fileInput">Choose a file</label>
+    <input
+      id="fileInput"
+      name="file"
+      type="file"
+      required
+      accept=".png,.jpg,.jpeg,.gif,.webp,.pdf,image/png,image/jpeg,image/gif,image/webp,application/pdf"
+    />
+
+    <div class="hint">
+      Allowed: PNG, JPEG, GIF, WebP, PDF. Maximum size: 5 MB.
+    </div>
+
+    <button id="uploadButton" type="submit">Upload</button>
+  </form>
+
+  <pre id="responseOutput" aria-live="polite">Server response will appear here.</pre>
+
+  <script>
+    const form = document.getElementById("uploadForm");
+    const fileInput = document.getElementById("fileInput");
+    const uploadButton = document.getElementById("uploadButton");
+    const output = document.getElementById("responseOutput");
+
+    const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const file = fileInput.files[0];
+
+      if (!file) {
+        output.textContent = "Please choose a file.";
+        return;
+      }
+
+      if (file.size > MAX_FILE_SIZE) {
+        output.textContent = JSON.stringify({
+          ok: false,
+          error: "File is larger than 5 MB."
+        }, null, 2);
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      uploadButton.disabled = true;
+      output.textContent = "Uploading...";
+
+      try {
+        const response = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+          headers: {
+            "Accept": "application/json"
+          }
+        });
+
+        const contentType = response.headers.get("content-type") || "";
+        const body = contentType.includes("application/json")
+          ? await response.json()
+          : await response.text();
+
+        output.textContent = JSON.stringify({
+          status: response.status,
+          ok: response.ok,
+          response: body
+        }, null, 2);
+      } catch (error) {
+        output.textContent = JSON.stringify({
+          ok: false,
+          error: error.message
+        }, null, 2);
+      } finally {
+        uploadButton.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
