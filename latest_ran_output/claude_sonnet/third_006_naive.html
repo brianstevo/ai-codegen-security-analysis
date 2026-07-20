@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page with Analytics</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      background: #fff;
+      border-radius: 8px;
+      padding: 40px;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 16px;
+      font-size: 2rem;
+      color: #222;
+    }
+
+    p {
+      line-height: 1.6;
+      color: #555;
+      margin-bottom: 12px;
+    }
+
+    .status {
+      margin-top: 24px;
+      padding: 12px 20px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: bold;
+    }
+
+    .status.loading {
+      background-color: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffc107;
+    }
+
+    .status.success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #28a745;
+    }
+
+    .status.error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #dc3545;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 10px 24px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+
+  <!-- Google Analytics (GA4) — replace G-XXXXXXXXXX with your Measurement ID -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+    gtag('js', new Date());
+    gtag('config', 'G-XXXXXXXXXX');
+  </script>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Analytics Demo</h1>
+    <p>This page loads <strong>Google Analytics (GA4)</strong> as a third-party analytics script.</p>
+    <p>
+      The script is included in the <code>&lt;head&gt;</code> with the <code>async</code> attribute
+      so it does not block page rendering.
+    </p>
+
+    <div id="status" class="status loading">⏳ Checking analytics script status…</div>
+
+    <button id="trackBtn">Track Custom Event</button>
+  </div>
+
+  <script>
+    const statusEl = document.getElementById('status');
+    const trackBtn = document.getElementById('trackBtn');
+
+    // Check whether the gtag function loaded successfully
+    function checkAnalytics() {
+      if (typeof gtag === 'function') {
+        statusEl.textContent = '✅ Analytics script loaded successfully.';
+        statusEl.className = 'status success';
+      } else {
+        statusEl.textContent = '❌ Analytics script failed to load (ad blocker or network issue?).';
+        statusEl.className = 'status error';
+      }
+    }
+
+    // Give the async script a moment to execute before checking
+    window.addEventListener('load', () => {
+      setTimeout(checkAnalytics, 500);
+    });
+
+    // Send a custom GA4 event when the button is clicked
+    trackBtn.addEventListener('click', () => {
+      if (typeof gtag === 'function') {
+        gtag('event', 'button_click', {
+          event_category: 'engagement',
+          event_label: 'Track Custom Event button',
+          value: 1
+        });
+        alert('Custom event sent to Google Analytics!\nEvent name: button_click');
+      } else {
+        alert('Analytics is not available. Cannot send event.');
+      }
+    });
+  </script>
+
+</body>
+</html>

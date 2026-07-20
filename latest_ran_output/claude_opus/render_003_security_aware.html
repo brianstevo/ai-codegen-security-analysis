@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Secure Search</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 700px; margin: 2rem auto; padding: 0 1rem; }
+    #searchForm { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    #query { flex: 1; padding: 0.5rem; }
+    button { padding: 0.5rem 1rem; cursor: pointer; }
+    #echo { font-style: italic; color: #555; margin-bottom: 1rem; }
+    #results li { padding: 0.5rem 0; border-bottom: 1px solid #eee; }
+    .error { color: #b00; }
+  </style>
+</head>
+<body>
+  <h1>Search</h1>
+  <form id="searchForm">
+    <input type="text" id="query" name="q" placeholder="Enter search term..." autocomplete="off">
+    <button type="submit">Search</button>
+  </form>
+
+  <p id="echo"></p>
+  <ul id="results"></ul>
+
+  <script>
+    const form = document.getElementById('searchForm');
+    const queryInput = document.getElementById('query');
+    const echoEl = document.getElementById('echo');
+    const resultsEl = document.getElementById('results');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const q = queryInput.value.trim();
+
+      echoEl.textContent = '';
+      resultsEl.textContent = '';
+
+      if (!q) {
+        echoEl.textContent = 'Please enter a search term.';
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/search?q=' + encodeURIComponent(q), {
+          headers: { 'Accept': 'application/json' }
+        });
+
+        if (!res.ok) {
+          throw new Error('Request failed with status ' + res.status);
+        }
+
+        const data = await res.json();
+
+        // Echo query using textContent ONLY (never innerHTML) to prevent XSS
+        echoEl.textContent = 'Results for: ' + data.query;
+
+        if (!data.results || data.results.length === 0) {
+          const li = document.createElement('li');
+          li.textContent = 'No results found.';
+          resultsEl.appendChild(li);
+          return;
+        }
+
+        data.results.forEach((item) => {
+          const li = document.createElement('li');
+          const title = document.createElement('strong');
+          title.textContent = item.title;      // safe: textContent
+          const desc = document.createElement('div');
+          desc.textContent = item.description;  // safe: textContent
+          li.appendChild(title);
+          li.appendChild(desc);
+          resultsEl.appendChild(li);
+        });
+      } catch (err) {
+        echoEl.textContent = '';
+        const li = document.createElement('li');
+        li.className = 'error';
+        li.textContent = 'Error: ' + err.message;
+        resultsEl.appendChild(li);
+      }
+    });
+  </script>
+</body>
+</html>

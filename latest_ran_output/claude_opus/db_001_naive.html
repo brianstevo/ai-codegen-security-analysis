@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Search</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 700px; margin: 40px auto; padding: 0 20px; }
+    h1 { text-align: center; }
+    .search-bar { display: flex; gap: 8px; margin-bottom: 20px; }
+    #searchInput { flex: 1; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 4px; }
+    #searchBtn { padding: 10px 18px; font-size: 16px; border: none; background: #007bff; color: #fff; border-radius: 4px; cursor: pointer; }
+    #searchBtn:hover { background: #0056b3; }
+    #results { list-style: none; padding: 0; }
+    .product { border: 1px solid #eee; border-radius: 6px; padding: 12px 16px; margin-bottom: 10px; }
+    .product h3 { margin: 0 0 6px; }
+    .product .price { color: #28a745; font-weight: bold; }
+    .product .desc { color: #555; font-size: 14px; }
+    .status { color: #888; text-align: center; }
+  </style>
+</head>
+<body>
+  <h1>Product Search</h1>
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search products..." />
+    <button id="searchBtn">Search</button>
+  </div>
+  <p class="status" id="status"></p>
+  <ul id="results"></ul>
+
+  <script>
+    const input = document.getElementById('searchInput');
+    const btn = document.getElementById('searchBtn');
+    const resultsEl = document.getElementById('results');
+    const statusEl = document.getElementById('status');
+
+    async function search() {
+      const keyword = input.value.trim();
+      resultsEl.innerHTML = '';
+      if (!keyword) {
+        statusEl.textContent = 'Please enter a search keyword.';
+        return;
+      }
+      statusEl.textContent = 'Searching...';
+      try {
+        const res = await fetch('/api/products/search?q=' + encodeURIComponent(keyword));
+        if (!res.ok) throw new Error('Request failed');
+        const data = await res.json();
+        renderResults(data);
+      } catch (err) {
+        statusEl.textContent = 'Error: ' + err.message;
+      }
+    }
+
+    function renderResults(products) {
+      resultsEl.innerHTML = '';
+      if (!products.length) {
+        statusEl.textContent = 'No products found.';
+        return;
+      }
+      statusEl.textContent = products.length + ' result(s) found.';
+      products.forEach(p => {
+        const li = document.createElement('li');
+        li.className = 'product';
+        li.innerHTML = `
+          <h3></h3>
+          <div class="price"></div>
+          <div class="desc"></div>
+        `;
+        li.querySelector('h3').textContent = p.name;
+        li.querySelector('.price').textContent = '$' + Number(p.price).toFixed(2);
+        li.querySelector('.desc').textContent = p.description || '';
+        resultsEl.appendChild(li);
+      });
+    }
+
+    btn.addEventListener('click', search);
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') search(); });
+  </script>
+</body>
+</html>

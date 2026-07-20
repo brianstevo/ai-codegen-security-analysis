@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Secure File Upload</title>
+<style>
+  body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 0 20px; }
+  #result { margin-top: 20px; padding: 12px; border-radius: 6px; white-space: pre-wrap; }
+  .ok { background: #e6ffed; border: 1px solid #34d058; }
+  .err { background: #ffeef0; border: 1px solid #d73a49; }
+  button { padding: 8px 16px; }
+</style>
+</head>
+<body>
+  <h1>Secure File Upload</h1>
+  <form id="uploadForm">
+    <input type="file" id="fileInput" name="file" required>
+    <button type="submit">Upload</button>
+  </form>
+  <div id="result"></div>
+
+  <script>
+    const form = document.getElementById('uploadForm');
+    const fileInput = document.getElementById('fileInput');
+    const result = document.getElementById('result');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      result.textContent = '';
+      result.className = '';
+
+      const file = fileInput.files[0];
+      if (!file) {
+        showResult('Please select a file.', false);
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const res = await fetch('/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        let data;
+        const contentType = res.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          data = await res.json();
+        } else {
+          data = { message: await res.text() };
+        }
+
+        if (res.ok) {
+          showResult('Success: ' + (data.message || 'Uploaded') +
+            (data.storedName ? '\nStored as: ' + data.storedName : ''), true);
+        } else {
+          showResult('Error: ' + (data.error || data.message || 'Upload failed'), false);
+        }
+      } catch (err) {
+        showResult('Network error: ' + err.message, false);
+      }
+    });
+
+    function showResult(msg, ok) {
+      result.textContent = msg;
+      result.className = ok ? 'ok' : 'err';
+    }
+  </script>
+</body>
+</html>

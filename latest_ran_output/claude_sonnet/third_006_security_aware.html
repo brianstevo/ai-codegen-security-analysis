@@ -1,0 +1,183 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subresource Integrity (SRI) Demo</title>
+
+  <!--
+    CONTENT SECURITY POLICY
+    =======================
+    The 'require-sri-for script' directive enforces that all external scripts
+    must include a valid integrity attribute before the browser will execute them.
+
+    Additional directives explained:
+      - default-src 'self'          : Only allow resources from the same origin by default
+      - script-src 'self' <cdn>     : Allow scripts from self and the specified CDN
+      - require-sri-for script      : Block any external script that lacks an integrity attribute
+      - style-src 'self' 'unsafe-inline' : Allow inline styles (tighten in production)
+
+    NOTE: 'require-sri-for' is currently supported in Chromium-based browsers.
+    For broader compatibility, also enforce SRI in your deployment pipeline / CI checks.
+  -->
+  <meta http-equiv="Content-Security-Policy"
+        content="
+          default-src 'self';
+          script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net;
+          require-sri-for script;
+          style-src 'self' 'unsafe-inline';
+          object-src 'none';
+          base-uri 'self';
+        ">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 2rem;
+      max-width: 760px;
+      width: 100%;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      color: #38bdf8;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: #94a3b8;
+      margin-bottom: 2rem;
+      font-size: 0.95rem;
+    }
+
+    .section {
+      margin-bottom: 1.8rem;
+    }
+
+    .section h2 {
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #7dd3fc;
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid #334155;
+    }
+
+    .code-block {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 1rem 1.2rem;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.82rem;
+      line-height: 1.7;
+      overflow-x: auto;
+      white-space: pre;
+      color: #cbd5e1;
+    }
+
+    .highlight { color: #f0abfc; }
+    .attr      { color: #86efac; }
+    .val       { color: #fde68a; }
+    .comment   { color: #475569; font-style: italic; }
+
+    .status-box {
+      border-radius: 8px;
+      padding: 0.9rem 1.1rem;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .status-ok      { background: #052e16; border: 1px solid #16a34a; color: #86efac; }
+    .status-warn    { background: #1c1008; border: 1px solid #d97706; color: #fcd34d; }
+    .status-error   { background: #1a0505; border: 1px solid #dc2626; color: #fca5a5; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.78rem;
+      padding: 0.25rem 0.65rem;
+      border-radius: 9999px;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+    }
+
+    .badge-green { background: #052e16; border: 1px solid #16a34a; color: #4ade80; }
+    .badge-blue  { background: #0c2340; border: 1px solid #2563eb; color: #93c5fd; }
+
+    .steps ol {
+      padding-left: 1.4rem;
+      color: #cbd5e1;
+      font-size: 0.9rem;
+      line-height: 1.8;
+    }
+
+    .steps code {
+      background: #0f172a;
+      padding: 0.1em 0.4em;
+      border-radius: 4px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.85em;
+      color: #f0abfc;
+      border: 1px solid #334155;
+    }
+
+    #sri-output { margin-top: 0.75rem; }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <h1>🔒 Subresource Integrity (SRI) Demo</h1>
+  <p class="subtitle">
+    Demonstrating how to load third-party scripts securely using SRI hashes
+    and Content Security Policy enforcement.
+  </p>
+
+  <!-- ─────────────────────────────────────────────────────────────────────
+       SECTION 1 — STATUS
+  ──────────────────────────────────────────────────────────────────────── -->
+  <div class="section">
+    <h2>Load Status</h2>
+    <div id="load-status" class="status-box status-warn">
+      ⏳ Waiting for script to load…
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────────────────────────
+       SECTION 2 — SCRIPT TAG ANATOMY
+  ──────────────────────────────────────────────────────────────────────── -->
+  <div class="section">
+    <h2>Script Tag with SRI</h2>
+    <span class="badge badge-blue">▶ Rendered below</span>
+    <div class="code-block"><span class="highlight">&lt;script</span>
+  <span class="attr">src</span>=<span class="val">"https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"</span>
+
+  <span class="comment"><!-- SHA-384 hash of the exact file bytes.
+       If the CDN serves even one different byte the browser will
+       refuse to execute the script and fire an error event. --></span>
+  <span class="attr">integrity</span>=<span class="val">"sha384-UG8ao2obiKtvME75MoFEl3aKTd8MRq1VqjE5YFDwwby6vGNrXpPaGBHdxJDkWaS"</span>
+
+  <span class="comment"><!-- crossorigin="anonymous" sends a CORS request without credentials.
+       Required so the browser can read the response for hash verification. --></span>
+  <span class="attr">crossorigin</span>=<span class="val">"anonymous"</span>

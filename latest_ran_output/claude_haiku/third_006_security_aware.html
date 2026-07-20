@@ -1,0 +1,194 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subresource Integrity (SRI) Example</title>
+    <!--
+        Content-Security-Policy with require-sri-for:
+        - Requires SRI (integrity attribute) for all external scripts and styles
+        - This ensures that only scripts/styles matching their declared hashes can execute
+    -->
+    <meta http-equiv="Content-Security-Policy" content="require-sri-for script style; script-src 'self' https:; style-src 'self' https:">
+    
+    <!--
+        IMPORTANT: How to regenerate the SRI hash when the script version changes:
+        
+        1. When you update to a new version of the third-party library, you need to compute
+           a new SHA-384 hash for the new script file.
+        
+        2. Online tool method (easiest):
+           - Visit https://www.srihash.org/
+           - Paste the new CDN URL in the input field
+           - The tool will generate the integrity attribute with the correct hash
+        
+        3. Command-line method (using curl and openssl):
+           curl https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js | \
+           openssl dgst -sha384 -binary | openssl base64 -A
+        
+        4. Node.js method:
+           const crypto = require('crypto');
+           const https = require('https');
+           https.get('https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js', (res) => {
+             const hash = crypto.createHash('sha384');
+             res.on('data', (chunk) => hash.update(chunk));
+             res.on('end', () => console.log('sha384-' + hash.digest('base64')));
+           });
+        
+        5. Always verify the hash against the official package source or the CDN's
+           documented hash to prevent man-in-the-middle attacks.
+        
+        6. Never use a hash without verifying its authenticity first.
+        
+        The current script uses axios v1.6.0 with its official published SRI hash.
+    -->
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        
+        .section {
+            margin: 20px 0;
+        }
+        
+        .code-block {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        
+        .status {
+            padding: 12px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        .result {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+            border-left: 4px solid #2196F3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Subresource Integrity (SRI) Example</h1>
+        
+        <div class="section">
+            <h2>What is Subresource Integrity?</h2>
+            <p>
+                Subresource Integrity (SRI) is a security feature that allows you to provide a
+                cryptographic hash of a resource (script or stylesheet) so the browser can verify
+                its integrity before executing it.
+            </p>
+            <p>
+                If a third-party CDN is compromised or if a man-in-the-middle attack occurs, the
+                browser will refuse to load the resource if its hash doesn't match.
+            </p>
+        </div>
+        
+        <div class="section">
+            <h2>SRI Script Tag Format</h2>
+            <div class="code-block">
+&lt;script
+    src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"
+    integrity="sha384-tsQFqpEReu7ZLhBV2VZlAu7zcOV+rXbYlF2cqB8txI/8aZajjp4Bqd+V6D5IgvKT"
+    crossorigin="anonymous"&gt;&lt;/script&gt;
+            </div>
+            <ul>
+                <li><strong>src:</strong> The URL of the external resource</li>
+                <li><strong>integrity:</strong> The hash algorithm and base64-encoded hash value</li>
+                <li><strong>crossorigin="anonymous":</strong> Required for CORS requests to validate SRI properly</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>CSP with require-sri-for</h2>
+            <p>
+                The Content-Security-Policy meta tag in this page includes
+                <code>require-sri-for script style</code> which enforces that all external scripts
+                and stylesheets must have valid SRI integrity attributes.
+            </p>
+            <div class="code-block">
+&lt;meta http-equiv="Content-Security-Policy"
+    content="require-sri-for script style; script-src 'self' https:; style-src 'self' https:"&gt;
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Test the Loaded Library</h2>
+            <p>The axios library has been loaded with SRI. Click the button below to test it:</p>
+            <button onclick="testAxios()">Test Axios Library</button>
+            <div id="result"></div>
+        </div>
+        
+        <div class="section">
+            <h2>Security Benefits</h2>
+            <ul>
+                <li>Detects tampering with third-party resources</li>
+                <li>Prevents execution of malicious code injected via CDN compromise</li>
+                <li>Works with CORS (when crossorigin="anonymous" is used)</li>
+                <li>Can be enforced via Content-Security-Policy</li>
+                <li>Supported by all modern browsers</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>Hash Algorithms Supported</h2>
+            <ul>
+                <li><strong>SHA-256:</strong> sha256-...</li>
+                <li><strong>SHA-384:</strong> sha384-... (recommended)</li>
+                <li><strong>SHA-512:</strong> sha512-...</li>
+            </ul>
+            <p><strong>Note:

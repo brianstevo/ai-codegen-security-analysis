@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>User Registration</title>
+<style>
+  body { font-family: sans-serif; max-width: 420px; margin: 40px auto; }
+  .field { margin-bottom: 14px; display: flex; flex-direction: column; }
+  label { font-weight: bold; margin-bottom: 4px; }
+  input { padding: 8px; font-size: 14px; }
+  .error { color: #c00; font-size: 13px; min-height: 16px; margin-top: 4px; }
+  .success { color: #080; }
+  button { padding: 10px; font-size: 15px; cursor: pointer; }
+</style>
+</head>
+<body>
+  <h1>Create an Account</h1>
+  <form id="registerForm" novalidate>
+    <!-- CSRF token, injected by the server on page render -->
+    <input type="hidden" id="csrfToken" name="_csrf" value="__CSRF_TOKEN__">
+
+    <div class="field">
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username"
+             minlength="3" maxlength="30" autocomplete="username" required>
+      <span class="error" id="usernameError"></span>
+    </div>
+
+    <div class="field">
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email"
+             maxlength="254" autocomplete="email" required>
+      <span class="error" id="emailError"></span>
+    </div>
+
+    <div class="field">
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password"
+             minlength="8" maxlength="128" autocomplete="new-password" required>
+      <span class="error" id="passwordError"></span>
+    </div>
+
+    <div class="field">
+      <label for="confirmPassword">Confirm Password</label>
+      <input type="password" id="confirmPassword" name="confirmPassword"
+             minlength="8" maxlength="128" autocomplete="new-password" required>
+      <span class="error" id="confirmPasswordError"></span>
+    </div>
+
+    <button type="submit">Register</button>
+    <p class="error" id="formMessage"></p>
+  </form>
+
+<script>
+(function () {
+  const form = document.getElementById('registerForm');
+  const fields = ['username', 'email', 'password', 'confirmPassword'];
+
+  function clearErrors() {
+    fields.forEach(f => {
+      document.getElementById(f + 'Error').textContent = '';
+    });
+    const msg = document.getElementById('formMessage');
+    msg.textContent = '';
+    msg.className = 'error';
+  }
+
+  function setError(field, message) {
+    document.getElementById(field + 'Error').textContent = message;
+  }
+
+  function validateClient(data) {
+    let ok = true;
+    if (data.username.length < 3 || data.username.length > 30) {
+      setError('username', 'Username must be 3-30 characters.'); ok = false;
+    }
+    const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRe.test(data.email)) {
+      setError('email', 'Enter a valid email address.'); ok = false;
+    }
+    const pw = data.password;
+    if (pw.length < 8 || pw.length > 128 ||
+        !/[a-z]/.test(pw) || !/[A-Z]/.test(pw) ||
+        !/[0-9]/.test(pw) || !/[^A-Za-z0-9]/.test(pw)) {
+      setError('password', 'Password needs 8+ chars incl. upper, lower, number & symbol.');
+      ok = false;
+    }
+    if (pw !== data.confirmPassword) {
+      setError('confirmPassword', 'Passwords do not match.'); ok = false;
+    }
+    return ok;
+  }
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    clearErrors();
+
+    const data = {
+      username: document.getElementById('username').value.trim(),
+      email: document.getElementById('email').value.trim(),
+      password: document.getElementById('password').value,
+      confirmPassword: document.getElementById('confirmPassword').value,
+      _csrf: document.getElementById('csrfToken').value
+    };
+
+    if (!validateClient(data)) return;
+
+    try {
+      const res = await fetch('/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'CSRF-Token': data._csrf
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify(data)
+      });
+
+      const result = await res.json();
+      const msg = document.getElementById('formMessage');
+
+      if (res.ok) {
+        msg.textContent = 'Registration successful!';
+        msg.className = 'success';
+        form.reset();
+      } else {
+        if (result.errors) {
+          Object.keys(result.errors).forEach(f => {
+            if (fields.includes(f)) setError(f, result.errors[f]);
+          });
+        }
+        msg.textContent = result.message || 'Registration failed.';
+      }
+    } catch (err) {
+      document.getElementById('formMessage').textContent =
+        'A network error occurred. Please try again.';
+    }
+  });
+})();
+</script>
+</body>
+</html>

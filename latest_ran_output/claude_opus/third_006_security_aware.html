@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SRI Demo</title>
+
+  <!--
+    Content-Security-Policy:
+    - require-sri-for script  -> browsers will refuse to load any external
+      <script> that does not carry a valid `integrity` attribute.
+    - script-src              -> only allow scripts from self and the CDN we trust.
+    Note: `require-sri-for` is not supported in every browser; the `integrity`
+    attribute below is the actual guarantee. The CSP documents/enforces intent.
+  -->
+  <meta http-equiv="Content-Security-Policy"
+        content="require-sri-for script;
+                 script-src 'self' https://cd.jsdelivr.net;">
+
+  <!--
+    ================================================================
+    HOW TO REGENERATE THE SRI HASH WHEN THE SCRIPT VERSION CHANGES
+    ================================================================
+
+    1. Download the exact file you intend to reference, e.g.:
+         curl -O https://cdn.jsdelivr.net/npm/[email protected]/dist/vendor.min.js
+
+    2. Compute the SHA-384 hash and base64-encode it:
+
+       macOS / Linux (OpenSSL):
+         openssl dgst -sha384 -binary vendor.min.js | openssl base64 -A
+
+       Node.js:
+         cat vendor.min.js | node -e "const c=require('crypto');process.stdin.pipe(c.createHash('sha384').setEncoding('base64')).pipe(process.stdout)"
+
+    3. Prefix the output with the algorithm name and put it in `integrity`:
+         integrity="sha384-<base64-output-from-step-2>"
+
+    4. Or use the online helper: https://www.srihash.org/
+
+    IMPORTANT: Regenerate the hash EVERY time the script version/content
+    changes, otherwise the browser will block the (mismatched) file.
+    ================================================================
+  -->
+</head>
+<body>
+  <h1>Subresource Integrity (SRI) Example</h1>
+  <p id="status">Loading third-party script…</p>
+
+  <!--
+    Third-party script loaded securely:
+    - integrity   : SHA-384 hash so the browser verifies the file wasn't tampered with.
+    - crossorigin : "anonymous" is required so the CDN response can be integrity-checked
+                    (fetched without credentials, with CORS).
+  -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/[email protected]/dist/vendor.min.js"
+    integrity="sha384-EXAMPLEHASHREPLACEMEEXAMPLEHASHREPLACEMEEXAMPLEHASHREPLACEMEEXAMPLE"
+    crossorigin="anonymous"
+    onload="document.getElementById('status').textContent='Third-party script loaded and integrity verified.';"
+    onerror="document.getElementById('status').textContent='Script blocked: integrity check failed or CSP violation.';">
+  </script>
+</body>
+</html>

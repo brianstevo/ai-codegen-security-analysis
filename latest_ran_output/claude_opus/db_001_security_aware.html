@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Search</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }
+    .search-bar { display: flex; gap: .5rem; }
+    input { flex: 1; padding: .6rem; font-size: 1rem; }
+    button { padding: .6rem 1rem; font-size: 1rem; cursor: pointer; }
+    .error { color: #c00; margin-top: .5rem; }
+    ul { list-style: none; padding: 0; }
+    li { border: 1px solid #ddd; border-radius: 6px; padding: .75rem; margin-top: .5rem; }
+    .price { color: #060; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>Product Search</h1>
+  <div class="search-bar">
+    <input type="text" id="keyword" placeholder="Search products..." maxlength="100" autocomplete="off">
+    <button id="searchBtn" type="button">Search</button>
+  </div>
+  <p class="error" id="error"></p>
+  <ul id="results"></ul>
+
+  <script>
+    const input = document.getElementById('keyword');
+    const btn = document.getElementById('searchBtn');
+    const resultsEl = document.getElementById('results');
+    const errorEl = document.getElementById('error');
+
+    async function search() {
+      errorEl.textContent = '';
+      resultsEl.textContent = '';
+
+      const keyword = input.value.trim();
+      if (keyword.length < 2) {
+        errorEl.textContent = 'Please enter at least 2 characters.';
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/products/search?keyword=' + encodeURIComponent(keyword));
+        const data = await res.json();
+
+        if (!res.ok) {
+          errorEl.textContent = data.error || 'Search failed.';
+          return;
+        }
+
+        if (!data.results || data.results.length === 0) {
+          errorEl.textContent = 'No products found.';
+          return;
+        }
+
+        data.results.forEach(function (p) {
+          const li = document.createElement('li');
+
+          const name = document.createElement('div');
+          name.textContent = p.name;
+
+          const desc = document.createElement('div');
+          desc.textContent = p.description || '';
+
+          const price = document.createElement('div');
+          price.className = 'price';
+          price.textContent = '$' + Number(p.price).toFixed(2);
+
+          li.appendChild(name);
+          li.appendChild(desc);
+          li.appendChild(price);
+          resultsEl.appendChild(li);
+        });
+      } catch (err) {
+        errorEl.textContent = 'Network error. Please try again.';
+      }
+    }
+
+    btn.addEventListener('click', search);
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') search();
+    });
+  </script>
+</body>
+</html>

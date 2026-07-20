@@ -1,0 +1,194 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Third-Party Chat Widget</title>
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #f4f6f9;
+    color: #333;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  header {
+    background: #1f2937;
+    color: #fff;
+    padding: 20px;
+    text-align: center;
+  }
+
+  main {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 0 20px;
+  }
+
+  main p {
+    margin-bottom: 16px;
+  }
+
+  /* Floating chat launcher button */
+  #chat-launcher {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    font-size: 26px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    z-index: 1000;
+    transition: transform 0.2s ease, background 0.2s ease;
+  }
+
+  #chat-launcher:hover {
+    background: #1d4ed8;
+    transform: scale(1.05);
+  }
+
+  /* Chat widget container */
+  #chat-widget {
+    position: fixed;
+    bottom: 96px;
+    right: 24px;
+    width: 370px;
+    max-width: calc(100vw - 48px);
+    height: 520px;
+    max-height: calc(100vh - 130px);
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    display: none;
+    flex-direction: column;
+    z-index: 1000;
+    animation: slideUp 0.25s ease;
+  }
+
+  #chat-widget.open {
+    display: flex;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  #chat-widget-header {
+    background: #2563eb;
+    color: #fff;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: 600;
+  }
+
+  #chat-widget-close {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 4px;
+  }
+
+  #chat-widget iframe {
+    flex: 1;
+    width: 100%;
+    border: none;
+  }
+</style>
+</head>
+<body>
+  <header>
+    <h1>Welcome to Our Support Center</h1>
+  </header>
+
+  <main>
+    <p>Need help? Click the chat button in the bottom-right corner to talk with our support team.</p>
+    <p>Our chat widget is powered by a third-party provider and is embedded securely using an iframe.</p>
+  </main>
+
+  <!-- Floating launcher button -->
+  <button id="chat-launcher" aria-label="Open chat" aria-expanded="false">💬</button>
+
+  <!-- Chat widget with embedded third-party iframe -->
+  <div id="chat-widget" role="dialog" aria-label="Chat widget">
+    <div id="chat-widget-header">
+      <span>Live Chat</span>
+      <button id="chat-widget-close" aria-label="Close chat">&times;</button>
+    </div>
+    <!-- The iframe is populated lazily when the widget is first opened -->
+    <iframe
+      id="chat-frame"
+      title="Third-party chat widget"
+      allow="microphone; camera; autoplay; clipboard-write"
+      referrerpolicy="strict-origin-when-cross-origin"
+      sandbox="allow-scripts allow-forms allow-popups allow-same-origin allow-popups-to-escape-sandbox">
+    </iframe>
+  </div>
+
+  <script>
+    (function () {
+      // Replace this URL with the embed URL provided by your chat vendor.
+      var CHAT_EMBED_URL = 'https://www.example.com/chat-widget';
+
+      var launcher = document.getElementById('chat-launcher');
+      var widget = document.getElementById('chat-widget');
+      var closeBtn = document.getElementById('chat-widget-close');
+      var frame = document.getElementById('chat-frame');
+      var loaded = false;
+
+      function openWidget() {
+        // Lazy-load the iframe only on first open to avoid unnecessary requests.
+        if (!loaded) {
+          frame.src = CHAT_EMBED_URL;
+          loaded = true;
+        }
+        widget.classList.add('open');
+        launcher.setAttribute('aria-expanded', 'true');
+      }
+
+      function closeWidget() {
+        widget.classList.remove('open');
+        launcher.setAttribute('aria-expanded', 'false');
+      }
+
+      function toggleWidget() {
+        if (widget.classList.contains('open')) {
+          closeWidget();
+        } else {
+          openWidget();
+        }
+      }
+
+      launcher.addEventListener('click', toggleWidget);
+      closeBtn.addEventListener('click', closeWidget);
+
+      // Close on Escape key for accessibility.
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && widget.classList.contains('open')) {
+          closeWidget();
+        }
+      });
+
+      // Optional: listen for messages posted by the third-party iframe.
+      window.addEventListener('message', function (event) {
+        // In production, verify event.origin matches your chat vendor's domain.
+        // if (event.

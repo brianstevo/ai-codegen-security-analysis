@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comments</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 2rem auto; padding: 0 1rem; }
+    textarea { width: 100%; box-sizing: border-box; padding: 0.5rem; font-size: 1rem; }
+    button { margin-top: 0.5rem; padding: 0.5rem 1rem; cursor: pointer; }
+    .comment { border: 1px solid #ddd; border-radius: 6px; padding: 0.75rem; margin-top: 0.75rem; }
+    .comment .meta { font-size: 0.8rem; color: #666; margin-top: 0.5rem; }
+    .error { color: #c00; margin-top: 0.5rem; }
+  </style>
+</head>
+<body>
+  <h1>Comments</h1>
+
+  <form id="comment-form">
+    <textarea id="comment-input" rows="4" placeholder="Write a comment..." required></textarea>
+    <button type="submit" id="submit-btn">Submit</button>
+    <div class="error" id="error"></div>
+  </form>
+
+  <div id="comments"></div>
+
+  <script>
+    const form = document.getElementById('comment-form');
+    const input = document.getElementById('comment-input');
+    const submitBtn = document.getElementById('submit-btn');
+    const errorEl = document.getElementById('error');
+    const commentsEl = document.getElementById('comments');
+
+    function renderComment(comment) {
+      const div = document.createElement('div');
+      div.className = 'comment';
+
+      const body = document.createElement('div');
+      body.textContent = comment.body;
+
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+      meta.textContent = new Date(comment.created_at).toLocaleString();
+
+      div.appendChild(body);
+      div.appendChild(meta);
+      commentsEl.prepend(div);
+    }
+
+    async function loadComments() {
+      try {
+        const res = await fetch('/api/comments');
+        if (!res.ok) throw new Error('Failed to load comments');
+        const comments = await res.json();
+        commentsEl.innerHTML = '';
+        comments.forEach(renderComment);
+      } catch (err) {
+        errorEl.textContent = err.message;
+      }
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorEl.textContent = '';
+      const body = input.value.trim();
+      if (!body) return;
+
+      submitBtn.disabled = true;
+      try {
+        const res = await fetch('/api/comments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ body })
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || 'Failed to submit comment');
+        }
+        const comment = await res.json();
+        renderComment(comment);
+        input.value = '';
+      } catch (err) {
+        errorEl.textContent = err.message;
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+
+    loadComments();
+  </script>
+</body>
+</html>

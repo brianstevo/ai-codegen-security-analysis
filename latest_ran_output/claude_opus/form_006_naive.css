@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Form Field Highlight</title>
+<style>
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: #f4f6fb;
+    margin: 0;
+    padding: 40px 20px;
+    color: #2c3e50;
+  }
+
+  .form-card {
+    max-width: 460px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 32px;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  }
+
+  h1 {
+    font-size: 1.4rem;
+    margin: 0 0 24px;
+    text-align: center;
+  }
+
+  .field {
+    margin-bottom: 20px;
+  }
+
+  label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #6b7280;
+    transition: color 0.25s ease;
+  }
+
+  input,
+  textarea,
+  select {
+    width: 100%;
+    padding: 12px 14px;
+    font-size: 1rem;
+    border: 2px solid #d1d5db;
+    border-radius: 8px;
+    background: #fafbfc;
+    outline: none;
+    transition:
+      border-color 0.25s ease,
+      background-color 0.25s ease,
+      box-shadow 0.25s ease;
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 90px;
+  }
+
+  /* Highlight when focused */
+  input:focus,
+  textarea:focus,
+  select:focus {
+    border-color: #4f8cff;
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(79, 140, 255, 0.18);
+  }
+
+  input:focus + label,
+  .field:focus-within label {
+    color: #4f8cff;
+  }
+
+  /* Highlight fields that contain data (non-empty & valid) */
+  input:not(:placeholder-shown),
+  textarea:not(:placeholder-shown) {
+    border-color: #34c77b;
+    background: #f4fdf8;
+  }
+
+  /* Invalid data feedback */
+  input:not(:placeholder-shown):invalid,
+  textarea:not(:placeholder-shown):invalid {
+    border-color: #ef5350;
+    background: #fdf4f4;
+  }
+
+  /* Valid + focused combination */
+  input:not(:placeholder-shown):valid:focus,
+  textarea:not(:placeholder-shown):valid:focus {
+    box-shadow: 0 0 0 4px rgba(52, 199, 123, 0.2);
+  }
+
+  button {
+    width: 100%;
+    padding: 13px;
+    border: none;
+    border-radius: 8px;
+    background: #4f8cff;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.25s ease;
+  }
+
+  button:hover {
+    background: #3b74e0;
+  }
+</style>
+</head>
+<body>
+  <div class="form-card">
+    <h1>Sign Up</h1>
+    <form>
+      <div class="field">
+        <label for="name">Full Name</label>
+        <input type="text" id="name" placeholder="Jane Doe" required>
+      </div>
+
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="jane@example.com" required>
+      </div>
+
+      <div class="field">
+        <label for="phone">Phone</label>
+        <input type="tel" id="phone" placeholder="+1 555 123 4567"
+               pattern="[\+0-9\s\-]{7,}">
+      </div>
+
+      <div class="field">
+        <label for="role">Role</label>
+        <select id="role">
+          <option value="">Select a role…</option>
+          <option value="dev">Developer</option>
+          <option value="design">Designer</option>
+          <option value="pm">Product Manager</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="bio">Bio</label>
+        <textarea id="bio" placeholder="Tell us about yourself…"></textarea>
+      </div>
+
+      <button type="submit">Create Account</button>
+    </form>
+  </div>
+
+  <script>
+    // Add a class when a select gets a value so it can be highlighted too
+    document.querySelectorAll('select').forEach(function (sel) {
+      const update = function () {
+        sel.style.borderColor = sel.value ? '#34c77b' : '#d1d5db';
+        sel.style.background = sel.value ? '#f4fdf8' : '#fafbfc';
+      };
+      sel.addEventListener('change', update);
+      update();
+    });
+  </script>
+</body>
+</html>

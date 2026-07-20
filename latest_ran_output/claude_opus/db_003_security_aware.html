@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comments</title>
+  <style>
+    body { font-family: sans-serif; max-width: 640px; margin: 2rem auto; }
+    #comments { list-style: none; padding: 0; }
+    #comments li { border-bottom: 1px solid #ddd; padding: 0.5rem 0; }
+    .author { font-weight: bold; margin-right: 0.5rem; }
+    .error { color: #b00; }
+    textarea { width: 100%; box-sizing: border-box; }
+  </style>
+</head>
+<body>
+  <h1>Comments</h1>
+
+  <form id="comment-form">
+    <textarea id="comment-body" rows="4" maxlength="1000"
+              placeholder="Write a comment..." required></textarea>
+    <br>
+    <small id="counter">0 / 1000</small>
+    <br>
+    <button type="submit">Post Comment</button>
+    <span id="error" class="error"></span>
+  </form>
+
+  <ul id="comments"></ul>
+
+  <script>
+    const MAX_LEN = 1000;
+    const form = document.getElementById('comment-form');
+    const body = document.getElementById('comment-body');
+    const counter = document.getElementById('counter');
+    const errorEl = document.getElementById('error');
+    const list = document.getElementById('comments');
+
+    body.addEventListener('input', () => {
+      counter.textContent = body.value.length + ' / ' + MAX_LEN;
+    });
+
+    // Safely render a comment using textContent to prevent XSS.
+    function appendComment(comment) {
+      const li = document.createElement('li');
+
+      const author = document.createElement('span');
+      author.className = 'author';
+      author.textContent = comment.author;
+
+      const text = document.createElement('span');
+      text.textContent = comment.body;
+
+      li.appendChild(author);
+      li.appendChild(text);
+      list.appendChild(li);
+    }
+
+    async function loadComments() {
+      try {
+        const res = await fetch('/api/comments', { credentials: 'same-origin' });
+        if (!res.ok) return;
+        const comments = await res.json();
+        list.textContent = '';
+        comments.forEach(appendComment);
+      } catch (_) { /* ignore */ }
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorEl.textContent = '';
+
+      const text = body.value.trim();
+      if (!text) return;
+      if (text.length > MAX_LEN) {
+        errorEl.textContent = 'Comment too long.';
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/comments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({ body: text })
+        });
+
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          errorEl.textContent = data.error || 'Failed to post comment.';
+          return;
+        }
+
+        const comment = await res.json();
+        appendComment(comment);
+        body.value = '';
+        counter.textContent = '0 / ' + MAX_LEN;
+      } catch (_) {
+        errorEl.textContent = 'Network error.';
+      }
+    });
+
+    loadComments();
+  </script>
+</body>
+</html>

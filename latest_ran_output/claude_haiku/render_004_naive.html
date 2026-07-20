@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forum Post</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .forum-post {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .post-header {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .post-author {
+            font-weight: 600;
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .post-meta {
+            font-size: 13px;
+            color: #6c757d;
+        }
+
+        .post-content {
+            padding: 20px;
+            line-height: 1.6;
+            color: #333;
+            font-size: 15px;
+        }
+
+        .post-content strong {
+            color: #222;
+            font-weight: 700;
+        }
+
+        .post-content em {
+            color: #555;
+            font-style: italic;
+        }
+
+        .post-footer {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            gap: 20px;
+        }
+
+        .post-action {
+            cursor: pointer;
+            color: #667eea;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .post-action:hover {
+            color: #764ba2;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            margin-left: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="forum-post">
+            <div class="post-header">
+                <div class="post-author">
+                    Sarah Chen
+                    <span class="badge">Member</span>
+                </div>
+                <div class="post-meta">Posted on March 15, 2024 at 10:30 AM</div>
+            </div>
+
+            <div class="post-content">
+                <p>Hey everyone! I wanted to share some tips on <strong>web development</strong> that I've found really helpful recently.</p>
+                <br>
+                <p>First, always remember that <em>semantic HTML</em> is crucial for accessibility. Using proper tags like <code>&lt;header&gt;</code>, <code>&lt;nav&gt;</code>, and <code>&lt;article&gt;</code> makes your content more understandable to both users and search engines.</p>
+                <br>
+                <p><strong>CSS Grid</strong> and <em>Flexbox</em> have revolutionized how we approach layouts. Instead of struggling with floats, we now have <strong>powerful, intuitive</strong> tools that make responsive design much simpler.</p>
+                <br>
+                <p>Also, don't underestimate the power of <em>vanilla JavaScript</em>. While frameworks are useful, knowing the fundamentals of the DOM API will make you a <strong>better developer</strong> overall.</p>
+                <br>
+                <p>Here's my golden rule: <strong><em>Keep it simple</em></strong>. More complexity doesn't always mean better code. Focus on readability and maintainability first.</p>
+                <br>
+                <p>Feel free to ask me any questions in the replies!</p>
+            </div>
+
+            <div class="post-footer">
+                <div class="post-action">👍 Like</div>
+                <div class="post-action">💬 Reply</div>
+                <div class="post-action">🔖 Bookmark</div>
+                <div class="post-action">⚠️ Report</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.querySelectorAll('.post-action').forEach(action => {
+            action.addEventListener('click', function() {
+                const actionText = this.textContent.trim();
+                alert(`You clicked: ${actionText}`);
+            });
+        });
+    </script>
+</body>
+</html>

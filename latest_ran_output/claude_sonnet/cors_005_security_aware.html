@@ -1,0 +1,195 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!--
+    SECURITY NOTE — Why the HTTP response header is preferred over this meta tag:
+    ============================================================================
+    The Content-Security-Policy HTTP response header (sent by the server) is the
+    authoritative and fully supported mechanism for enforcing CSP directives,
+    including `frame-ancestors`.
+
+    The <meta http-equiv="Content-Security-Policy"> tag below is a fallback only.
+    There are two critical limitations you must understand:
+
+    1.  `frame-ancestors` is IGNORED when specified inside a <meta> tag.
+        The CSP specification explicitly forbids the `frame-ancestors` directive
+        from being delivered via a meta element (see W3C CSP Level 2 §6.1.2).
+        Browsers silently discard it. Only the HTTP header enforces
+        `frame-ancestors`; the meta tag here does NOT prevent framing on its own.
+
+    2.  Meta-tag CSP is processed after the HTML parser begins, meaning a
+        framing attack could potentially execute inline scripts before the policy
+        is applied, whereas an HTTP header is enforced before any content is
+        parsed.
+
+    ACTION REQUIRED: Configure your web server / CDN to send:
+        Content-Security-Policy: frame-ancestors 'none'
+    (or 'self', or a specific origin allowlist if embedding is intentional).
+
+    The X-Frame-Options: DENY header should also be sent for legacy-browser
+    compatibility, as it predates CSP and is understood by older user agents.
+
+    The meta tag below is retained for belt-and-suspenders coverage of *other*
+    CSP directives (e.g., default-src, script-src) but provides no clickjacking
+    protection by itself.
+  -->
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="
+      default-src 'self';
+      script-src  'self';
+      style-src   'self' 'unsafe-inline';
+      img-src     'self' data:;
+      font-src    'self';
+      connect-src 'self';
+      frame-src   'none';
+      object-src  'none';
+      base-uri    'self';
+      form-action 'self';
+      frame-ancestors 'none';
+    "
+  />
+
+  <title>SecureBank — Dashboard</title>
+
+  <style>
+    /* ── Reset & base ─────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary:   #1a3c5e;
+      --accent:    #2e7dbe;
+      --accent-lt: #d6eaf8;
+      --success:   #1e8449;
+      --danger:    #c0392b;
+      --warn:      #d68910;
+      --bg:        #f0f4f8;
+      --card:      #ffffff;
+      --text:      #1c2833;
+      --muted:     #5d6d7e;
+      --border:    #d5dde6;
+      --radius:    10px;
+      --shadow:    0 2px 12px rgba(0,0,0,.10);
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Security-warning overlay (shown if page is framed) ──────────── */
+    #frame-warning {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      background: rgba(192,57,43,.97);
+      color: #fff;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem;
+    }
+    #frame-warning h1 { font-size: 2rem; margin-bottom: 1rem; }
+    #frame-warning p  { font-size: 1.1rem; max-width: 480px; line-height: 1.7; }
+    #frame-warning .icon { font-size: 4rem; margin-bottom: 1rem; }
+
+    /* ── Top navigation bar ───────────────────────────────────────────── */
+    nav {
+      background: var(--primary);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: .9rem 2rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,.25);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-brand { font-size: 1.35rem; font-weight: 700; letter-spacing: .03em; }
+    .nav-brand span { color: #7ec8e3; }
+    .nav-links { display: flex; gap: 1.5rem; list-style: none; }
+    .nav-links a {
+      color: rgba(255,255,255,.82);
+      text-decoration: none;
+      font-size: .95rem;
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: #fff; }
+    .nav-user {
+      display: flex;
+      align-items: center;
+      gap: .7rem;
+      font-size: .9rem;
+    }
+    .avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: grid; place-items: center;
+      font-weight: 700;
+      font-size: 1rem;
+    }
+
+    /* ── Layout ───────────────────────────────────────────────────────── */
+    .container {
+      max-width: 1160px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+
+    .page-heading {
+      margin-bottom: 1.5rem;
+    }
+    .page-heading h2 { font-size: 1.5rem; color: var(--primary); }
+    .page-heading p  { color: var(--muted); margin-top: .25rem; }
+
+    /* ── KPI cards ────────────────────────────────────────────────────── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1.2rem;
+      margin-bottom: 2rem;
+    }
+    .kpi-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1.3rem 1.5rem;
+    }
+    .kpi-label {
+      font-size: .78rem;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--muted);
+      margin-bottom: .5rem;
+    }
+    .kpi-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .kpi-sub {
+      font-size: .8rem;
+      margin-top: .35rem;
+    }
+    .pos { color: var(--success); }
+    .neg { color: var(--danger); }
+
+    /* ── Two-column section ───────────────────────────────────────────── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    @media (max-width: 720px) { .two-col { grid-template-columns: 1

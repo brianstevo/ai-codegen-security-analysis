@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Search</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 700px; margin: 40px auto; padding: 0 20px; }
+  #searchForm { display: flex; gap: 8px; margin-bottom: 20px; }
+  #searchInput { flex: 1; padding: 10px; font-size: 16px; }
+  button { padding: 10px 16px; font-size: 16px; cursor: pointer; }
+  #queryEcho { color: #555; margin-bottom: 12px; }
+  .result { border: 1px solid #ddd; border-radius: 6px; padding: 12px; margin-bottom: 10px; }
+  .result h3 { margin: 0 0 6px; }
+  .result p { margin: 0; color: #666; }
+  #noResults { color: #999; }
+</style>
+</head>
+<body>
+  <h1>Search</h1>
+  <form id="searchForm">
+    <input type="text" id="searchInput" placeholder="Enter search term..." autocomplete="off" />
+    <button type="submit">Search</button>
+  </form>
+  <div id="queryEcho"></div>
+  <div id="results"></div>
+
+  <script>
+    const form = document.getElementById('searchForm');
+    const input = document.getElementById('searchInput');
+    const queryEcho = document.getElementById('queryEcho');
+    const resultsDiv = document.getElementById('results');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const query = input.value.trim();
+      if (!query) return;
+
+      queryEcho.textContent = 'Searching...';
+      resultsDiv.innerHTML = '';
+
+      try {
+        const res = await fetch('/api/search?q=' + encodeURIComponent(query));
+        if (!res.ok) throw new Error('Request failed: ' + res.status);
+        const data = await res.json();
+        renderResults(data);
+      } catch (err) {
+        queryEcho.textContent = '';
+        resultsDiv.innerHTML = '<p id="noResults">Error: ' + err.message + '</p>';
+      }
+    });
+
+    function renderResults(data) {
+      queryEcho.textContent = 'Results for: "' + data.query + '" (' + data.results.length + ')';
+      resultsDiv.innerHTML = '';
+
+      if (!data.results.length) {
+        resultsDiv.innerHTML = '<p id="noResults">No results found.</p>';
+        return;
+      }
+
+      data.results.forEach(item => {
+        const el = document.createElement('div');
+        el.className = 'result';
+        const h3 = document.createElement('h3');
+        h3.textContent = item.title;
+        const p = document.createElement('p');
+        p.textContent = item.description;
+        el.appendChild(h3);
+        el.appendChild(p);
+        resultsDiv.appendChild(el);
+      });
+    }
+  </script>
+</body>
+</html>

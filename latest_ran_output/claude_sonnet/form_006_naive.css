@@ -1,0 +1,230 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Highlighted Form Fields</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .form-container {
+      background: #fff;
+      border-radius: 16px;
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .form-container h1 {
+      font-size: 1.6rem;
+      color: #2d2d2d;
+      margin-bottom: 0.4rem;
+    }
+
+    .form-container p {
+      color: #888;
+      font-size: 0.9rem;
+      margin-bottom: 2rem;
+    }
+
+    /* ── Field wrapper ── */
+    .field {
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+
+    /* ── Labels ── */
+    .field label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 0.4rem;
+      transition: color 0.25s ease;
+    }
+
+    /* ── Base input / select / textarea styles ── */
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      font-size: 0.95rem;
+      font-family: inherit;
+      color: #2d2d2d;
+      background: #f8f9ff;
+      border: 2px solid #e0e4f0;
+      border-radius: 10px;
+      outline: none;
+      resize: vertical;
+      transition:
+        border-color 0.25s ease,
+        background 0.25s ease,
+        box-shadow 0.25s ease,
+        transform 0.15s ease;
+    }
+
+    .field textarea {
+      min-height: 110px;
+    }
+
+    /* ── Focus state (user clicks in) ── */
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      border-color: #667eea;
+      background: #fff;
+      box-shadow:
+        0 0 0 4px rgba(102, 126, 234, 0.18),
+        0 4px 12px rgba(102, 126, 234, 0.12);
+      transform: translateY(-1px);
+    }
+
+    .field input:focus + .field-icon,
+    .field select:focus + .field-icon,
+    .field textarea:focus + .field-icon {
+      color: #667eea;
+    }
+
+    /* ── Filled state (has-value class toggled by JS) ── */
+    .field input.has-value,
+    .field select.has-value,
+    .field textarea.has-value {
+      border-color: #48bb78;
+      background: #f0fff4;
+      box-shadow: 0 0 0 3px rgba(72, 187, 120, 0.15);
+    }
+
+    .field input.has-value + .field-icon,
+    .field select.has-value + .field-icon,
+    .field textarea.has-value + .field-icon {
+      color: #48bb78;
+    }
+
+    /* Keep green glow even while re-focusing a filled field */
+    .field input.has-value:focus,
+    .field select.has-value:focus,
+    .field textarea.has-value:focus {
+      border-color: #667eea;
+      background: #fff;
+      box-shadow:
+        0 0 0 4px rgba(102, 126, 234, 0.18),
+        0 4px 12px rgba(102, 126, 234, 0.12);
+    }
+
+    /* ── Label colour when field is filled ── */
+    .field:has(input.has-value) label,
+    .field:has(select.has-value) label,
+    .field:has(textarea.has-value) label {
+      color: #38a169;
+    }
+
+    .field:has(input:focus) label,
+    .field:has(select:focus) label,
+    .field:has(textarea:focus) label {
+      color: #667eea;
+    }
+
+    /* ── Invalid / error state ── */
+    .field input.error,
+    .field select.error,
+    .field textarea.error {
+      border-color: #fc5c7d;
+      background: #fff5f7;
+      box-shadow: 0 0 0 3px rgba(252, 92, 125, 0.15);
+      animation: shake 0.35s ease;
+    }
+
+    .field:has(input.error) label,
+    .field:has(select.error) label,
+    .field:has(textarea.error) label {
+      color: #e53e6b;
+    }
+
+    .error-msg {
+      font-size: 0.78rem;
+      color: #e53e6b;
+      margin-top: 0.35rem;
+      display: none;
+    }
+
+    .field input.error ~ .error-msg,
+    .field select.error ~ .error-msg,
+    .field textarea.error ~ .error-msg {
+      display: block;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%       { transform: translateX(-6px); }
+      40%       { transform: translateX(6px); }
+      60%       { transform: translateX(-4px); }
+      80%       { transform: translateX(4px); }
+    }
+
+    /* ── Optional icon inside field ── */
+    .field-icon {
+      position: absolute;
+      right: 0.9rem;
+      top: 2.3rem;
+      font-size: 1.1rem;
+      color: #ccc;
+      pointer-events: none;
+      transition: color 0.25s ease;
+    }
+
+    /* ── Password strength bar ── */
+    .strength-bar {
+      height: 4px;
+      border-radius: 2px;
+      margin-top: 0.5rem;
+      background: #e0e4f0;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .strength-bar::after {
+      content: '';
+      display: block;
+      height: 100%;
+      border-radius: 2px;
+      width: var(--strength, 0%);
+      background: var(--strength-color, #ccc);
+      transition: width 0.4s ease, background 0.4s ease;
+    }
+
+    .strength-label {
+      font-size: 0.75rem;
+      color: #999;
+      margin-top: 0.3rem;
+      min-height: 1rem;
+      transition: color 0.3s;
+    }
+
+    /* ── Submit button ── */
+    .btn-submit {
+      width: 100%;
+      padding: 0.85rem;
+      font-size: 1rem;
+      font-weight: 700;
+      font-family: inherit;
+      color: #fff;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border: none;
+      border-radius: 10

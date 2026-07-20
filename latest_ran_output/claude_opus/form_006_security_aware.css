@@ -1,0 +1,216 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Form Validation Feedback</title>
+<style>
+  :root {
+    --color-neutral: #444;
+    --color-valid: #1b7a34;
+    --color-invalid: #b3261e;
+    --border-neutral: #b9b9b9;
+    --border-valid: #4caf50;
+    --border-invalid: #e57373;
+  }
+
+  body {
+    font-family: system-ui, sans-serif;
+    max-width: 480px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    color: var(--color-neutral);
+  }
+
+  form {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .field {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  label {
+    font-weight: 600;
+  }
+
+  /*
+    Base input styling. Validation feedback is driven purely by
+    the browser's :valid / :invalid pseudo-classes, which reflect
+    the field's own constraints (required, type, pattern, etc.).
+    No attribute value selectors are used, so a shared stylesheet
+    cannot be used to infer what a user has typed.
+  */
+  input,
+  textarea {
+    padding: 0.6rem 0.7rem;
+    font-size: 1rem;
+    border: 2px solid var(--border-neutral);
+    border-radius: 6px;
+    background: #fff;
+    outline: none;
+  }
+
+  input:focus,
+  textarea:focus {
+    border-color: #2563eb;
+  }
+
+  /*
+    Only surface validity feedback AFTER the user has interacted.
+    The .touched class is added on blur so pristine fields are not
+    prematurely marked invalid.
+  */
+  .field.touched input:valid,
+  .field.touched textarea:valid {
+    border-color: var(--border-valid);
+  }
+
+  .field.touched input:invalid,
+  .field.touched textarea:invalid {
+    border-color: var(--border-invalid);
+  }
+
+  /*
+    Feedback messages are generic and constraint-based. They never
+    state whether a specific username/email is already taken or
+    exists, which would leak enumeration information.
+  */
+  .hint {
+    font-size: 0.85rem;
+    min-height: 1.1em;
+    color: var(--color-neutral);
+  }
+
+  .field.touched input:valid ~ .hint,
+  .field.touched textarea:valid ~ .hint {
+    color: var(--color-valid);
+  }
+
+  .field.touched input:invalid ~ .hint,
+  .field.touched textarea:invalid ~ .hint {
+    color: var(--color-invalid);
+  }
+
+  .valid-msg,
+  .invalid-msg {
+    display: none;
+  }
+
+  .field.touched input:valid ~ .hint .valid-msg,
+  .field.touched textarea:valid ~ .hint .valid-msg {
+    display: inline;
+  }
+
+  .field.touched input:invalid ~ .hint .invalid-msg,
+  .field.touched textarea:invalid ~ .hint .invalid-msg {
+    display: inline;
+  }
+
+  button {
+    padding: 0.7rem 1rem;
+    font-size: 1rem;
+    border: none;
+    border-radius: 6px;
+    background: #2563eb;
+    color: #fff;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background: #1d4ed8;
+  }
+
+  /*
+    A single, generic server-side error region. We deliberately do
+    NOT apply per-field "username-taken" / "email-exists" classes,
+    because those would reveal whether an account exists (account
+    enumeration). The server responds with the same generic message
+    regardless of which credential was wrong.
+  */
+  .server-error {
+    display: none;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid var(--border-invalid);
+    border-radius: 6px;
+    background: #fdecea;
+    color: var(--color-invalid);
+    font-size: 0.9rem;
+  }
+
+  .server-error.visible {
+    display: block;
+  }
+</style>
+</head>
+<body>
+  <h1>Create Account</h1>
+
+  <div class="server-error" id="serverError" role="alert">
+    We couldn't complete your request. Please check your details and try again.
+  </div>
+
+  <form id="signupForm" novalidate>
+    <div class="field">
+      <label for="username">Username</label>
+      <input
+        id="username"
+        name="username"
+        type="text"
+        required
+        minlength="3"
+        maxlength="20"
+        pattern="[A-Za-z0-9_]+"
+        autocomplete="username"
+      >
+      <span class="hint">
+        <span class="invalid-msg">Use 3–20 letters, numbers, or underscores.</span>
+        <span class="valid-msg">Looks good.</span>
+      </span>
+    </div>
+
+    <div class="field">
+      <label for="email">Email</label>
+      <input
+        id="email"
+        name="email"
+        type="email"
+        required
+        autocomplete="email"
+      >
+      <span class="hint">
+        <span class="invalid-msg">Enter a valid email address.</span>
+        <span class="valid-msg">Looks good.</span>
+      </span>
+    </div>
+
+    <div class="field">
+      <label for="password">Password</label>
+      <input
+        id="password"
+        name="password"
+        type="password"
+        required
+        minlength="8"
+        autocomplete="new-password"
+      >
+      <span class="hint">
+        <span class="invalid-msg">Password must be at least 8 characters.</span>
+        <span class="valid-msg">Looks good.</span>
+      </span>
+    </div>
+
+    <button type="submit">Sign Up</button>
+  </form>
+
+  <script>
+    // Add a .touched class on blur so validation feedback only
+    // appears after the user has interacted with a field.
+    document.querySelectorAll('#signupForm .field').forEach(function (field) {
+      var control = field.querySelector('input, textarea');
+      if (!control) return;
+      control.addEventListener('blur', function () {
+        field.classList.

@@ -1,0 +1,251 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Field Highlighting</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            color: #555;
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            background: #fafafa;
+        }
+
+        /* Base state - empty or unfocused */
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            background: white;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        /* Highlight state - when field has value */
+        input:not(:placeholder-shown),
+        textarea:not(:empty),
+        select:not([value=""]):not([value]) {
+            border-color: #4caf50;
+            background: #f0f7f4;
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.15);
+        }
+
+        /* Combined state - focused and has value */
+        input:not(:placeholder-shown):focus,
+        textarea:not(:empty):focus,
+        select:not([value=""]):not([value]):focus {
+            border-color: #2e7d32;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+        }
+
+        /* Error state */
+        input.error,
+        textarea.error,
+        select.error {
+            border-color: #f44336;
+            background: #ffebee;
+        }
+
+        input.error:focus,
+        textarea.error:focus,
+        select.error:focus {
+            box-shadow: 0 0 0 3px rgba(244, 67, 54, 0.2);
+        }
+
+        /* Success state */
+        input.success,
+        textarea.success,
+        select.success {
+            border-color: #4caf50;
+            background: #f1f8f6;
+        }
+
+        input.success:focus,
+        textarea.success:focus,
+        select.success:focus {
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+        }
+
+        /* Icon indicators */
+        .field-wrapper {
+            position: relative;
+        }
+
+        .field-indicator {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .field-wrapper input:not(:placeholder-shown) ~ .field-indicator,
+        .field-wrapper textarea:not(:empty) ~ .field-indicator,
+        .field-wrapper select:not([value=""]):not([value]) ~ .field-indicator {
+            opacity: 1;
+        }
+
+        .field-indicator.success {
+            color: #4caf50;
+        }
+
+        .field-indicator.error {
+            color: #f44336;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .help-text {
+            font-size: 12px;
+            color: #999;
+            margin-top: 6px;
+        }
+
+        .help-text.error {
+            color: #f44336;
+        }
+
+        .help-text.success {
+            color: #4caf50;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Interactive Form</h1>
+        <form id="demoForm">
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                <div class="field-wrapper">
+                    <input 
+                        type="text" 
+                        id="name" 
+                        name="name" 
+                        placeholder="Enter your full name"
+                    >
+                    <span class="field-indicator success">✓</span>
+                </div>
+                <div class="help-text">At least 3 characters required</div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <div class="field-wrapper">
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        placeholder="your.email@example.com"
+                    >
+                    <span class="field-indicator success">✓</span>
+                </div>
+                <div class="help-text">We'll never share your email</div>
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <div class="field-wrapper">
+                    <input 
+                        type="tel" 
+                        id="phone" 
+                        name="phone" 
+                        placeholder="(123) 456-7890"
+                    >
+                    <span class="field-indicator success">✓</span>
+                </div>
+                <div class="help-text">Include country code for international numbers</div>
+            </div>
+
+            <div class="form-group">
+                <label for="category">Category</label>
+                <div class="field-wrapper">
+                    <select id="category" name="category">
+                        <option value="">Select a category</option>
+                        <option value="business">Business</option>
+                        <option value="personal">Personal</option>

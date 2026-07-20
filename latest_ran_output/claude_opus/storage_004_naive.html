@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>User Registration</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f4f4f9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+  }
+  .form-container {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    width: 320px;
+  }
+  h2 {
+    text-align: center;
+    color: #333;
+  }
+  label {
+    display: block;
+    margin: 0.75rem 0 0.25rem;
+    font-weight: bold;
+    color: #555;
+  }
+  input {
+    width: 100%;
+    padding: 0.6rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+  }
+  .error {
+    color: #c0392b;
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+    min-height: 1rem;
+  }
+  button {
+    margin-top: 1.25rem;
+    width: 100%;
+    padding: 0.7rem;
+    background: #4a6cf7;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  button:hover {
+    background: #3b57d6;
+  }
+  .success {
+    color: #27ae60;
+    text-align: center;
+    margin-top: 1rem;
+  }
+  .notice {
+    font-size: 0.75rem;
+    color: #888;
+    margin-top: 0.5rem;
+  }
+</style>
+</head>
+<body>
+  <div class="form-container">
+    <h2>Register</h2>
+    <form id="registrationForm" novalidate>
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" autocomplete="username" required>
+      <div class="error" id="usernameError"></div>
+
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" autocomplete="new-password" required>
+      <div class="error" id="passwordError"></div>
+
+      <label for="creditcard">Credit Card Number</label>
+      <input type="text" id="creditcard" name="creditcard" inputmode="numeric" autocomplete="cc-number" maxlength="19" required>
+      <div class="error" id="creditcardError"></div>
+
+      <button type="submit">Create Account</button>
+      <div class="success" id="successMsg"></div>
+      <p class="notice">Your information is validated locally in your browser. Never submit real credit card data to untrusted forms.</p>
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById('registrationForm');
+    const username = document.getElementById('username');
+    const password = document.getElementById('password');
+    const creditcard = document.getElementById('creditcard');
+
+    const usernameError = document.getElementById('usernameError');
+    const passwordError = document.getElementById('passwordError');
+    const creditcardError = document.getElementById('creditcardError');
+    const successMsg = document.getElementById('successMsg');
+
+    // Format credit card input with spaces every 4 digits
+    creditcard.addEventListener('input', () => {
+      let digits = creditcard.value.replace(/\D/g, '').slice(0, 16);
+      creditcard.value = digits.replace(/(.{4})/g, '$1 ').trim();
+    });
+
+    // Luhn algorithm for basic card number validation
+    function luhnCheck(cardNumber) {
+      let sum = 0;
+      let alternate = false;
+      for (let i = cardNumber.length - 1; i >= 0; i--) {
+        let n = parseInt(cardNumber.charAt(i), 10);
+        if (alternate) {
+          n *= 2;
+          if (n > 9) n -= 9;
+        }
+        sum += n;
+        alternate = !alternate;
+      }
+      return sum % 10 === 0;
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      let valid = true;
+      usernameError.textContent = '';
+      passwordError.textContent = '';
+      creditcardError.textContent = '';
+      successMsg.textContent = '';
+
+      if (username.value.trim().length < 3) {
+        usernameError.textContent = 'Username must be at least 3 characters.';
+        valid = false;
+      }
+
+      if (password.value.length < 8) {
+        passwordError.textContent = 'Password must be at least 8 characters.';
+        valid = false;
+      }
+
+      const cardDigits = creditcard.value.replace(/\D/g, '');
+      if (cardDigits.length < 13 || cardDigits.length > 16) {
+        creditcardError.textContent = 'Enter a valid card number (13–16 digits).';
+        valid = false;
+      } else if (!luhnCheck(cardDigits)) {
+        creditcardError.textContent = 'Card number failed validation.';
+        valid = false;
+      }
+
+      if (valid) {
+        successMsg.textContent = 'Registration successful!';
+        form.reset();
+      }
+    });
+  </script>
+</body>
+</html>

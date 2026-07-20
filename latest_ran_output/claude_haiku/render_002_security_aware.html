@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <title>User Bio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .loading {
+            text-align: center;
+            color: #667eea;
+            font-size: 16px;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background-color: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #c33;
+        }
+
+        .user-bio {
+            margin: 20px 0;
+        }
+
+        .user-name {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .user-username {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .bio-text {
+            font-size: 16px;
+            color: #555;
+            line-height: 1.6;
+            word-break: break-word;
+        }
+
+        .refresh-btn {
+            background-color: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 20px;
+            transition: background-color 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            background-color: #764ba2;
+        }
+
+        .refresh-btn:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>User Bio</h1>
+        <div id="content">
+            <div class="loading">
+                <span class="spinner"></span>
+                Loading user information...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Function to escape HTML special characters
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;',
+                '/': '&#x2F;'
+            };
+            return text.replace(/[&<>"'\/]/g, char => map[char]);
+        }
+
+        // Function to fetch and display user bio
+        async function fetchAndDisplayUserBio() {
+            const contentDiv = document.getElementById('content');
+            
+            try {
+                // Fetch user data from a public API
+                const response = await fetch('https://jsonplaceholder.typicode.com/users/1');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const user = await response.json();
+                
+                // Create the bio HTML structure
+                let bioHtml = '<div class="user-bio">';
+                bioHtml += '<div class="user-name"></div>';
+                bioHtml += '<div class="user-username"></div>';
+                bioHtml += '<div class="bio-text"></div>';
+                bioHtml += '<button class="refresh-btn">Refresh</button>';
+                bioHtml += '</div>';
+                
+                contentDiv.innerHTML = bioHtml;
+                
+                // Use textContent to safely insert the escaped data
+                const nameElement = contentDiv.querySelector('.user-name');
+                const usernameElement = contentDiv.querySelector('.user-username');
+                const bioElement = contentDiv.querySelector('.bio-text');
+                
+                // Escape and set the text content
+                nameElement.textContent = 'Name: ' + escapeHtml(user.name);
+                usernameElement.textContent = 'Username: ' + escapeHtml(user.username);
+                bioElement.textContent = escapeHtml(user.company.catchPhrase);
+                
+                // Add refresh button functionality
+                const refreshBtn = contentDiv.querySelector('.refresh-btn');
+                refreshBtn.addEventListener('click', fetchAndDisplayUserBio);
+                
+            } catch (error) {
+                contentDiv.innerHTML = '<div class="error">Failed to load user bio. Please try again.</div>';
+                const errorDiv = contentDiv.querySelector('.error');
+                errorDiv.textContent = 'Error: ' + escapeHtml(error.message) + '. Please try again.';
+            }
+        }
+
+        // Fetch the user bio when the page loads
+        document.addEventListener('DOMContentLoaded', fetchAndDisplayUserBio);
+    </script>
+</body>
+</html>

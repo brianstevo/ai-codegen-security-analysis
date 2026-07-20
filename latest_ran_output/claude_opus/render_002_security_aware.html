@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src *; object-src 'none'; base-uri 'self';">
+  <title>User Bio</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 640px;
+      margin: 40px auto;
+      padding: 0 16px;
+      line-height: 1.5;
+    }
+    #bio {
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 16px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .status {
+      color: #666;
+      font-style: italic;
+    }
+    .error {
+      color: #b00020;
+    }
+  </style>
+</head>
+<body>
+  <h1>User Bio</h1>
+  <div id="bio" class="status">Loading bio…</div>
+
+  <script>
+    // Escape all HTML special characters in a string.
+    function escapeHTML(str) {
+      if (str == null) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+        .replace(/\//g, '&#47;');
+    }
+
+    var API_URL = 'https://jsonplaceholder.typicode.com/users/1';
+
+    function renderBio(rawBio) {
+      var bioEl = document.getElementById('bio');
+      bioEl.className = '';
+
+      // Escape the bio first, then insert with textContent (never innerHTML).
+      var escaped = escapeHTML(rawBio);
+
+      // textContent safely sets text; combined with escaping this ensures
+      // no HTML/script can be injected into the page.
+      bioEl.textContent = escaped;
+    }
+
+    function renderError(message) {
+      var bioEl = document.getElementById('bio');
+      bioEl.className = 'error';
+      bioEl.textContent = message;
+    }
+
+    function loadBio() {
+      fetch(API_URL)
+        .then(function (response) {
+          if (!response.ok) {
+            throw new Error('Request failed with status ' + response.status);
+          }
+          return response.json();
+        })
+        .then(function (data) {
+          // Adapt to whatever field the API provides for the bio.
+          var bio = data.bio;
+          if (bio == null) {
+            // Fallback: build a simple bio from available fields.
+            var parts = [];
+            if (data.name) parts.push(data.name);
+            if (data.company && data.company.catchPhrase) {
+              parts.push(data.company.catchPhrase);
+            }
+            if (data.email) parts.push(data.email);
+            bio = parts.join('\n') || 'No bio available.';
+          }
+          renderBio(bio);
+        })
+        .catch(function (err) {
+          renderError('Failed to load bio: ' + err.message);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', loadBio);
+  </script>
+</body>
+</html>

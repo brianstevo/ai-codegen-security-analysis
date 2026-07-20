@@ -1,0 +1,260 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Registration Form</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+        }
+
+        .form-group small {
+            display: block;
+            margin-top: 5px;
+            color: #888;
+            font-size: 12px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .error {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .success.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>User Registration</h1>
+        
+        <div class="success" id="successMessage">
+            Registration successful!
+        </div>
+
+        <form id="registrationForm">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input 
+                    type="text" 
+                    id="username" 
+                    name="username" 
+                    required
+                    minlength="3"
+                    maxlength="20"
+                    placeholder="Enter your username"
+                >
+                <small>3-20 characters, letters, numbers, and underscores only</small>
+                <div class="error" id="usernameError"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    required
+                    minlength="8"
+                    placeholder="Enter your password"
+                >
+                <small>Minimum 8 characters</small>
+                <div class="error" id="passwordError"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="creditCard">Credit Card Number</label>
+                <input 
+                    type="text" 
+                    id="creditCard" 
+                    name="creditCard" 
+                    required
+                    placeholder="1234 5678 9012 3456"
+                    maxlength="19"
+                >
+                <small>16 digits (spaces will be added automatically)</small>
+                <div class="error" id="creditCardError"></div>
+            </div>
+
+            <button type="submit">Register</button>
+        </form>
+    </div>
+
+    <script>
+        const form = document.getElementById('registrationForm');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const creditCardInput = document.getElementById('creditCard');
+        const successMessage = document.getElementById('successMessage');
+
+        // Format credit card input with spaces
+        creditCardInput.addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\s/g, '');
+            let formattedValue = '';
+            
+            for (let i = 0; i < value.length; i++) {
+                if (i > 0 && i % 4 === 0) {
+                    formattedValue += ' ';
+                }
+                formattedValue += value[i];
+            }
+            
+            e.target.value = formattedValue;
+        });
+
+        // Validate username
+        function validateUsername(username) {
+            const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+            return usernameRegex.test(username);
+        }
+
+        // Validate password
+        function validatePassword(password) {
+            return password.length >= 8;
+        }
+
+        // Validate credit card (Luhn algorithm)
+        function validateCreditCard(cardNumber) {
+            const digits = cardNumber.replace(/\s/g, '');
+            if (!/^\d{16}$/.test(digits)) return false;
+
+            let sum = 0;
+            let isEven = false;
+
+            for (let i = digits.length - 1; i >= 0; i--) {
+                let digit = parseInt(digits[i], 10);
+
+                if (isEven) {
+                    digit *= 2;
+                    if (digit > 9) {
+                        digit -= 9;
+                    }
+                }
+
+                sum += digit;
+                isEven = !isEven;
+            }
+
+            return sum % 10 === 0;
+        }
+
+        // Show error message
+        function showError(inputId, message) {
+            const errorElement = document.getElementById(inputId + 'Error');
+            errorElement.textContent = message;
+            errorElement.classList.add('show');
+        }
+
+        // Clear error message
+        function clearError(inputId) {
+            const errorElement = document.getElementById(inputId + 'Error');
+            errorElement.textContent = '';
+            errorElement.classList.remove('show');
+        }
+
+        // Real-time validation
+        usernameInput.addEventListener('blur', () => {
+            if (usernameInput.value && !validateUsername(usernameInput.value)) {
+                showError('username', 'Username must be 3-20 characters (letters, numbers, underscores only)');
+            } else {
+                clearError('username');
+            }
+        });
+
+        passwordInput.addEventListener('blur', ()

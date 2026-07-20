@@ -1,0 +1,245 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Forum Post</title>
+  <script
+    src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"
+    integrity="sha384-TFEH8OLFqJKnwODPdXGAiGMUU2oZ4pLmGXLN9XBIFCvWLBf+GvFPqONiPw3MfWS"
+    crossorigin="anonymous"
+  ></script>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #f0f2f5;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 2rem 1rem;
+    }
+
+    .forum-container {
+      width: 100%;
+      max-width: 780px;
+    }
+
+    .forum-header {
+      margin-bottom: 1.25rem;
+    }
+
+    .forum-header h1 {
+      font-size: 1.5rem;
+      color: #1a1a2e;
+      font-weight: 700;
+    }
+
+    .forum-header .thread-meta {
+      font-size: 0.8rem;
+      color: #888;
+      margin-top: 0.25rem;
+    }
+
+    .post-card {
+      background: #ffffff;
+      border: 1px solid #dde1e7;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      margin-bottom: 1.25rem;
+    }
+
+    .post-header {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid #eaecf0;
+      background: #fafbfc;
+    }
+
+    .avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .avatar.color-a { background: #4f46e5; }
+    .avatar.color-b { background: #0891b2; }
+    .avatar.color-c { background: #16a34a; }
+    .avatar.color-d { background: #dc2626; }
+
+    .post-author-info {
+      flex: 1;
+    }
+
+    .post-author-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: #1a1a2e;
+    }
+
+    .post-author-role {
+      font-size: 0.75rem;
+      color: #888;
+      margin-top: 1px;
+    }
+
+    .post-timestamp {
+      font-size: 0.78rem;
+      color: #aaa;
+    }
+
+    .post-number {
+      font-size: 0.78rem;
+      color: #bbb;
+      font-weight: 600;
+    }
+
+    .post-body {
+      padding: 1.25rem 1.5rem;
+      font-size: 0.97rem;
+      line-height: 1.7;
+      color: #2d2d2d;
+    }
+
+    .post-body p {
+      margin-bottom: 0.85rem;
+    }
+
+    .post-body p:last-child {
+      margin-bottom: 0;
+    }
+
+    .post-body b {
+      font-weight: 700;
+      color: #111;
+    }
+
+    .post-body i {
+      font-style: italic;
+      color: #444;
+    }
+
+    .post-footer {
+      padding: 0.65rem 1.5rem;
+      border-top: 1px solid #eaecf0;
+      background: #fafbfc;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .react-btn {
+      background: none;
+      border: 1px solid #dde1e7;
+      border-radius: 20px;
+      padding: 0.28rem 0.75rem;
+      font-size: 0.82rem;
+      cursor: pointer;
+      color: #555;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .react-btn:hover {
+      background: #f0f2f5;
+      border-color: #c0c4cc;
+    }
+
+    .sanitise-notice {
+      background: #fff8e1;
+      border: 1px solid #f9c74f;
+      border-radius: 8px;
+      padding: 0.85rem 1.1rem;
+      font-size: 0.82rem;
+      color: #7a5c00;
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+    }
+
+    .sanitise-notice strong {
+      display: block;
+      margin-bottom: 0.2rem;
+    }
+
+    .raw-input-section {
+      background: #ffffff;
+      border: 1px solid #dde1e7;
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .raw-input-section h2 {
+      font-size: 0.95rem;
+      color: #333;
+      margin-bottom: 0.75rem;
+      font-weight: 600;
+    }
+
+    .raw-input-section textarea {
+      width: 100%;
+      min-height: 120px;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 0.82rem;
+      padding: 0.65rem 0.85rem;
+      border: 1px solid #dde1e7;
+      border-radius: 6px;
+      resize: vertical;
+      color: #333;
+      background: #f8f9fa;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .raw-input-section textarea:focus {
+      border-color: #4f46e5;
+    }
+
+    .raw-input-section button {
+      margin-top: 0.75rem;
+      background: #4f46e5;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 0.55rem 1.25rem;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .raw-input-section button:hover {
+      background: #4338ca;
+    }
+  </style>
+</head>
+<body>
+
+<div class="forum-container">
+
+  <div class="forum-header">
+    <h1>💬 Tech Discussions › Web Security</h1>
+    <div class="thread-meta">Thread started 14 Jun 2025 · 4 replies · 312 views</div>
+  </div>
+
+  <div class="sanitise-notice">
+    <strong>🛡️

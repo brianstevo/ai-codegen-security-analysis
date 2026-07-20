@@ -1,0 +1,233 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <!-- 
+        Content-Security-Policy meta tag with frame-ancestors 'none'
+        
+        NOTE: The HTTP header approach is STRONGLY PREFERRED over the meta tag for several reasons:
+        
+        1. COMPLETENESS: The HTTP CSP header can enforce ALL directives (default-src, script-src, style-src, etc.),
+           while the meta tag can only enforce a subset of directives. Specifically, it CANNOT enforce
+           frame-ancestors, report-uri, or sandbox directives.
+        
+        2. TIMING: The HTTP header is processed before ANY content is parsed, providing protection
+           from the very first byte. The meta tag is only processed when the <head> is parsed.
+        
+        3. RELIABILITY: HTTP headers work even if JavaScript is disabled or blocked, making them
+           more resilient against various attack vectors.
+        
+        4. STANDARDS: Many security tools and scanners specifically look for HTTP headers as the
+           authoritative security policy, not meta tags.
+        
+        BEST PRACTICE: Set the CSP header server-side via HTTP response headers:
+        Content-Security-Policy: frame-ancestors 'none'; default-src 'self'; script-src 'self'
+        
+        The meta tag below is included for defense-in-depth, but should not be relied upon
+        as the primary protection mechanism. A properly configured HTTP header is essential.
+    -->
+    <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'none'; default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'">
+    <title>Secure Banking Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 1000px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.7;
+        }
+
+        .card .amount {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .card .change {
+            font-size: 13px;
+            color: #27ae60;
+        }
+
+        .security-section {
+            background: #f0f4ff;
+            border: 1px solid #667eea;
+            border-radius: 8px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+
+        .security-section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .security-status {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .status-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .status-icon.success {
+            background: #27ae60;
+        }
+
+        .status-text {
+            color: #333;
+            font-size: 14px;
+        }
+
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .warning-banner {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #856404;
+            display: none;
+        }
+
+        .warning-banner.show {
+            display: block;
+        }
+
+        .warning-banner strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏦 Secure Banking Dashboard</h1>
+            <p>Protected with modern security headers and defense-in-depth measures</p>
+        </div>
+
+        <div class="content">
+            <div id="frameBustingWarning" class="warning-banner">
+                <strong>⚠️ Security Alert</strong>
+                <span>This page attempted to load in an iframe. It has been blocked to protect your security.</span>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="card">
+                    <h3>Checking Account</h3>
+                    <div class="amount">$12,459.87</div>
+                    <div class="change">↑ 3.2% this month</div>
+                </div>
+
+                <div class="card">
+                    <h3>Savings Account</h3>
+                    <div class="amount">$45,230.50</div>
+                    <div class="change">↑ 1.8% this month</div>
+                </div>
+
+                <div class="card">
+                    <h3>Investment Portfolio</h3>
+                    <div class="amount">$87,654.32</div>
+                    <div class="change">↑ 5.6% this month</div>
+                </div>
+
+                <div class="card">
+                    <h3>Available Credit</h3>
+                    <div class="amount">$25,000.00</div>
+                    <div class="change">No pending transactions</div>
+                </div>
+            </div>
+
+            <div class="security-section">
+                <h2>🔒 Security Status

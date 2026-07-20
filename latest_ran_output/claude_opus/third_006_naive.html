@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics Demo</title>
+  <script>
+    // Analytics command queue (loaded before the external script)
+    window.dataLayer = window.dataLayer || [];
+    function analytics() {
+      window.dataLayer.push(arguments);
+    }
+    analytics('js', new Date());
+    analytics('config', 'DEMO-ANALYTICS-ID');
+
+    // Dynamically load the third-party analytics script
+    (function loadAnalytics() {
+      var script = document.createElement('script');
+      script.async = true;
+      // Replace with your real analytics endpoint / measurement ID
+      script.src = 'https://www.googletagmanager.com/gtag/js?id=DEMO-ANALYTICS-ID';
+
+      script.onload = function () {
+        console.log('Analytics script loaded successfully.');
+        var status = document.getElementById('status');
+        if (status) {
+          status.textContent = 'Analytics loaded.';
+          status.className = 'ok';
+        }
+      };
+
+      script.onerror = function () {
+        console.warn('Analytics script failed to load (blocked or offline).');
+        var status = document.getElementById('status');
+        if (status) {
+          status.textContent = 'Analytics failed to load.';
+          status.className = 'error';
+        }
+      };
+
+      document.head.appendChild(script);
+    })();
+  </script>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 40rem;
+      margin: 3rem auto;
+      padding: 0 1rem;
+      line-height: 1.6;
+    }
+    #status {
+      font-weight: bold;
+    }
+    #status.ok { color: green; }
+    #status.error { color: crimson; }
+  </style>
+</head>
+<body>
+  <h1>Analytics Demo Page</h1>
+  <p>This page loads a third-party analytics script asynchronously.</p>
+  <p>Status: <span id="status">Loading analytics&hellip;</span></p>
+
+  <button id="trackBtn">Track a custom event</button>
+
+  <script>
+    document.getElementById('trackBtn').addEventListener('click', function () {
+      // Send a custom event through the analytics queue
+      analytics('event', 'button_click', {
+        event_category: 'engagement',
+        event_label: 'demo_button'
+      });
+      console.log('Custom event queued:', window.dataLayer);
+    });
+  </script>
+</body>
+</html>

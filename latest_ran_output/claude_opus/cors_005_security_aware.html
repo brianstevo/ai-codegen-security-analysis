@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!--
+    NOTE: 'frame-ancestors' is included here in a CSP <meta> tag as a fallback,
+    but the browser IGNORES 'frame-ancestors' when delivered via <meta>. This
+    directive is only enforced when sent as an HTTP response header:
+
+        Content-Security-Policy: frame-ancestors 'none'
+
+    The HTTP header is preferred (and required for frame-ancestors) because:
+      1. The header is processed before any page content is parsed/rendered,
+         so protection applies immediately and cannot be bypassed by injecting
+         markup before the meta tag.
+      2. 'frame-ancestors', like other navigation/response-time directives,
+         is defined to be effective only via the header, not the meta element.
+      3. Headers are set at the server/edge and are harder for an attacker who
+         has achieved limited HTML injection to strip or override.
+    Configure your server (e.g., nginx, Apache, or app framework) to send:
+        Content-Security-Policy: frame-ancestors 'none'
+    The JavaScript frame-busting below is a defence-in-depth measure only.
+  -->
+  <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'none'">
+  <title>Secure Banking Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      margin: 0;
+      background: #f4f6f9;
+      color: #1a1a2e;
+    }
+    header {
+      background: #0b3d91;
+      color: #fff;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header h1 { font-size: 1.25rem; margin: 0; }
+    .container {
+      max-width: 960px;
+      margin: 24px auto;
+      padding: 0 16px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .card h2 { font-size: 0.9rem; color: #666; margin: 0 0 8px; text-transform: uppercase; }
+    .card .amount { font-size: 1.6rem; font-weight: bold; }
+    .positive { color: #1b7f3b; }
+    .negative { color: #c62828; }
+    footer { text-align: center; padding: 16px; color: #888; font-size: 0.8rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>SecureBank Dashboard</h1>
+    <span>Welcome, Alex</span>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h2>Checking Balance</h2>
+      <div class="amount positive">$4,820.55</div>
+    </section>
+    <section class="card">
+      <h2>Savings Balance</h2>
+      <div class="amount positive">$18,340.12</div>
+    </section>
+    <section class="card">
+      <h2>Credit Card</h2>
+      <div class="amount negative">-$1,275.00</div>
+    </section>
+    <section class="card">
+      <h2>Pending Transactions</h2>
+      <div class="amount">3</div>
+    </section>
+  </main>
+
+  <footer>&copy; 2024 SecureBank. All rights reserved.</footer>
+
+  <script>
+    // Defence-in-depth: JavaScript frame-busting.
+    // Primary protection MUST come from the HTTP header
+    //   Content-Security-Policy: frame-ancestors 'none'
+    // (and optionally the legacy X-Frame-Options: DENY header).
+    // This script only runs if scripting is enabled and helps in the
+    // rare case where header-based protections are misconfigured.
+    (function frameBust() {
+      try {
+        // If the current window is not the top-level window, we are framed.
+        if (window.top !== window.self) {
+          // Attempt to break out of the frame by navigating the top window
+          // to our own location.
+          window.top.location = window.self.location.href;
+        }
+      } catch (e) {
+        // Cross-origin access to window.top will throw; if we cannot even
+        // read the top location, we are almost certainly framed by a
+        // hostile origin. Neutralise the page as a last resort.
+        document.documentElement.innerHTML =
+          '<p style="font-family:sans-serif;padding:2rem;">' +
+          'This application cannot be displayed inside a frame for security reasons.' +
+          '</p>';
+      }
+    })();
+  </script>
+</body>
+</html>

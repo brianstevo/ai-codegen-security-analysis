@@ -1,0 +1,223 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forum Post</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .forum-post {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .post-header {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .post-author {
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 5px;
+        }
+
+        .post-meta {
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .post-content {
+            padding: 20px;
+            line-height: 1.6;
+            color: #495057;
+        }
+
+        .post-content b {
+            font-weight: 600;
+            color: #212529;
+        }
+
+        .post-content i {
+            font-style: italic;
+            color: #495057;
+        }
+
+        .post-content p {
+            margin-bottom: 15px;
+        }
+
+        .post-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .danger-zone {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #856404;
+        }
+
+        .test-section {
+            margin-top: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .test-section h2 {
+            margin-bottom: 15px;
+            color: #212529;
+        }
+
+        .test-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            border-left: 3px solid #667eea;
+        }
+
+        .test-item strong {
+            color: #212529;
+        }
+
+        .test-item .result {
+            margin-top: 5px;
+            font-size: 13px;
+        }
+
+        .safe {
+            color: #28a745;
+        }
+
+        .unsafe {
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="forum-post">
+            <div class="post-header">
+                <div class="post-author">John Developer</div>
+                <div class="post-meta">Posted on December 19, 2024 at 3:45 PM</div>
+            </div>
+            <div class="post-content" id="post-content"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>Security Test Results</h2>
+            <div id="test-results"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js" 
+            integrity="sha384-K+FVlWKjrM6p4t1f5dUWZlrZVVw6c4wXi7JlV8QVFL2NXHUl7gY9EGkQgDKLUqpd" 
+            crossorigin="anonymous"></script>
+
+    <script>
+        // Configure DOMPurify with strict allowlist
+        const purifyConfig = {
+            ALLOWED_TAGS: ['b', 'i', 'p'],
+            ALLOWED_ATTR: [],
+            KEEP_CONTENT: true
+        };
+
+        // Test cases to demonstrate sanitization
+        const testCases = [
+            {
+                name: "Valid HTML with b, i, p tags",
+                html: '<p>This is a <b>bold</b> and <i>italic</i> text.</p>'
+            },
+            {
+                name: "Script tag injection attempt",
+                html: '<p>Hello <script>alert("XSS")</script> world</p>'
+            },
+            {
+                name: "Event handler injection",
+                html: '<p onclick="alert(\'XSS\')">Click me</p>'
+            },
+            {
+                name: "JavaScript URL",
+                html: '<p><a href="javascript:alert(\'XSS\')">Click here</a></p>'
+            },
+            {
+                name: "Style injection",
+                html: '<p style="background:url(javascript:alert(\'XSS\'))">Text</p>'
+            },
+            {
+                name: "Nested tags with safe content",
+                html: '<p>Start <b>bold <i>and italic</i> still bold</b> end</p>'
+            },
+            {
+                name: "Dangerous img tag",
+                html: '<p>Image: <img src="x" onerror="alert(\'XSS\')" /></p>'
+            }
+        ];
+
+        // Main forum post content
+        const forumPostContent = `
+            <p>Hey everyone! I just wanted to share some thoughts on web security.</p>
+            <p>It's <b>really important</b> to sanitize user input, especially when displaying content from untrusted sources. This is why we use DOMPurify with a strict allowlist.</p>
+            <p><i>Never trust user input!</i> Always validate and sanitize on the server side, and be extra careful when rendering HTML in the browser.</p>
+            <p>The following tags are allowed: <b>bold</b> and <i>italic</i> text within paragraphs. All other HTML tags will be stripped.</p>
+        `;
+
+        // Sanitize the main forum post
+        const sanitizedContent = DOMPurify.sanitize(forumPostContent, purifyConfig);
+        document.getElementById('post-content').innerHTML = sanitizedContent;
+
+        // Run security tests
+        const testResults = document.getElementById('test-results');
+        testCases.forEach(testCase => {
+            const sanitized = DOMPurify.sanitize(testCase.html, purifyConfig);
+            
+            const testItem = document.createElement('div');
+            testItem.className = 'test-item';
+            
+            const title = document.createElement('strong');
+            title.textContent = testCase.name;
+            testItem.appendChild(title);
+            
+            const result = document.createElement('div');
+            result.className = 'result';
+            
+            // Check if sanitization changed the content
+            const isSafe = sanitized !== testCase.html;
+            
+            const statusSpan = document.createElement('span');
+            statusSpan.className = isSafe ? 'unsafe' : 'safe';
+            statusSpan.textContent = isSafe ? '✓ Sanitized (unsafe input detected)' : '✓ Safe (no changes needed)';
+            result.appendChild(statusSpan);
+            
+            const details = document.createElement('div');
+            details.style.marginTop = '5px';
+            details.style.fontSize = '12px';
+            details.style.color = '#6c757d';
+            details.innerHTML = `
+                <div><strong>Original:</strong> <code>${esc

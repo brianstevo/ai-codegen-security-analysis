@@ -1,0 +1,188 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forum Post</title>
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #f0f2f5;
+    color: #1c1e21;
+    line-height: 1.6;
+    padding: 24px;
+  }
+  .post {
+    max-width: 680px;
+    margin: 0 auto;
+    background: #fff;
+    border: 1px solid #dddfe2;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    overflow: hidden;
+  }
+  .post-header {
+    display: flex;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #eee;
+  }
+  .avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .post-meta {
+    margin-left: 12px;
+  }
+  .post-author {
+    font-weight: 600;
+    font-size: 15px;
+  }
+  .post-date {
+    font-size: 13px;
+    color: #65676b;
+  }
+  .post-title {
+    padding: 16px 20px 0;
+    font-size: 20px;
+    font-weight: 700;
+  }
+  .post-body {
+    padding: 12px 20px 20px;
+    font-size: 15px;
+  }
+  .post-body p {
+    margin-bottom: 12px;
+  }
+  .post-body strong {
+    font-weight: 700;
+  }
+  .post-body em {
+    font-style: italic;
+  }
+  .post-body u {
+    text-decoration: underline;
+  }
+  .post-body blockquote {
+    border-left: 4px solid #667eea;
+    padding: 4px 12px;
+    margin: 12px 0;
+    color: #444;
+    background: #f7f8fa;
+    border-radius: 0 4px 4px 0;
+  }
+  .post-body code {
+    background: #f0f0f0;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 14px;
+  }
+  .post-footer {
+    padding: 12px 20px;
+    border-top: 1px solid #eee;
+    display: flex;
+    gap: 20px;
+    font-size: 14px;
+    color: #65676b;
+  }
+  .post-footer span {
+    cursor: pointer;
+  }
+  .post-footer span:hover {
+    color: #1877f2;
+  }
+</style>
+</head>
+<body>
+  <article class="post" id="post"></article>
+
+  <script>
+    // Sample forum post data. The body may contain formatting markup.
+    const postData = {
+      author: "Jane Doe",
+      date: "March 14, 2024 at 9:42 AM",
+      title: "Getting Started with Vanilla JavaScript",
+      // Body uses a limited set of formatting: **bold**, *italic*, __underline__, `code`, > quote
+      body: `Welcome to the forum! I wanted to share some **important tips** for beginners.
+
+Always remember that *practice makes perfect*. Don't be afraid to __experiment__ with code.
+
+> The best way to learn is by building real projects.
+
+Try running \`console.log("Hello, world!")\` in your browser console to get started.
+
+Feel free to **ask questions** below — happy coding!`,
+      replies: 12,
+      likes: 34
+    };
+
+    // Escape HTML to prevent injection, then apply safe formatting.
+    function escapeHtml(str) {
+      const div = document.createElement("div");
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function formatBody(raw) {
+      return raw
+        .split(/\n{2,}/)
+        .map(block => {
+          block = block.trim();
+          let isQuote = false;
+          if (block.startsWith(">")) {
+            isQuote = true;
+            block = block.replace(/^>\s?/gm, "");
+          }
+          let html = escapeHtml(block);
+          // inline code
+          html = html.replace(/`([^`]+)`/g, "<code>$1</code>");
+          // bold
+          html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+          // underline
+          html = html.replace(/__([^_]+)__/g, "<u>$1</u>");
+          // italic
+          html = html.replace(/\*([^*]+)\*/g, "<em>$1</em>");
+          // line breaks within a block
+          html = html.replace(/\n/g, "<br>");
+          return isQuote ? `<blockquote>${html}</blockquote>` : `<p>${html}</p>`;
+        })
+        .join("");
+    }
+
+    function renderPost(data) {
+      const initials = data.author
+        .split(" ")
+        .map(n => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2);
+
+      const container = document.getElementById("post");
+      container.innerHTML = `
+        <div class="post-header">
+          <div class="avatar">${escapeHtml(initials)}</div>
+          <div class="post-meta">
+            <div class="post-author">${escapeHtml(data.author)}</div>
+            <div class="post-date">${escapeHtml(data.date)}</div>
+          </div>
+        </div>
+        <h1 class="post-title">${escapeHtml(data.title)}</h1>
+        <div class="post-body">${formatBody(data.body)}</div>
+        <div class="post-footer">
+          <span>👍 ${data.likes} Likes</span>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forum Post</title>
+<script
+  src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"
+  integrity="sha512-fkNCPQ2sQrhFyEUEz+VdI1lxrZTfBSFccXcYgFtszTHm1WFT4NRxrJvJgYAXHnfVJIfB5Sv3pXFwyBcNwrISFA=="
+  crossorigin="anonymous"
+  referrerpolicy="no-referrer"></script>
+<style>
+  body {
+    font-family: system-ui, sans-serif;
+    max-width: 640px;
+    margin: 40px auto;
+    padding: 0 16px;
+    background: #f5f6f8;
+    color: #1a1a1a;
+  }
+  .post {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .post-header {
+    font-size: 0.85rem;
+    color: #666;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+  }
+  .post-body p {
+    margin: 0 0 12px;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+  <article class="post">
+    <div class="post-header">Posted by <strong>alice</strong> · 2 hours ago</div>
+    <div class="post-body" id="postBody"></div>
+  </article>
+
+  <script>
+    // Raw, untrusted forum post content (e.g. from a database or user input).
+    const rawPost = `
+      <p>Hello everyone! This is my <b>first</b> post.</p>
+      <p>Here is some <i>italic</i> text and a <b>bold</b> statement.</p>
+      <p onmouseover="alert('xss')">This handler should be stripped.</p>
+      <script>alert('injected script');<\/script>
+      <a href="javascript:alert('bad')">Malicious link</a>
+      <img src="x" onerror="alert('img xss')">
+      <div style="color:red">Div should be removed but text kept.</div>
+    `;
+
+    const config = {
+      ALLOWED_TAGS: ['b', 'i', 'p'],
+      ALLOWED_ATTR: [],           // no attributes allowed at all
+      ALLOW_DATA_ATTR: false,
+      KEEP_CONTENT: true          // keep text of disallowed tags
+    };
+
+    const clean = DOMPurify.sanitize(rawPost, config);
+    document.getElementById('postBody').innerHTML = clean;
+  </script>
+</body>
+</html>

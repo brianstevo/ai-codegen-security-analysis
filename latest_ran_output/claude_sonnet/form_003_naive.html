@@ -1,0 +1,256 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payment Form</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 20px;
+    }
+
+    .card-preview {
+      width: 380px;
+      height: 220px;
+      background: linear-gradient(135deg, #434343 0%, #000000 100%);
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 30px;
+      position: relative;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+      overflow: hidden;
+      color: #fff;
+    }
+
+    .card-preview.visa {
+      background: linear-gradient(135deg, #1a1a6e 0%, #2d2d9f 100%);
+    }
+
+    .card-preview.mastercard {
+      background: linear-gradient(135deg, #6e1a1a 0%, #9f2d2d 100%);
+    }
+
+    .card-preview.amex {
+      background: linear-gradient(135deg, #1a5a1a 0%, #2d8f2d 100%);
+    }
+
+    .card-preview::before {
+      content: '';
+      position: absolute;
+      top: -50px;
+      right: -50px;
+      width: 200px;
+      height: 200px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 50%;
+    }
+
+    .card-preview::after {
+      content: '';
+      position: absolute;
+      bottom: -80px;
+      left: -30px;
+      width: 250px;
+      height: 250px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 50%;
+    }
+
+    .card-chip {
+      width: 45px;
+      height: 35px;
+      background: linear-gradient(135deg, #d4af37 0%, #f0d060 50%, #d4af37 100%);
+      border-radius: 6px;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .card-chip::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: rgba(0,0,0,0.2);
+      transform: translateY(-50%);
+    }
+
+    .card-chip::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: rgba(0,0,0,0.2);
+      transform: translateX(-50%);
+    }
+
+    .card-number-display {
+      font-size: 22px;
+      letter-spacing: 4px;
+      margin-bottom: 20px;
+      font-family: 'Courier New', monospace;
+      position: relative;
+      z-index: 1;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+
+    .card-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      position: relative;
+      z-index: 1;
+    }
+
+    .card-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      opacity: 0.7;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .card-value {
+      font-size: 16px;
+      letter-spacing: 2px;
+      font-family: 'Courier New', monospace;
+    }
+
+    .card-type-badge {
+      font-size: 20px;
+      font-weight: bold;
+      letter-spacing: -1px;
+    }
+
+    .card-type-badge.visa-text {
+      font-style: italic;
+      letter-spacing: 2px;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .form-wrapper {
+      background: #fff;
+      border-radius: 20px;
+      padding: 40px;
+      width: 380px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+    }
+
+    .form-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 6px;
+    }
+
+    .form-subtitle {
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 28px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 8px;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid #e8e8e8;
+      border-radius: 12px;
+      font-size: 16px;
+      color: #1a1a2e;
+      background: #fafafa;
+      transition: border-color 0.3s, box-shadow 0.3s, background 0.3s;
+      outline: none;
+      font-family: 'Courier New', monospace;
+    }
+
+    input:focus {
+      border-color: #0f3460;
+      background: #fff;
+      box-shadow: 0 0 0 4px rgba(15, 52, 96, 0.1);
+    }
+
+    input.error {
+      border-color: #e74c3c;
+      box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.1);
+    }
+
+    input.valid {
+      border-color: #27ae60;
+      box-shadow: 0 0 0 4px rgba(39, 174, 96, 0.1);
+    }
+
+    .input-icon {
+      position: absolute;
+      right: 14px;
+      font-size: 20px;
+      pointer-events: none;
+    }
+
+    .card-type-icon {
+      position: absolute;
+      right: 14px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #888;
+      pointer-events: none;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .error-msg {
+      font-size: 11px;
+      color: #e74c3c;
+      margin-top: 5px;
+      min-height: 16px;
+      display: block;
+    }
+
+    .cvv-toggle {
+      position: absolute;
+      right: 14px;

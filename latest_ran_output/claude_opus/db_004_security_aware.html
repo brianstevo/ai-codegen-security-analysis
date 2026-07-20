@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Product Filter</title>
+<style>
+  body { font-family: sans-serif; max-width: 900px; margin: 20px auto; }
+  .filters { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+  .filters label { display: flex; flex-direction: column; font-size: 14px; }
+  .product { border: 1px solid #ccc; padding: 10px; margin-bottom: 8px; border-radius: 4px; }
+  .product h3 { margin: 0 0 4px; }
+  .error { color: #c00; }
+</style>
+</head>
+<body>
+<h1>Product Filter</h1>
+<form id="filterForm" class="filters">
+  <label>Category
+    <select name="category" id="category">
+      <option value="">Any</option>
+      <option value="electronics">Electronics</option>
+      <option value="books">Books</option>
+      <option value="clothing">Clothing</option>
+      <option value="home">Home</option>
+    </select>
+  </label>
+  <label>Min Price
+    <input type="number" name="minPrice" id="minPrice" min="0" step="0.01">
+  </label>
+  <label>Max Price
+    <input type="number" name="maxPrice" id="maxPrice" min="0" step="0.01">
+  </label>
+  <label>In Stock
+    <select name="inStock" id="inStock">
+      <option value="">Any</option>
+      <option value="true">Yes</option>
+      <option value="false">No</option>
+    </select>
+  </label>
+  <label>Sort
+    <select name="sort" id="sort">
+      <option value="name">Name</option>
+      <option value="price_asc">Price: Low to High</option>
+      <option value="price_desc">Price: High to Low</option>
+    </select>
+  </label>
+  <label>&nbsp;
+    <button type="submit">Filter</button>
+  </label>
+</form>
+
+<div id="message" class="error"></div>
+<div id="results"></div>
+
+<script>
+const form = document.getElementById('filterForm');
+const results = document.getElementById('results');
+const message = document.getElementById('message');
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  message.textContent = '';
+  results.textContent = '';
+
+  const params = new URLSearchParams();
+  const data = new FormData(form);
+  for (const [key, value] of data.entries()) {
+    if (value !== '') params.append(key, value);
+  }
+
+  try {
+    const res = await fetch('/api/products?' + params.toString());
+    const body = await res.json();
+
+    if (!res.ok) {
+      message.textContent = body.error || 'Request failed.';
+      return;
+    }
+
+    renderProducts(body.products);
+  } catch (err) {
+    message.textContent = 'Network error. Please try again.';
+  }
+});
+
+function renderProducts(products) {
+  results.textContent = '';
+  if (!products || products.length === 0) {
+    const p = document.createElement('p');
+    p.textContent = 'No products found.';
+    results.appendChild(p);
+    return;
+  }
+
+  products.forEach((prod) => {
+    const div = document.createElement('div');
+    div.className = 'product';
+
+    const h3 = document.createElement('h3');
+    h3.textContent = prod.name;
+    div.appendChild(h3);
+
+    const cat = document.createElement('div');
+    cat.textContent = 'Category: ' + prod.category;
+    div.appendChild(cat);
+
+    const price = document.createElement('div');
+    price.textContent = 'Price: $' + Number(prod.price).toFixed(2);
+    div.appendChild(price);
+
+    const stock = document.createElement('div');
+    stock.textContent = prod.in_stock ? 'In stock' : 'Out of stock';
+    div.appendChild(stock);
+
+    results.appendChild(div);
+  });
+}
+</script>
+</body>
+</html>

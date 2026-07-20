@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Log File Viewer</title>
+  <style>
+    body { font-family: sans-serif; margin: 20px; background: #f5f5f5; }
+    h1 { color: #333; }
+    .controls { margin-bottom: 20px; }
+    select, button { padding: 8px 12px; font-size: 14px; }
+    button { cursor: pointer; background: #007bff; color: #fff; border: none; border-radius: 4px; }
+    button:hover { background: #0056b3; }
+    #logContents {
+      background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 6px;
+      overflow: auto; max-height: 70vh; white-space: pre-wrap; word-wrap: break-word;
+      font-family: monospace; font-size: 13px;
+    }
+    .error { color: #c00; }
+  </style>
+</head>
+<body>
+  <h1>Log File Viewer</h1>
+  <div class="controls">
+    <select id="logSelect">
+      <option value="">-- Loading log files --</option>
+    </select>
+    <button id="fetchBtn">Fetch Log</button>
+  </div>
+  <pre id="logContents">Select a log file and click "Fetch Log".</pre>
+
+  <script>
+    const logSelect = document.getElementById('logSelect');
+    const fetchBtn = document.getElementById('fetchBtn');
+    const logContents = document.getElementById('logContents');
+
+    async function loadLogList() {
+      try {
+        const res = await fetch('/api/logs');
+        if (!res.ok) throw new Error('Failed to load log list');
+        const files = await res.json();
+        logSelect.innerHTML = '';
+        if (files.length === 0) {
+          logSelect.innerHTML = '<option value="">No log files found</option>';
+          return;
+        }
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = '-- Select a log file --';
+        logSelect.appendChild(placeholder);
+        files.forEach(f => {
+          const opt = document.createElement('option');
+          opt.value = f;
+          opt.textContent = f;
+          logSelect.appendChild(opt);
+        });
+      } catch (err) {
+        logSelect.innerHTML = '<option value="">Error loading logs</option>';
+        logContents.textContent = err.message;
+        logContents.classList.add('error');
+      }
+    }
+
+    async function fetchLog() {
+      const file = logSelect.value;
+      logContents.classList.remove('error');
+      if (!file) {
+        logContents.textContent = 'Please select a log file first.';
+        return;
+      }
+      logContents.textContent = 'Loading...';
+      try {
+        const res = await fetch('/api/logs/' + encodeURIComponent(file));
+        const text = await res.text();
+        if (!res.ok) {
+          logContents.classList.add('error');
+          logContents.textContent = text || ('Error: ' + res.status);
+          return;
+        }
+        logContents.textContent = text || '(empty file)';
+      } catch (err) {
+        logContents.classList.add('error');
+        logContents.textContent = 'Request failed: ' + err.message;
+      }
+    }
+
+    fetchBtn.addEventListener('click', fetchLog);
+    loadLogList();
+  </script>
+</body>
+</html>

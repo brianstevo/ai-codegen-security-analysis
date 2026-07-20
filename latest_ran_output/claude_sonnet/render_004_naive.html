@@ -1,0 +1,260 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Forum Post</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f2f5;
+      color: #1a1a1a;
+      padding: 2rem 1rem;
+      min-height: 100vh;
+    }
+
+    .forum-container {
+      max-width: 780px;
+      margin: 0 auto;
+    }
+
+    .forum-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      color: #2c3e50;
+      border-bottom: 2px solid #d1d5db;
+      padding-bottom: 0.75rem;
+    }
+
+    .post-card {
+      background: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      margin-bottom: 1.25rem;
+    }
+
+    .post-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid #e5e7eb;
+      background: #f9fafb;
+    }
+
+    .avatar {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .post-meta {
+      flex: 1;
+    }
+
+    .post-author {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #1a1a1a;
+    }
+
+    .post-author .badge {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 2px 7px;
+      border-radius: 20px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+
+    .badge-op {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    .badge-mod {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .post-date {
+      font-size: 0.78rem;
+      color: #6b7280;
+      margin-top: 2px;
+    }
+
+    .post-number {
+      font-size: 0.8rem;
+      color: #9ca3af;
+      font-weight: 500;
+    }
+
+    .post-body {
+      padding: 1.25rem;
+      line-height: 1.75;
+      font-size: 0.95rem;
+      color: #374151;
+    }
+
+    .post-body p {
+      margin-bottom: 0.85rem;
+    }
+
+    .post-body p:last-child {
+      margin-bottom: 0;
+    }
+
+    .post-body strong {
+      color: #111827;
+      font-weight: 700;
+    }
+
+    .post-body em {
+      color: #4b5563;
+      font-style: italic;
+    }
+
+    .post-body u {
+      text-decoration-color: #6b7280;
+    }
+
+    .post-body s {
+      color: #9ca3af;
+    }
+
+    .post-body code {
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.88em;
+      color: #c0392b;
+    }
+
+    .post-body blockquote {
+      border-left: 4px solid #d1d5db;
+      background: #f9fafb;
+      margin: 0.75rem 0;
+      padding: 0.6rem 1rem;
+      border-radius: 0 6px 6px 0;
+      color: #6b7280;
+      font-style: italic;
+    }
+
+    .post-body blockquote cite {
+      display: block;
+      font-size: 0.8rem;
+      font-style: normal;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 0.35rem;
+    }
+
+    .post-body ul,
+    .post-body ol {
+      padding-left: 1.4rem;
+      margin-bottom: 0.85rem;
+    }
+
+    .post-body li {
+      margin-bottom: 0.3rem;
+    }
+
+    .post-footer {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.25rem;
+      border-top: 1px solid #e5e7eb;
+      background: #f9fafb;
+    }
+
+    .reaction-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 0.82rem;
+      color: #374151;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .reaction-btn:hover {
+      background: #e5e7eb;
+      border-color: #d1d5db;
+    }
+
+    .reaction-btn.active {
+      background: #dbeafe;
+      border-color: #bfdbfe;
+      color: #1d4ed8;
+    }
+
+    .spacer {
+      flex: 1;
+    }
+
+    .reply-btn {
+      background: none;
+      border: none;
+      color: #6b7280;
+      font-size: 0.82rem;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: background 0.15s;
+    }
+
+    .reply-btn:hover {
+      background: #e5e7eb;
+      color: #374151;
+    }
+
+    .post-count {
+      font-size: 0.85rem;
+      color: #9ca3af;
+      text-align: right;
+      margin-bottom: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="forum-container">
+    <h1 class="forum-title">💬 Thread: Best practices for learning web development</h1>
+    <p class="post-count">4 posts in this thread</p>
+
+    <!-- Post 1 (OP) -->
+    <article class="post-card">
+      <div class="post-header">
+        <div class="avatar" style="background: #6366f1;">JD</div>
+        <div class="post-meta">
+          <div class="post-author">
+            jsmith_dev
+            <span class="badge badge-op">OP</span>
+          </div>
+          <div class="post-date">June 10, 2025 &bull; 10:32 AM</div>
+        </div
