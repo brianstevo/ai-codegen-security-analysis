@@ -10,9 +10,302 @@ Each prompt is sent in two versions:
 - **Naive** — functional requirement only, no security context
 - **Security-aware** — same task with explicit security constraints
 
+Results are written to `latest_ran_output/` and analysed with `node analyze.js` to produce `findings.json`.
+
+---
+
+## Prerequisites
+
+| Tool | Minimum version | Purpose |
+|---|---|---|
+| Node.js | 18+ | Run the pipeline and analysis scripts |
+| Semgrep | any recent | Static analysis |
+| Ollama | any | Serve local open-weight models (optional) |
+
+---
+
+## Setup
+
+### 1. Install Node.js dependencies
+
+```bash
+cd ai-codegen-security-analysis
+npm install
+```
+
+### 2. Install Semgrep
+
+```bash
+pip install semgrep
+# verify
+semgrep --version
+```
+
+### 3. Install Ollama (local models only)
+
+```bash
+curl -fsSL https://ollama.com/install.sh | sh
+ollama serve          # start the server (keep this running in a separate terminal)
+```
+
+### 4. Set API keys (commercial models only)
+
+```bash
+export OPENAI_API_KEY=sk-...
+export ANTHROPIC_API_KEY=sk-ant-...
+```
+
+Add these to your shell profile (`~/.bashrc` or `~/.zshrc`) to persist them.
+
+---
+
+## Running the Pipeline
+
+### Full run (all 13 models)
+
+```bash
+node pipeline.js
+```
+
+The pipeline skips any file that already exists, so it is safe to interrupt and resume.
+
+### Fresh run (archive previous output and start over)
+
+```bash
+node pipeline.js --new-run
+```
+
+This renames `latest_ran_output/` to `output_number_N/` and starts a clean run.
+
+### Single model only
+
+```bash
+node pipeline.js --model claude_sonnet
+node pipeline.js --model qwen_coder
+```
+
+Use this to test one model without waiting for all others.
+
+### Preview without calling any APIs
+
+```bash
+node pipeline.js --dry-run
+```
+
+Prints every file that would be generated without making a single API call.
+
+### Automated multi-model run (detachable)
+
+```bash
+nohup bash run_second.sh &
+tail -f run_second.log
+```
+
+`run_second.sh` pulls each local model, runs the pipeline for it, then deletes the model to free GPU memory before pulling the next one. Safe to run over SSH — the `nohup` keeps it alive after disconnect.
+
+---
+
+## Running Static Analysis
+
+```bash
+# Scan latest_ran_output/ → writes latest_ran_output/findings.json
+node analyze.js
+
+# Scan all archived output folders (output_number_1/, output_number_2/, etc.)
+node analyze_all.js
+```
+
+After running, `findings.json` contains one entry per finding:
+
+```json
+{
+  "model":     "claude_haiku",
+  "prompt_id": "auth_001",
+  "tier":      "naive",
+  "language":  "javascript",
+  "cwe_id":    "CWE-798",
+  "severity":  "warning",
+  "rule":      "javascript.lang.security.detect-hardcoded-password",
+  "line":      12,
+  "file":      "latest_ran_output/claude_haiku/auth_001_naive.js"
+}
+```
+
+---
+
+## Output Structure
+
+```
+latest_ran_output/
+  run_log.jsonl          # one JSON line per API call (tokens, duration, status)
+  findings.json          # all Semgrep findings after running analyze.js
+  claude_haiku/
+    auth_001_naive.js
+    auth_001_security_aware.js
+    auth_001_naive_backend.py
+    auth_001_security_aware_backend.py
+    ...
+  qwen_coder/
+    ...
+
+output_number_1/         # archived first run  (created by --new-run)
+output_number_2/         # archived second run
+```
+
+---
+
+## Adding a Local Model via Ollama
+
+**Step 1 — Pull the model**
+
+```bash
+ollama pull llama3.2:3b
+```
+
+Check available models at `ollama.com/library`.
+
+**Step 2 — Add an entry to `MODELS` in `pipeline.js`**
+
+```js
+llama3_2_3b: {
+  provider: 'ollama',
+  model:    'llama3.2:3b',        // exact Ollama tag
+  base_url: 'http://localhost:11434',
+},
+```
+
+The key (`llama3_2_3b`) is what you pass to `--model`. It also becomes the subfolder name in `latest_ran_output/`.
+
+**Optional: disable thinking mode for reasoning models**
+
+Some models (e.g. Qwen3.6) support a `think` flag. Set `think: false` to suppress chain-of-thought output and get cleaner code blocks:
+
+```js
+my_model: {
+  provider: 'ollama',
+  model:    'some-reasoning-model',
+  base_url: 'http://localhost:11434',
+  think:    false,
+},
+```
+
+**Step 3 — Run**
+
+```bash
+node pipeline.js --model llama3_2_3b
+```
+
+---
+
+## Adding a Different Commercial Model
+
+### OpenAI (or any OpenAI-compatible API)
+
+**Step 1 — Add an entry to `MODELS` in `pipeline.js`**
+
+```js
+gpt_4o: {
+  provider: 'openai',
+  model:    'gpt-4o',
+  base_url: 'https://api.openai.com',
+  api_key:  process.env.OPENAI_API_KEY,
+},
+```
+
+For OpenAI-compatible third-party APIs (Together AI, Groq, Fireworks, OpenRouter, etc.), just change `base_url` and `api_key`:
+
+```js
+llama4_together: {
+  provider: 'openai',                         // reuses the OpenAI adapter
+  model:    'meta-llama/Llama-4-Scout-17B-16E-Instruct',
+  base_url: 'https://api.together.xyz',
+  api_key:  process.env.TOGETHER_API_KEY,
+},
+```
+
+The pipeline uses the standard `POST /v1/chat/completions` endpoint, so any provider that implements this will work.
+
+**Special case: OpenAI Responses API** (used by GPT-5.3-Codex)
+
+If the model requires `/v1/responses` instead of `/v1/chat/completions`, add `responses_api: true`:
+
+```js
+my_codex_model: {
+  provider:      'openai',
+  model:         'some-codex-model',
+  base_url:      'https://api.openai.com',
+  api_key:       process.env.OPENAI_API_KEY,
+  responses_api: true,
+},
+```
+
+**Step 2 — Export your API key**
+
+```bash
+export TOGETHER_API_KEY=your-key
+```
+
+**Step 3 — Run**
+
+```bash
+node pipeline.js --model llama4_together
+```
+
+### Anthropic (Claude models)
+
+```js
+claude_haiku_3: {
+  provider: 'anthropic',
+  model:    'claude-haiku-3-5-20241022',   // exact Anthropic model ID
+  api_key:  process.env.ANTHROPIC_API_KEY,
+},
+```
+
+The `base_url` field is not needed for Anthropic — the adapter always calls `https://api.anthropic.com/v1/messages`.
+
+```bash
+export ANTHROPIC_API_KEY=sk-ant-...
+node pipeline.js --model claude_haiku_3
+```
+
+---
+
+## Adding a New Provider
+
+The pipeline has three built-in adapters: `ollama`, `openai`, `anthropic`. To add a fourth:
+
+1. Write a new async function in `pipeline.js` following the same signature as `callOllama`:
+
+```js
+async function callMyProvider(cfg, systemPrompt, userPrompt) {
+  const response = await fetch(`${cfg.base_url}/your-endpoint`, {
+    method:  'POST',
+    headers: { 'Authorization': `Bearer ${cfg.api_key}`, 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ model: cfg.model, prompt: userPrompt }),
+  });
+  const data = await response.json();
+  return {
+    text:   data.output,               // the generated text
+    tokens: { input: null, output: null },
+  };
+}
+```
+
+2. Register it in the `callModel` dispatcher (~line 280):
+
+```js
+if (cfg.provider === 'myprovider') {
+  return callMyProvider(cfg, systemPrompt, userPrompt);
+}
+```
+
+3. Add a model entry using `provider: 'myprovider'`.
+
+---
+
 ## Dataset
 
-50 prompts across 10 categories:
+51 prompts across 10 vulnerability categories:
 
 | Category | Examples |
 |---|---|
@@ -27,7 +320,14 @@ Each prompt is sent in two versions:
 | Third-Party Integration | OAuth, webhooks, postMessage, SSRF |
 | Form Validation | Registration, payment, rate limiting |
 
-Prompts are tagged with `context: backend | frontend | both` to generate the appropriate code style.
+Prompts are defined in `prompts.json`. Each prompt has:
+- `id` — filename stem (e.g. `auth_001`)
+- `category` — one of the ten categories above
+- `context` — `backend` | `frontend` | `both`
+- `language` — `javascript` | `html`
+- `naive` — the naive prompt text
+- `security_aware` — the security-aware prompt text
+- `python_naive` / `python_security_aware` — optional Python/Flask variants
 
 ## Models
 
@@ -42,73 +342,10 @@ Prompts are tagged with `context: backend | frontend | both` to generate the app
 | `devstral_small_2` | Devstral-Small-2 24B | Mistral AI | Local (Ollama) |
 | `gpt_5_5` | GPT-5.5 | OpenAI | API |
 | `gpt_5_4_mini` | GPT-5.4-Mini | OpenAI | API |
-| `gpt_5_3_codex` | GPT-5.3-Codex | OpenAI | API |
+| `gpt_5_3_codex` | GPT-5.3-Codex | OpenAI | API (Responses API) |
 | `claude_opus` | Claude Opus 4.8 | Anthropic | API |
 | `claude_sonnet` | Claude Sonnet 4.6 | Anthropic | API |
 | `claude_haiku` | Claude Haiku 4.5 | Anthropic | API |
-
-## Setup
-
-```bash
-# Install Node.js dependencies
-npm install
-
-# Install Semgrep
-pip install semgrep
-
-# For local models — install Ollama and pull the model
-ollama pull qwen2.5-coder:7b
-
-# Set API keys
-export GOOGLE_API_KEY=your-key
-export ANTHROPIC_API_KEY=your-key
-```
-
-## Usage
-
-### Run the pipeline
-
-```bash
-# Continue current run (resumes from where it stopped)
-node pipeline.js
-
-# Start a fresh run (archives current output → output_number_N)
-node pipeline.js --new-run
-
-# Run a single model only
-node pipeline.js --model qwen_coder
-
-# Preview what would run without calling any APIs
-node pipeline.js --dry-run
-```
-
-### Run static analysis
-
-```bash
-# Scan latest_ran_output/ and write findings.json there
-node analyze.js
-
-# Scan all model output folders (devstral-glm/, gemma4-31b/, etc.)
-# Writes findings.json inside each folder and prints a combined summary
-node analyze_all.js
-```
-
-## Output Structure
-
-```
-latest_ran_output/
-  run_log.jsonl        # one JSON line per API call (tokens, duration, status)
-  findings.json        # all Semgrep findings with CWE IDs
-  qwen_coder/
-    auth_001_naive.js
-    auth_001_security_aware.js
-    ...
-  gemini_flash/
-    ...
-
-output_number_1/       # archived previous run
-output_number_2/       # archived run before that
-```
 
 ## Static Analysis
 
@@ -117,12 +354,7 @@ Two Semgrep rulesets are combined:
 | Ruleset | Coverage |
 |---|---|
 | `p/cwe-top-25` | MITRE CWE Top 25 — SQL injection, path traversal, hardcoded secrets, XSS, etc. |
-| `custom_rules/` | innerHTML/outerHTML XSS, insertAdjacentHTML, document.write, eval() |
-
-Findings schema:
-```json
-{ "model", "prompt_id", "tier", "cwe_id", "severity", "tool", "rule", "line", "file" }
-```
+| `custom_rules/` | innerHTML/outerHTML XSS, insertAdjacentHTML, document.write |
 
 ## Target Vulnerability Classes
 
@@ -130,10 +362,8 @@ Findings schema:
 |---|---|
 | CWE-79 | Cross-Site Scripting (XSS) |
 | CWE-89 | SQL Injection |
-| CWE-94 | Code Injection (eval) |
 | CWE-22 | Path Traversal |
 | CWE-798 | Hardcoded Credentials |
-| CWE-522 | Weak Cookie/Session Settings |
-| CWE-346 | CORS Origin Validation Error |
-| CWE-338 | Insecure Randomness |
-| CWE-345 | Wildcard postMessage |
+| CWE-918 | Server-Side Request Forgery (SSRF) |
+| CWE-78 | OS Command Injection |
+| CWE-287 | Improper Authentication |

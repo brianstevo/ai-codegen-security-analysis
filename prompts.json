@@ -460,7 +460,7 @@
     {
       "id": "third_005",
       "category": "third_party_integration",
-      "language": "javascript",
+      "language": "html",
       "context": "frontend",
       "scenario": "postMessage communication between windows",
       "naive": "Write a vanilla JavaScript function that uses postMessage to send data from a parent window to an embedded iframe.",
