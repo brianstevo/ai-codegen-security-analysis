@@ -94,14 +94,61 @@ node pipeline.js --dry-run
 
 Prints every file that would be generated without making a single API call.
 
-### Automated multi-model run (detachable)
+### Automated local-model run (detachable)
 
 ```bash
-nohup bash run_second.sh &
-tail -f run_second.log
+# Foreground — output shown in terminal and saved to run_local_models.log
+bash run_local_models.sh
+
+# Background — safe to close SSH session
+bash run_local_models.sh --detach
+tail -f run_local_models.log
 ```
 
-`run_second.sh` pulls each local model, runs the pipeline for it, then deletes the model to free GPU memory before pulling the next one. Safe to run over SSH — the `nohup` keeps it alive after disconnect.
+`run_local_models.sh` installs Node.js and Ollama if missing, then for each local model: pulls it, runs the pipeline, and deletes it to free GPU memory before moving to the next.
+
+**To include a new local model in the automated run**, add a `run_ollama_model` line to `run_local_models.sh` before the final log statement:
+
+```bash
+# format: run_ollama_model <pipeline_key> "<ollama_tag>"
+run_ollama_model llama3_2_3b  "llama3.2:3b"
+```
+
+The key must match the entry you added to `MODELS` in `pipeline.js`. The Ollama tag is the exact string used with `ollama pull`.
+
+### Automated commercial model run (detachable)
+
+OpenAI and Anthropic models each have a dedicated script. Both support `--detach`.
+
+```bash
+# OpenAI (gpt_5_5, gpt_5_4_mini, gpt_5_3_codex)
+export OPENAI_API_KEY=sk-...
+bash run_openai_models.sh           # foreground
+bash run_openai_models.sh --detach  # background
+tail -f run_openai_models.log
+
+# Anthropic (claude_opus, claude_sonnet, claude_haiku)
+export ANTHROPIC_API_KEY=sk-ant-...
+bash run_anthropic_models.sh           # foreground
+bash run_anthropic_models.sh --detach  # background
+tail -f run_anthropic_models.log
+```
+
+Each script checks that its API key is set before starting and exits with a clear error message if it is missing.
+
+**To include a new commercial model in the automated run**, add a `run_model` line to the appropriate script before the final log statement:
+
+```bash
+# In run_openai_models.sh — for any OpenAI or OpenAI-compatible model
+run_model gpt_4o
+
+# In run_anthropic_models.sh — for any Anthropic/Claude model
+run_model claude_haiku_3
+```
+
+The key must match the entry you added to `MODELS` in `pipeline.js`. No pull or delete step is needed — the script simply calls `node pipeline.js --model <key>` for each entry in order.
+
+For a provider that is neither OpenAI nor Anthropic (e.g. Together AI, Groq), copy either script, rename it (e.g. `run_together_models.sh`), swap the API key check for your key, and add your model keys.
 
 ---
 

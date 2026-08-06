@@ -1,15 +1,27 @@
 #!/bin/bash
-# run_second.sh — Automated second run across all models
-# Usage: bash run_second.sh
-# Logs everything to run_second.log in the same directory.
-# Safe to disconnect — run with: nohup bash run_second.sh &
+# run_local_models.sh — Pull, run, and delete each local Ollama model in sequence.
+#
+# Usage:
+#   bash run_local_models.sh           # foreground (output shown + saved to log)
+#   bash run_local_models.sh --detach  # background, safe to close SSH session
+#
+# Progress log: run_local_models.log (in the same directory)
 
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-LOG="$SCRIPT_DIR/run_second.log"
+LOG="$SCRIPT_DIR/run_local_models.log"
+
+# Self-daemonize when --detach is passed
+if [[ "${1:-}" == "--detach" ]]; then
+  nohup bash "$0" > "$LOG" 2>&1 &
+  echo "Running in background (pid $!). Follow progress with:"
+  echo "  tail -f $LOG"
+  exit 0
+fi
+
 exec > >(tee -a "$LOG") 2>&1
 
 log() { echo "[$(date '+%H:%M:%S')] $*"; }
@@ -74,7 +86,7 @@ run_ollama_model() {
   ollama rm "$model" && log "$model deleted" || log "WARN: could not delete $model"
 }
 
-log "====== Second run started (open-weight models only) ======"
+log "====== Local model run started ======"
 setup_node
 setup_ollama
 
