@@ -183,7 +183,7 @@ async function callAnthropic(model, systemPrompt, userPrompt, apiKey) {
     },
     body: JSON.stringify({
       model,
-      max_tokens: 2048,
+      max_tokens: 8192,
       system:     systemPrompt,
       messages: [
         { role: 'user', content: userPrompt },
