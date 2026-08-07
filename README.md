@@ -114,7 +114,7 @@ tail -f run_local_models.log
 run_ollama_model llama3_2_3b  "llama3.2:3b"
 ```
 
-The key must match the entry you added to `MODELS` in `pipeline.js`. The Ollama tag is the exact string used with `ollama pull`.
+The key must match the entry you added to `MODELS` in `models.js`. The Ollama tag is the exact string used with `ollama pull`.
 
 ### Automated commercial model run (detachable)
 
@@ -146,9 +146,9 @@ run_model gpt_4o
 run_model claude_haiku_3
 ```
 
-The key must match the entry you added to `MODELS` in `pipeline.js`. No pull or delete step is needed — the script simply calls `node pipeline.js --model <key>` for each entry in order.
+The key must match the entry you added to `MODELS` in `models.js`. No pull or delete step is needed — the script simply calls `node pipeline.js --model <key>` for each entry in order.
 
-For a provider that is neither OpenAI nor Anthropic (e.g. Together AI, Groq), copy either script, rename it (e.g. `run_together_models.sh`), swap the API key check for your key, and add your model keys.
+For a provider that is neither OpenAI nor Anthropic (e.g. Groq), copy either script, rename it (e.g. `run_groq_models.sh`), swap the API key check for your key, and add your model keys.
 
 ---
 
@@ -211,7 +211,7 @@ ollama pull llama3.2:3b
 
 Check available models at `ollama.com/library`.
 
-**Step 2 — Add an entry to `MODELS` in `pipeline.js`**
+**Step 2 — Add an entry to `MODELS` in `models.js`**
 
 ```js
 llama3_2_3b: {
@@ -248,7 +248,7 @@ node pipeline.js --model llama3_2_3b
 
 ### OpenAI (or any OpenAI-compatible API)
 
-**Step 1 — Add an entry to `MODELS` in `pipeline.js`**
+**Step 1 — Add an entry to `MODELS` in `models.js`**
 
 ```js
 gpt_4o: {
@@ -259,14 +259,14 @@ gpt_4o: {
 },
 ```
 
-For OpenAI-compatible third-party APIs (Together AI, Groq, Fireworks, OpenRouter, etc.), just change `base_url` and `api_key`:
+For OpenAI-compatible third-party APIs (Groq, Fireworks, OpenRouter, etc.), just change `base_url` and `api_key`:
 
 ```js
-llama4_together: {
-  provider: 'openai',                         // reuses the OpenAI adapter
-  model:    'meta-llama/Llama-4-Scout-17B-16E-Instruct',
-  base_url: 'https://api.together.xyz',
-  api_key:  process.env.TOGETHER_API_KEY,
+llama3_groq: {
+  provider: 'openai',          // reuses the OpenAI adapter
+  model:    'llama3-70b-8192',
+  base_url: 'https://api.groq.com/openai',
+  api_key:  process.env.GROQ_API_KEY,
 },
 ```
 
@@ -289,13 +289,13 @@ my_codex_model: {
 **Step 2 — Export your API key**
 
 ```bash
-export TOGETHER_API_KEY=your-key
+export GROQ_API_KEY=your-key
 ```
 
 **Step 3 — Run**
 
 ```bash
-node pipeline.js --model llama4_together
+node pipeline.js --model llama3_groq
 ```
 
 ### Anthropic (Claude models)
@@ -314,6 +314,30 @@ The `base_url` field is not needed for Anthropic — the adapter always calls `h
 export ANTHROPIC_API_KEY=sk-ant-...
 node pipeline.js --model claude_haiku_3
 ```
+
+---
+
+## Model Registry (`models.js`)
+
+All model definitions live in `models.js`, not in `pipeline.js`. Open `models.js` to add, remove, or edit models — `pipeline.js` imports them automatically.
+
+Each entry looks like:
+
+```js
+my_model: {
+  provider: 'ollama' | 'openai' | 'anthropic',
+  model:    '<exact model ID or Ollama tag>',
+  // ollama / openai only:
+  base_url: 'http://localhost:11434',
+  // openai / anthropic only:
+  api_key:  process.env.MY_API_KEY,
+  // optional flags:
+  think:         false,   // suppress chain-of-thought (some Ollama models)
+  responses_api: true,    // use /v1/responses instead of /v1/chat/completions
+},
+```
+
+The key (`my_model`) is what you pass to `--model` and becomes the output subfolder name.
 
 ---
 
