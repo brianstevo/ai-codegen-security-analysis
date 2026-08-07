@@ -9,6 +9,6 @@
     "tool": "semgrep",
     "rule": "javascript.express.security.audit.express-path-join-resolve-traversal.express-path-join-resolve-traversal",
     "line": 36,
-    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/sonnet/claude_sonnet/file_002_security_aware.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/firstrun/sonnet/claude_sonnet/file_002_security_aware.js"
   }
 ]

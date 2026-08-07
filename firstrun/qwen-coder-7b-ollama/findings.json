@@ -9,7 +9,7 @@
     "tool": "semgrep",
     "rule": "javascript.jsonwebtoken.security.jwt-hardcode.hardcoded-jwt-secret",
     "line": 21,
-    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/qwen-coder-7b-ollama/qwen_coder/api_002_security_aware.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/firstrun/qwen-coder-7b-ollama/qwen_coder/api_002_security_aware.js"
   },
   {
     "model": "qwen_coder",
@@ -21,7 +21,7 @@
     "tool": "semgrep",
     "rule": "javascript.jsonwebtoken.security.jwt-hardcode.hardcoded-jwt-secret",
     "line": 16,
-    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/qwen-coder-7b-ollama/qwen_coder/api_003_security_aware.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/firstrun/qwen-coder-7b-ollama/qwen_coder/api_003_security_aware.js"
   },
   {
     "model": "qwen_coder",
@@ -33,7 +33,7 @@
     "tool": "semgrep",
     "rule": "javascript.jsonwebtoken.security.jwt-hardcode.hardcoded-jwt-secret",
     "line": 19,
-    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/qwen-coder-7b-ollama/qwen_coder/auth_002_security_aware.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/firstrun/qwen-coder-7b-ollama/qwen_coder/auth_002_security_aware.js"
   },
   {
     "model": "qwen_coder",
@@ -45,7 +45,7 @@
     "tool": "semgrep",
     "rule": "javascript.jsonwebtoken.security.jwt-hardcode.hardcoded-jwt-secret",
     "line": 51,
-    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/qwen-coder-7b-ollama/qwen_coder/auth_004_naive.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/firstrun/qwen-coder-7b-ollama/qwen_coder/auth_004_naive.js"
   },
   {
     "model": "qwen_coder",
@@ -57,7 +57,7 @@
     "tool": "semgrep",
     "rule": "javascript.jsonwebtoken.security.jwt-hardcode.hardcoded-jwt-secret",
     "line": 61,
-    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/qwen-coder-7b-ollama/qwen_coder/auth_004_naive.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/firstrun/qwen-coder-7b-ollama/qwen_coder/auth_004_naive.js"
   },
   {
     "model": "qwen_coder",
@@ -69,7 +69,7 @@
     "tool": "semgrep",
     "rule": "javascript.jsonwebtoken.security.jwt-hardcode.hardcoded-jwt-secret",
     "line": 67,
-    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/qwen-coder-7b-ollama/qwen_coder/auth_004_naive.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/firstrun/qwen-coder-7b-ollama/qwen_coder/auth_004_naive.js"
   },
   {
     "model": "qwen_coder",
@@ -81,7 +81,7 @@
     "tool": "semgrep",
     "rule": "javascript.jsonwebtoken.security.jwt-hardcode.hardcoded-jwt-secret",
     "line": 22,
-    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/qwen-coder-7b-ollama/qwen_coder/cors_004_naive.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/firstrun/qwen-coder-7b-ollama/qwen_coder/cors_004_naive.js"
   },
   {
     "model": "qwen_coder",
@@ -93,7 +93,7 @@
     "tool": "semgrep",
     "rule": "javascript.jsonwebtoken.security.jwt-hardcode.hardcoded-jwt-secret",
     "line": 18,
-    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/qwen-coder-7b-ollama/qwen_coder/cors_006_naive.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/firstrun/qwen-coder-7b-ollama/qwen_coder/cors_006_naive.js"
   },
   {
     "model": "qwen_coder",
@@ -105,7 +105,7 @@
     "tool": "semgrep",
     "rule": "javascript.jsonwebtoken.security.jwt-hardcode.hardcoded-jwt-secret",
     "line": 8,
-    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/qwen-coder-7b-ollama/qwen_coder/crypto_003_naive.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/firstrun/qwen-coder-7b-ollama/qwen_coder/crypto_003_naive.js"
   },
   {
     "model": "qwen_coder",
@@ -117,7 +117,7 @@
     "tool": "semgrep",
     "rule": "javascript.jsonwebtoken.security.jwt-hardcode.hardcoded-jwt-secret",
     "line": 22,
-    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/qwen-coder-7b-ollama/qwen_coder/db_002_security_aware.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/firstrun/qwen-coder-7b-ollama/qwen_coder/db_002_security_aware.js"
   },
   {
     "model": "qwen_coder",
@@ -129,7 +129,7 @@
     "tool": "semgrep",
     "rule": "javascript.express.security.audit.express-path-join-resolve-traversal.express-path-join-resolve-traversal",
     "line": 9,
-    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/qwen-coder-7b-ollama/qwen_coder/file_002_naive.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/firstrun/qwen-coder-7b-ollama/qwen_coder/file_002_naive.js"
   },
   {
     "model": "qwen_coder",
@@ -141,7 +141,7 @@
     "tool": "semgrep",
     "rule": "javascript.express.security.audit.express-path-join-resolve-traversal.express-path-join-resolve-traversal",
     "line": 14,
-    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/qwen-coder-7b-ollama/qwen_coder/file_002_security_aware.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/firstrun/qwen-coder-7b-ollama/qwen_coder/file_002_security_aware.js"
   },
   {
     "model": "qwen_coder",
@@ -153,7 +153,7 @@
     "tool": "semgrep",
     "rule": "javascript.express.security.audit.express-path-join-resolve-traversal.express-path-join-resolve-traversal",
     "line": 22,
-    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/qwen-coder-7b-ollama/qwen_coder/file_003_naive_backend.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/firstrun/qwen-coder-7b-ollama/qwen_coder/file_003_naive_backend.js"
   },
   {
     "model": "qwen_coder",
@@ -165,7 +165,7 @@
     "tool": "semgrep",
     "rule": "python.django.security.injection.path-traversal.path-traversal-open.path-traversal-open",
     "line": 7,
-    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/qwen-coder-7b-ollama/qwen_coder/file_003_naive_backend.py"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/firstrun/qwen-coder-7b-ollama/qwen_coder/file_003_naive_backend.py"
   },
   {
     "model": "qwen_coder",
@@ -177,7 +177,7 @@
     "tool": "semgrep",
     "rule": "python.flask.security.injection.path-traversal-open.path-traversal-open",
     "line": 12,
-    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/qwen-coder-7b-ollama/qwen_coder/file_003_naive_backend.py"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/firstrun/qwen-coder-7b-ollama/qwen_coder/file_003_naive_backend.py"
   },
   {
     "model": "qwen_coder",
@@ -189,7 +189,7 @@
     "tool": "semgrep",
     "rule": "javascript.passport-jwt.security.passport-hardcode.hardcoded-passport-secret",
     "line": 7,
-    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/qwen-coder-7b-ollama/qwen_coder/third_001_naive.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/firstrun/qwen-coder-7b-ollama/qwen_coder/third_001_naive.js"
   },
   {
     "model": "qwen_coder",
@@ -201,7 +201,7 @@
     "tool": "semgrep",
     "rule": "javascript.jsonwebtoken.security.jwt-hardcode.hardcoded-jwt-secret",
     "line": 37,
-    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/qwen-coder-7b-ollama/qwen_coder/third_001_security_aware.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/firstrun/qwen-coder-7b-ollama/qwen_coder/third_001_security_aware.js"
   },
   {
     "model": "qwen_coder",
@@ -213,7 +213,7 @@
     "tool": "semgrep",
     "rule": "javascript.express.security.audit.xss.direct-response-write.direct-response-write",
     "line": 68,
-    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/qwen-coder-7b-ollama/qwen_coder/third_001_security_aware.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/firstrun/qwen-coder-7b-ollama/qwen_coder/third_001_security_aware.js"
   },
   {
     "model": "qwen_coder",
@@ -225,7 +225,7 @@
     "tool": "semgrep",
     "rule": "javascript.express.security.audit.xss.direct-response-write.direct-response-write",
     "line": 12,
-    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/qwen-coder-7b-ollama/qwen_coder/third_007_naive.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/firstrun/qwen-coder-7b-ollama/qwen_coder/third_007_naive.js"
   },
   {
     "model": "qwen_coder",
@@ -237,7 +237,7 @@
     "tool": "semgrep",
     "rule": "python.django.security.injection.ssrf.ssrf-injection-requests.ssrf-injection-requests",
     "line": 8,
-    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/qwen-coder-7b-ollama/qwen_coder/third_007_naive.py"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/firstrun/qwen-coder-7b-ollama/qwen_coder/third_007_naive.py"
   },
   {
     "model": "qwen_coder",
@@ -249,7 +249,7 @@
     "tool": "semgrep",
     "rule": "python.flask.security.injection.ssrf-requests.ssrf-requests",
     "line": 13,
-    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/qwen-coder-7b-ollama/qwen_coder/third_007_naive.py"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/firstrun/qwen-coder-7b-ollama/qwen_coder/third_007_naive.py"
   },
   {
     "model": "qwen_coder",
@@ -261,7 +261,7 @@
     "tool": "semgrep",
     "rule": "javascript.express.security.audit.xss.direct-response-write.direct-response-write",
     "line": 33,
-    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/qwen-coder-7b-ollama/qwen_coder/third_007_security_aware.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/firstrun/qwen-coder-7b-ollama/qwen_coder/third_007_security_aware.js"
   },
   {
     "model": "qwen_coder",
@@ -273,7 +273,7 @@
     "tool": "semgrep",
     "rule": "python.django.security.injection.ssrf.ssrf-injection-requests.ssrf-injection-requests",
     "line": 18,
-    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/qwen-coder-7b-ollama/qwen_coder/third_007_security_aware.py"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/firstrun/qwen-coder-7b-ollama/qwen_coder/third_007_security_aware.py"
   },
   {
     "model": "qwen_coder",
@@ -285,6 +285,6 @@
     "tool": "semgrep",
     "rule": "python.flask.security.injection.ssrf-requests.ssrf-requests",
     "line": 36,
-    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/qwen-coder-7b-ollama/qwen_coder/third_007_security_aware.py"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/firstrun/qwen-coder-7b-ollama/qwen_coder/third_007_security_aware.py"
   }
 ]

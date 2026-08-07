@@ -9,7 +9,7 @@
     "tool": "semgrep",
     "rule": "javascript.express.security.audit.xss.direct-response-write.direct-response-write",
     "line": 89,
-    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/gpt-5.4-mini/gpt_5_4_mini/cors_004_security_aware.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/firstrun/gpt-5.4-mini/gpt_5_4_mini/cors_004_security_aware.js"
   },
   {
     "model": "gpt_5_4_mini",
@@ -21,7 +21,7 @@
     "tool": "semgrep",
     "rule": "javascript.express.security.audit.xss.direct-response-write.direct-response-write",
     "line": 93,
-    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/gpt-5.4-mini/gpt_5_4_mini/cors_004_security_aware.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/firstrun/gpt-5.4-mini/gpt_5_4_mini/cors_004_security_aware.js"
   },
   {
     "model": "gpt_5_4_mini",
@@ -33,7 +33,7 @@
     "tool": "semgrep",
     "rule": "javascript.express.security.audit.express-path-join-resolve-traversal.express-path-join-resolve-traversal",
     "line": 15,
-    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/gpt-5.4-mini/gpt_5_4_mini/file_002_naive.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/firstrun/gpt-5.4-mini/gpt_5_4_mini/file_002_naive.js"
   },
   {
     "model": "gpt_5_4_mini",
@@ -45,7 +45,7 @@
     "tool": "semgrep",
     "rule": "javascript.express.security.audit.express-path-join-resolve-traversal.express-path-join-resolve-traversal",
     "line": 17,
-    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/gpt-5.4-mini/gpt_5_4_mini/file_002_security_aware.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/firstrun/gpt-5.4-mini/gpt_5_4_mini/file_002_security_aware.js"
   },
   {
     "model": "gpt_5_4_mini",
@@ -57,7 +57,7 @@
     "tool": "semgrep",
     "rule": "javascript.express.security.audit.express-path-join-resolve-traversal.express-path-join-resolve-traversal",
     "line": 25,
-    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/gpt-5.4-mini/gpt_5_4_mini/file_003_naive_backend.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/firstrun/gpt-5.4-mini/gpt_5_4_mini/file_003_naive_backend.js"
   },
   {
     "model": "gpt_5_4_mini",
@@ -69,7 +69,7 @@
     "tool": "semgrep",
     "rule": "javascript.express.security.audit.express-path-join-resolve-traversal.express-path-join-resolve-traversal",
     "line": 29,
-    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/gpt-5.4-mini/gpt_5_4_mini/file_003_naive_backend.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/firstrun/gpt-5.4-mini/gpt_5_4_mini/file_003_naive_backend.js"
   },
   {
     "model": "gpt_5_4_mini",
@@ -81,7 +81,7 @@
     "tool": "semgrep",
     "rule": "javascript.express.security.audit.express-path-join-resolve-traversal.express-path-join-resolve-traversal",
     "line": 41,
-    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/gpt-5.4-mini/gpt_5_4_mini/file_003_security_aware_backend.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/firstrun/gpt-5.4-mini/gpt_5_4_mini/file_003_security_aware_backend.js"
   },
   {
     "model": "gpt_5_4_mini",
@@ -93,7 +93,7 @@
     "tool": "semgrep",
     "rule": "javascript.express.security.injection.raw-html-format.raw-html-format",
     "line": 59,
-    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/gpt-5.4-mini/gpt_5_4_mini/form_004_naive.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/firstrun/gpt-5.4-mini/gpt_5_4_mini/form_004_naive.js"
   },
   {
     "model": "gpt_5_4_mini",
@@ -105,7 +105,7 @@
     "tool": "semgrep",
     "rule": "javascript.express.security.injection.raw-html-format.raw-html-format",
     "line": 60,
-    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/gpt-5.4-mini/gpt_5_4_mini/form_004_naive.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/firstrun/gpt-5.4-mini/gpt_5_4_mini/form_004_naive.js"
   },
   {
     "model": "gpt_5_4_mini",
@@ -117,7 +117,7 @@
     "tool": "semgrep",
     "rule": "javascript.express.security.injection.raw-html-format.raw-html-format",
     "line": 61,
-    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/gpt-5.4-mini/gpt_5_4_mini/form_004_naive.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/firstrun/gpt-5.4-mini/gpt_5_4_mini/form_004_naive.js"
   },
   {
     "model": "gpt_5_4_mini",
@@ -129,7 +129,7 @@
     "tool": "semgrep",
     "rule": "javascript.express.security.injection.raw-html-format.raw-html-format",
     "line": 63,
-    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/gpt-5.4-mini/gpt_5_4_mini/form_004_naive.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/firstrun/gpt-5.4-mini/gpt_5_4_mini/form_004_naive.js"
   },
   {
     "model": "gpt_5_4_mini",
@@ -141,7 +141,7 @@
     "tool": "semgrep",
     "rule": "javascript.express.security.injection.raw-html-format.raw-html-format",
     "line": 47,
-    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/gpt-5.4-mini/gpt_5_4_mini/render_003_security_aware_backend.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/firstrun/gpt-5.4-mini/gpt_5_4_mini/render_003_security_aware_backend.js"
   },
   {
     "model": "gpt_5_4_mini",
@@ -153,7 +153,7 @@
     "tool": "semgrep",
     "rule": "javascript.express.security.audit.xss.direct-response-write.direct-response-write",
     "line": 33,
-    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/gpt-5.4-mini/gpt_5_4_mini/third_007_naive.js"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/firstrun/gpt-5.4-mini/gpt_5_4_mini/third_007_naive.js"
   },
   {
     "model": "gpt_5_4_mini",
@@ -165,7 +165,7 @@
     "tool": "semgrep",
     "rule": "python.flask.security.injection.ssrf-requests.ssrf-requests",
     "line": 29,
-    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/gpt-5.4-mini/gpt_5_4_mini/third_007_naive.py"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/firstrun/gpt-5.4-mini/gpt_5_4_mini/third_007_naive.py"
   },
   {
     "model": "gpt_5_4_mini",
@@ -177,6 +177,6 @@
     "tool": "semgrep",
     "rule": "python.flask.security.injection.ssrf-requests.ssrf-requests",
     "line": 72,
-    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/gpt-5.4-mini/gpt_5_4_mini/third_007_security_aware.py"
+    "file": "/home/brian/Documents/master_cs/seminar-ai/ai-codegen-security-analysis/firstrun/gpt-5.4-mini/gpt_5_4_mini/third_007_security_aware.py"
   }
 ]
